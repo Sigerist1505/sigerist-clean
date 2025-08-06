@@ -10,15 +10,15 @@ async function startServer() {
   const app = express();
 
   // Basic middleware
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
 
   // CORS for Railway
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    if (req.method === 'OPTIONS') {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    if (req.method === "OPTIONS") {
       res.sendStatus(200);
     } else {
       next();
@@ -26,11 +26,11 @@ async function startServer() {
   });
 
   // Health check for Railway
-  app.get('/api/health', (req, res) => {
-    res.status(200).json({ 
-      status: 'ok', 
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({
+      status: "ok",
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || "development",
     });
   });
 
@@ -38,24 +38,26 @@ async function startServer() {
   setupRoutes(app);
 
   // Serve static assets
-  app.use('/assets', express.static(path.join(process.cwd(), 'assets')));
+  app.use("/assets", express.static(path.join(process.cwd(), "assets")));
 
   // Serve built frontend in production
-  if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(process.cwd(), 'dist/public')));
-    
-    app.get('*', (req, res) => {
-      if (!req.path.startsWith('/api')) {
-        res.sendFile(path.join(process.cwd(), 'dist/public', 'index.html'));
+  if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(process.cwd(), "dist/public")));
+
+    app.get("*", (req, res) => {
+      if (!req.path.startsWith("/api")) {
+        res.sendFile(path.join(process.cwd(), "dist/public", "index.html"));
       }
     });
   }
 
-  const PORT = parseInt(process.env.PORT || '5000', 10);
-  
-  app.listen(PORT, '0.0.0.0', () => {
+  console.log("🚀 Launching server...");
+
+  const PORT = parseInt(process.env.PORT || "5000", 10);
+
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📱 Environment: ${process.env.NODE_ENV || "development"}`);
   });
 }
 
