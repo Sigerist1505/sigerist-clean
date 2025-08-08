@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 // Script para crear tablas y datos iniciales en Neon Database
-import { sql } from '@neondatabase/serverless';
+import { neon } from '@neondatabase/serverless';
+const sql = neon(process.env.DATABASE_URL);
 
-const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
   console.error('❌ DATABASE_URL no encontrada');
