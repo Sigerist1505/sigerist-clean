@@ -8,18 +8,11 @@
     "dev": "vite",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js",
     "start": "node dist/index.js",
-    "postbuild": "",
-    "seed": "node seed-database.js",
+    "migrate": "node migrate-clean.js",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
-  "keywords": [
-    "ecommerce",
-    "luxury",
-    "bags",
-    "whatsapp",
-    "ai"
-  ],
+  "keywords": ["ecommerce", "luxury", "bags", "whatsapp", "ai"],
   "author": "Sigerist Luxury Bags",
   "license": "MIT",
   "dependencies": {
@@ -54,7 +47,6 @@
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
     "date-fns": "^2.30.0",
-    "dotenv": "^17.2.1",
     "drizzle-kit": "^0.24.0",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",

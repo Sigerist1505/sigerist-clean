@@ -5,23 +5,18 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies for build)
-RUN npm ci
+# Install dependencies
+RUN npm install --omit=dev
 
 # Copy source code
 COPY . .
 
 # Build the application
 RUN npm run build
-
-# Remove dev dependencies after build
-RUN npm ci --only=production && npm cache clean --force
-
-# Make scripts executable
-RUN chmod +x railway-start.sh
+RUN ls -la dist
 
 # Expose port
 EXPOSE 5000
 
 # Start the application
-CMD ["./railway-start.sh"]
+CMD ["npm", "start"]
