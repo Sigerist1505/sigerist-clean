@@ -71,7 +71,7 @@ async function startServer() {
     });
   }
 
-  const PORT = parseInt(process.env.PORT || '5000', 10);
+  const PORT = parseInt(process.env.PORT || '8080', 10);
   
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
