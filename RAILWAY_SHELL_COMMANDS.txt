@@ -1,0 +1,19 @@
+COMANDOS PARA RAILWAY SHELL:
+
+1. Primero verificar conexión:
+   echo "Verificando DATABASE_URL..."
+   echo $DATABASE_URL
+
+2. Ejecutar migración:
+   npm run migrate
+
+3. Verificar tablas creadas:
+   node -e "
+   import { neon } from '@neondatabase/serverless';
+   const sql = neon(process.env.DATABASE_URL);
+   const result = await sql\`SELECT COUNT(*) as count FROM products\`;
+   console.log('Productos en BD:', result[0].count);
+   "
+
+4. Si todo está bien, el servidor debería reiniciarse automáticamente.
+   Si no, ir a Railway Settings y hacer redeploy.
