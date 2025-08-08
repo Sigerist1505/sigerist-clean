@@ -1,17 +1,15 @@
-#!/usr/bin/env node
-
-// Script para crear tablas y datos iniciales en Neon Database
 import 'dotenv/config';
 import { neon } from '@neondatabase/serverless';
-const sql = neon(process.env.DATABASE_URL);
 
+const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
   console.error('❌ DATABASE_URL no encontrada');
   process.exit(1);
 }
 
-const sqlClient = sql(DATABASE_URL);
+// Creamos el cliente SQL
+const sqlClient = neon(DATABASE_URL);
 
 console.log('🚀 Iniciando configuración de base de datos para Sigerist...');
 
