@@ -13,7 +13,13 @@
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
-  "keywords": ["ecommerce", "luxury", "bags", "whatsapp", "ai"],
+  "keywords": [
+    "ecommerce",
+    "luxury",
+    "bags",
+    "whatsapp",
+    "ai"
+  ],
   "author": "Sigerist Luxury Bags",
   "license": "MIT",
   "dependencies": {
@@ -35,6 +41,7 @@
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
+    "@radix-ui/react-tooltip": "^1.2.7",
     "@tanstack/react-query": "^5.8.4",
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^4.17.21",
