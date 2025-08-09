@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -12,7 +12,6 @@ export const products = pgTable("products", {
   animalType: text("animal_type"),
   colors: text("colors").array(),
   inStock: boolean("in_stock").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const cartItems = pgTable("cart_items", {
@@ -32,7 +31,6 @@ export const cartItems = pgTable("cart_items", {
   keychainPersonalization: text("keychain_personalization"),
   hasBordado: boolean("has_bordado").default(false),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const orders = pgTable("orders", {
@@ -43,7 +41,7 @@ export const orders = pgTable("orders", {
   items: text("items").notNull(), // JSON string
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   status: text("status").default("pending"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: text("created_at").notNull(),
 });
 
 export const contactMessages = pgTable("contact_messages", {
@@ -53,27 +51,55 @@ export const contactMessages = pgTable("contact_messages", {
   email: text("email").notNull(),
   phone: text("phone"),
   message: text("message").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: text("created_at").notNull(),
 });
 
 // Insert schemas
-export const insertProductSchema = createInsertSchema(products).omit({
-  id: true,
+export const insertProductSchema = createInsertSchema(products).pick({
+  name: true,
+  description: true,
+  price: true,
+  category: true,
+  imageUrl: true,
+  animalType: true,
+  colors: true,
+  inStock: true,
+});
+
+export const insertCartItemSchema = createInsertSchema(cartItems).pick({
+  productId: true,
+  name: true,
+  quantity: true,
+  personalization: true,
+  embroideryColor: true,
+  embroideryFont: true,
+  customPreview: true,
+  addPompon: true,
+  addPersonalizedKeychain: true,
+  addDecorativeBow: true,
+  addPersonalization: true,
+  expressService: true,
+  keychainPersonalization: true,
+  hasBordado: true,
+  price: true,
+});
+
+export const insertOrderSchema = createInsertSchema(orders).pick({
+  customerName: true,
+  customerEmail: true,
+  customerPhone: true,
+  items: true,
+  total: true,
+  status: true,
   createdAt: true,
 });
 
-export const insertCartItemSchema = createInsertSchema(cartItems).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertOrderSchema = createInsertSchema(orders).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({
-  id: true,
+export const insertContactMessageSchema = createInsertSchema(contactMessages).pick({
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  message: true,
   createdAt: true,
 });
 
