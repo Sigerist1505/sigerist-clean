@@ -90,6 +90,7 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
     onAddonChange({
       ...newSelectedAddons,
       keychainPersonalization,
+      namePersonalization,
       totalAddonPrice,
     });
   };
@@ -109,6 +110,7 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
     onAddonChange({
       ...selectedAddons,
       keychainPersonalization: value,
+      namePersonalization,
       totalAddonPrice,
     });
   };

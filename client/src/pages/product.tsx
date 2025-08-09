@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/contexts/cart-context";
+import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@shared/schema";
@@ -101,20 +101,6 @@ export function ProductPage() {
                   {product.inStock ? "En Stock" : "Agotado"}
                 </Badge>
               </div>
-
-              {/* Colors */}
-              {product.colors && product.colors.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-medium mb-3">Colores disponibles:</h3>
-                  <div className="flex gap-2">
-                    {product.colors.map((color, index) => (
-                      <Badge key={index} variant="outline">
-                        {color}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Personalization */}
               <Card className="mb-6">

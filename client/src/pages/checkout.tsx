@@ -1,260 +1,152 @@
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { useCart } from '@/contexts/cart-context'
-import { useToast } from '@/hooks/use-toast'
-import { formatPrice } from '@/lib/utils'
+import { useState } from "react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCart } from "@/components/cart-provider";
+import { WompiCheckout } from "@/components/wompi-checkout";
+import { formatPrice } from "@/lib/utils";
+import { useLocation } from "wouter";
+import { ArrowLeft, ShoppingBag, CreditCard } from "lucide-react";
 
 export default function CheckoutPage() {
-  const { items, totalItems, formattedTotalPrice, clearCart } = useCart()
-  const { toast } = useToast()
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [customerInfo, setCustomerInfo] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-  })
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomerInfo({
-      ...customerInfo,
-      [e.target.name]: e.target.value,
-    })
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsProcessing(true)
-
-    try {
-      // Simulate order processing
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      toast({
-        title: "¡Pedido realizado con éxito!",
-        description: "Recibirás un email con los detalles de tu pedido",
-      })
-      
-      clearCart()
-      // Redirect to success page or home
-    } catch (error) {
-      toast({
-        title: "Error al procesar el pedido",
-        description: "Por favor intenta de nuevo o contáctanos",
-        variant: "destructive",
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
+  const { items, total, itemCount, finalTotal, discountCode, discountAmount, clearCart } = useCart();
+  const [, setLocation] = useLocation();
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen pt-16 bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md mx-4">
-          <CardContent className="pt-6 text-center">
-            <h2 className="text-xl font-semibold mb-2">Carrito vacío</h2>
-            <p className="text-muted-foreground">Agrega productos para continuar con el checkout.</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen pt-16 bg-black">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <Card className="text-center py-16 bg-black border border-[#C0C0C0]/30">
+            <CardContent>
+              <ShoppingBag className="h-24 w-24 text-[#C0C0C0] mx-auto mb-6" />
+              <h1 className="text-3xl font-bold text-[#ebc005] mb-4">
+                No hay productos en el carrito
+              </h1>
+              <p className="text-[#C0C0C0] mb-8 max-w-md mx-auto">
+                Agrega algunos productos a tu carrito antes de proceder al checkout.
+              </p>
+              <Link href="/">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-[#ebc005] to-[#d4a804] text-black hover:from-[#d4a804] hover:to-[#b8950b] font-bold"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Continuar Comprando
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    )
+    );
   }
 
-  const subtotal = items.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0)
-  const shipping = 25000
-  const total = subtotal + shipping
-
   return (
-    <div className="min-h-screen pt-16 bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-sigerist-charcoal mb-8">
-            Finalizar Compra
-          </h1>
+    <div className="min-h-screen pt-16 bg-black text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-[#ebc005] flex items-center gap-3">
+              <CreditCard className="h-8 w-8" />
+              Finalizar Compra
+            </h1>
+            <p className="text-[#C0C0C0] mt-2">
+              {itemCount} {itemCount === 1 ? 'producto' : 'productos'} • 
+              {discountCode && (
+                <span className="text-green-400">
+                  Descuento {discountCode}: -{formatPrice(discountAmount)} • 
+                </span>
+              )}
+              Total: {formatPrice(finalTotal)}
+            </p>
+          </div>
+          <Link href="/cart">
+            <Button variant="outline" className="border-[#C0C0C0]/30 text-[#C0C0C0] hover:text-[#ebc005] hover:border-[#ebc005]">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver al Carrito
+            </Button>
+          </Link>
+        </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Customer Information Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información de Envío</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Nombre completo *
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      value={customerInfo.name}
-                      onChange={handleInputChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Tu nombre completo"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      value={customerInfo.email}
-                      onChange={handleInputChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="tu@email.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Teléfono *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      required
-                      value={customerInfo.phone}
-                      onChange={handleInputChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="+57 300 123 4567"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Dirección completa *
-                    </label>
-                    <input
-                      type="text"
-                      name="address"
-                      required
-                      value={customerInfo.address}
-                      onChange={handleInputChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Calle, número, apartamento"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Ciudad *
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      required
-                      value={customerInfo.city}
-                      onChange={handleInputChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Tu ciudad"
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={isProcessing}
-                    className="w-full bg-sigerist-gold hover:bg-yellow-600 text-sigerist-charcoal font-semibold"
-                  >
-                    {isProcessing ? 'Procesando...' : 'Realizar Pedido'}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Order Summary */}
-            <div className="space-y-6">
-              {/* Items Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tu Pedido ({totalItems} productos)</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{item.name}</h4>
-                        {item.personalization && (
-                          <p className="text-sm text-gray-600">
-                            Personalización: {item.personalization}
-                          </p>
-                        )}
-                        <p className="text-sm text-gray-600">
-                          Cantidad: {item.quantity}
-                        </p>
-                      </div>
-                      <span className="font-medium">
-                        {formatPrice(parseFloat(item.price) * item.quantity)}
-                      </span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Payment Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resumen de Pago</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>{formatPrice(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Envío</span>
-                    <span>{formatPrice(shipping)}</span>
-                  </div>
-                  <div className="border-t pt-3">
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total</span>
-                      <span className="text-sigerist-charcoal">{formatPrice(total)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Payment Methods */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Métodos de Pago</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="p-3 border rounded-lg bg-green-50 border-green-200">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                        <span className="font-medium">Pago contra entrega</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Paga cuando recibas tu pedido
-                      </p>
-                    </div>
-                    
-                    <div className="p-3 border rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                        <span className="text-gray-500">Transferencia bancaria</span>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Próximamente disponible
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-[#ebc005] text-black flex items-center justify-center font-bold text-sm">
+                1
+              </div>
+              <span className="text-[#C0C0C0]">Carrito</span>
+            </div>
+            <div className="w-12 h-0.5 bg-[#ebc005]"></div>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-[#ebc005] text-black flex items-center justify-center font-bold text-sm">
+                2
+              </div>
+              <span className="text-[#ebc005] font-semibold">Pago</span>
+            </div>
+            <div className="w-12 h-0.5 bg-[#C0C0C0]/30"></div>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-[#C0C0C0]/30 text-[#C0C0C0] flex items-center justify-center font-bold text-sm">
+                3
+              </div>
+              <span className="text-[#C0C0C0]">Confirmación</span>
             </div>
           </div>
         </div>
+
+        {/* Wompi Checkout Component with Cart Data */}
+        <WompiCheckout 
+          amount={finalTotal}
+          reference={`SIGERIST-${Date.now()}`}
+          customerEmail="daniel.sigerist101@gmail.com"
+          customerPhone="3160183418"
+          onSuccess={(transactionId) => {
+            console.log('Payment successful:', transactionId);
+            // Limpiar carrito y redirigir a página de éxito
+            clearCart();
+            setLocation(`/payment-success?transaction=${transactionId}`);
+          }}
+          onError={(error) => {
+            console.error('Payment error:', error);
+            // Mostrar mensaje de error al usuario
+          }}
+        />
+
+        {/* Security badges */}
+        <div className="mt-12 text-center">
+          <div className="inline-flex items-center justify-center space-x-6 p-6 bg-gray-900 rounded-lg border border-[#C0C0C0]/30">
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className="text-[#C0C0C0] text-sm">Pago 100% Seguro</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className="text-[#C0C0C0] text-sm">SSL Certificado</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">W</span>
+              </div>
+              <span className="text-[#C0C0C0] text-sm">Powered by Wompi</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Return policy */}
+        <div className="mt-8 text-center text-xs text-[#C0C0C0]">
+          <p>Al realizar tu compra aceptas nuestros términos y condiciones.</p>
+          <p className="mt-1">Servicio estándar: 15-20 días | Servicio express: 5-8 días | Envío gratuito a toda Colombia</p>
+        </div>
       </div>
     </div>
-  )
+  );
 }
