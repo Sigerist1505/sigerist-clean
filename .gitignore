@@ -68,9 +68,6 @@ dist
 # Vite build cache
 .vite
 
-# Gatsby files
-.cache/
-public
 
 # Storybook build outputs
 .out
