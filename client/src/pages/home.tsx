@@ -28,6 +28,10 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
+// Usando rutas directas sin imports problemáticos
+const MaletaMilan_ConBordado = "/attached_assets/MaletaMilan_ConBordado.jpg";
+const Maleta_viajera_Bordada = "/attached_assets/Maleta viajera_Bordada.jpg";
+
 export default function Home() {
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
@@ -248,6 +252,148 @@ export default function Home() {
           <div className="text-center mt-12">
             <Link href="/products">
               <Button size="lg" className="bg-black hover:bg-gray-800 text-white">
+                Ver Toda la Colección
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              ¿Por qué elegir Sigerist?
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Cada bolso es una obra de arte única, diseñada especialmente para ti
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="text-center hover:shadow-xl transition-shadow">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl">✨</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  Bordados Personalizados
+                </h3>
+                <p className="text-gray-600">
+                  Agrega nombres, diseños únicos y toques personales a cada bolso
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center hover:shadow-xl transition-shadow">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl">🎨</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  Calidad Premium
+                </h3>
+                <p className="text-gray-600">
+                  Materiales de la más alta calidad, hechos para durar toda la vida
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center hover:shadow-xl transition-shadow">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl">🚚</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  Envío Seguro
+                </h3>
+                <p className="text-gray-600">
+                  Entrega rápida y segura en toda Colombia con seguimiento
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Sample Products with Images */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Productos Destacados
+            </h2>
+            <p className="text-gray-600 text-lg">
+              Descubre nuestros diseños más populares
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+            {/* Maleta Milano */}
+            <Card className="group hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-0">
+                <div className="aspect-square bg-white rounded-t-lg overflow-hidden">
+                  <img 
+                    src={MaletaMilan_ConBordado} 
+                    alt="Maleta Milano con Bordado" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    Maleta Milano
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Elegante maleta para viajes con bordado personalizado
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-gray-900">
+                      <span className="text-lg text-gray-600">Desde </span>
+                      {formatPrice(450000)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      + $15,000 bordado
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Maleta Viajera */}
+            <Card className="group hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-0">
+                <div className="aspect-square bg-white rounded-t-lg overflow-hidden">
+                  <img 
+                    src={Maleta_viajera_Bordada} 
+                    alt="Maleta Viajera Bordada" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    Maleta Viajera
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Perfecta para viajes largos con compartimentos organizados
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-gray-900">
+                      <span className="text-lg text-gray-600">Desde </span>
+                      {formatPrice(565000)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      + $15,000 bordado
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-12">
+            <Link href="/products">
+              <Button size="lg" className="bg-gray-900 hover:bg-gray-800 text-white">
                 Ver Toda la Colección
               </Button>
             </Link>
