@@ -68,6 +68,9 @@ dist
 # Vite build cache
 .vite
 
+# Gatsby files
+.cache/
+public
 
 # Storybook build outputs
 .out
@@ -102,4 +105,10 @@ Thumbs.db
 *.db
 
 # Drizzle
-drizzle/
+drizzle/ 
+
+# --- allow frontend public assets (override global ignore) ---
+!client/public/
+!client/public/**
+!client/public/assets/
+!client/public/assets/**
