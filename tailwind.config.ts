@@ -1,18 +1,16 @@
-import type { Config } from 'tailwindcss'
-
-const config = {
+// tailwind.config.cjs
+module.exports = {
   darkMode: ["class"],
   content: [
-    './client/src/**/*.{ts,tsx}',
+    "./client/index.html",
+    "./client/src/**/*.{ts,tsx,js,jsx}",
   ],
   prefix: "",
   theme: {
     container: {
       center: true,
       padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      screens: { "2xl": "1400px" },
     },
     extend: {
       colors: {
@@ -49,9 +47,9 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        'sigerist-gold': 'hsl(var(--sigerist-gold))',
-        'sigerist-charcoal': 'hsl(var(--sigerist-charcoal))',
-        'sigerist-silver': 'hsl(var(--sigerist-silver))',
+        "sigerist-gold": "hsl(var(--sigerist-gold))",
+        "sigerist-charcoal": "hsl(var(--sigerist-charcoal))",
+        "sigerist-silver": "hsl(var(--sigerist-silver))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -75,6 +73,4 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
-
-export default config
+};
