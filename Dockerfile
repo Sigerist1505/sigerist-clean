@@ -2,21 +2,20 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Instalar deps de producción
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Install dependencies
-RUN npm install --omit=dev
-
-# Copy source code
+# Copiar código
 COPY . .
 
-# Build the application
+# Build (cliente + servidor)
 RUN npm run build
-RUN ls -la dist
 
-# Expose port
-EXPOSE 5000
+# Variables/puerto
+ENV NODE_ENV=production
+ENV PORT=8080
+EXPOSE 8080
 
-# Start the application
-CMD ["npm", "start"]
+# Arranque del servidor Node (el mismo que npm start)
+CMD ["node", "dist/index.js"]
