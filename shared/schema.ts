@@ -1,5 +1,5 @@
-import { pgTable, text, serial, integer, boolean, decimal } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"; // <-- AÑADIDO
 import { z } from "zod";
 
 export const products = pgTable("products", {
@@ -54,7 +54,38 @@ export const contactMessages = pgTable("contact_messages", {
   createdAt: text("created_at").notNull(),
 });
 
-// Insert schemas
+// === NUEVAS TABLAS QUE NECESITA server/storage.ts ===
+export const whatsappSessions = pgTable("whatsapp_sessions", {
+  id: serial("id").primaryKey(),
+  phoneNumber: text("phone_number").notNull().unique(),
+  sessionData: text("session_data").notNull(), // JSON serializado
+  lastActivity: text("last_activity"),
+  createdAt: text("created_at"),
+});
+
+export const emailCampaigns = pgTable("email_campaigns", {
+  id: serial("id").primaryKey(),
+  campaignName: text("campaign_name").notNull(),
+  subject: text("subject").notNull(),
+  content: text("content").notNull(),
+  status: text("status").default("draft"),
+  sentCount: integer("sent_count").default(0),
+  createdAt: text("created_at"),
+  sentAt: text("sent_at"),
+});
+
+// === REGISTERED USERS (para register.tsx) ===
+export const registeredUsers = pgTable("registered_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name").notNull(),
+  phone: text("phone"),
+  shippingAddress: text("shipping_address"),
+  createdAt: timestamp("created_at").defaultNow(), // <-- requiere el import de timestamp
+});
+
+// Schemas Zod
 export const insertProductSchema = createInsertSchema(products).pick({
   name: true,
   description: true,
@@ -103,7 +134,14 @@ export const insertContactMessageSchema = createInsertSchema(contactMessages).pi
   createdAt: true,
 });
 
-// Export types
+export const insertRegisteredUserSchema = createInsertSchema(registeredUsers, {
+  email: (schema) => schema.email.email(),
+  passwordHash: (schema) => schema.passwordHash.min(8),
+  name: (schema) => schema.name.min(2),
+});
+export const selectRegisteredUserSchema = createSelectSchema(registeredUsers);
+
+// Types
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type CartItem = typeof cartItems.$inferSelect;
@@ -112,26 +150,5 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
-
-export const registeredUsers = pgTable("registered_users", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  name: text("name").notNull(),
-  phone: text("phone"),
-  shippingAddress: text("shipping_address"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Schemas Zod (para form / validación)
-export const insertRegisteredUserSchema = createInsertSchema(registeredUsers, {
-  email: (schema) => schema.email.email(),      // valida formato email
-  passwordHash: (schema) => schema.passwordHash.min(8),
-  name: (schema) => schema.name.min(2),
-});
-
-export const selectRegisteredUserSchema = createSelectSchema(registeredUsers);
-
-// Types
 export type InsertRegisteredUser = z.infer<typeof insertRegisteredUserSchema>;
 export type RegisteredUser = z.infer<typeof selectRegisteredUserSchema>;

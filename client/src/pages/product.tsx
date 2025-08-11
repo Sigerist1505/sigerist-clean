@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,25 +9,41 @@ import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@shared/schema";
 
-export function ProductPage() {
-  const [match, params] = useRoute("/product/:id");
+// Soporta /product/:id y /products/:id (singular y plural)
+function useProductRouteId() {
+  const [matchSingular, paramsSingular] = useRoute("/product/:id");
+  const [matchPlural, paramsPlural] = useRoute("/products/:id");
+  return useMemo(() => {
+    if (matchSingular) return paramsSingular?.id;
+    if (matchPlural) return paramsPlural?.id;
+    return undefined;
+  }, [matchSingular, matchPlural, paramsSingular, paramsPlural]);
+}
+
+function ProductPage() {
+  const productId = useProductRouteId();
   const { addItem } = useCart();
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [personalization, setPersonalization] = useState("");
 
   const { data: product, isLoading, error } = useQuery<Product>({
-    queryKey: ['/api/products', params?.id],
-    enabled: !!params?.id,
+    queryKey: ["/api/products", productId],
+    enabled: !!productId,
+    queryFn: async () => {
+      const res = await fetch(`/api/products/${productId}`);
+      if (!res.ok) throw new Error("No se pudo cargar el producto");
+      return res.json();
+    },
   });
 
   const handleAddToCart = () => {
     if (!product) return;
-    
+
     addItem({
       productId: product.id,
       name: product.name,
-      price: product.price,
+      price: product.price, // lo guardamos como viene (string/decimal)
       quantity,
       personalization,
     });
@@ -56,7 +72,9 @@ export function ProductPage() {
         <Card className="w-full max-w-md mx-4">
           <CardContent className="pt-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Producto no encontrado</h2>
-            <p className="text-muted-foreground">El producto que buscas no existe o ha sido eliminado.</p>
+            <p className="text-muted-foreground">
+              El producto que buscas no existe o ha sido eliminado.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -67,7 +85,7 @@ export function ProductPage() {
     <div className="min-h-screen pt-16 bg-gradient-to-br from-gray-50 to-white">
       <div className="container mx-auto px-4 py-8">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Product Image */}
+          {/* Imagen */}
           <div className="space-y-4">
             <div className="aspect-square bg-white rounded-2xl p-6 shadow-lg">
               <img
@@ -78,15 +96,13 @@ export function ProductPage() {
             </div>
           </div>
 
-          {/* Product Details */}
+          {/* Detalles */}
           <div className="space-y-6">
             <div>
               <Badge className="mb-4" variant="secondary">
                 {product.category}
               </Badge>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {product.name}
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
               <p className="text-gray-600 text-lg leading-relaxed">
                 {product.description}
               </p>
@@ -95,14 +111,14 @@ export function ProductPage() {
             <div className="border-t pt-6">
               <div className="flex items-center justify-between mb-6">
                 <span className="text-4xl font-bold text-gray-900">
-                  {formatPrice(product.price)}
+                  {formatPrice(Number(product.price))}
                 </span>
                 <Badge variant={product.inStock ? "default" : "destructive"}>
                   {product.inStock ? "En Stock" : "Agotado"}
                 </Badge>
               </div>
 
-              {/* Personalization */}
+              {/* Personalización */}
               <Card className="mb-6">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -123,15 +139,13 @@ export function ProductPage() {
                         className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         maxLength={15}
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Máximo 15 caracteres
-                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Máximo 15 caracteres</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Quantity and Add to Cart */}
+              {/* Cantidad + Agregar */}
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <label className="font-medium">Cantidad:</label>
