@@ -112,3 +112,26 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+
+export const registeredUsers = pgTable("registered_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name").notNull(),
+  phone: text("phone"),
+  shippingAddress: text("shipping_address"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Schemas Zod (para form / validación)
+export const insertRegisteredUserSchema = createInsertSchema(registeredUsers, {
+  email: (schema) => schema.email.email(),      // valida formato email
+  passwordHash: (schema) => schema.passwordHash.min(8),
+  name: (schema) => schema.name.min(2),
+});
+
+export const selectRegisteredUserSchema = createSelectSchema(registeredUsers);
+
+// Types
+export type InsertRegisteredUser = z.infer<typeof insertRegisteredUserSchema>;
+export type RegisteredUser = z.infer<typeof selectRegisteredUserSchema>;
