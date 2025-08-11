@@ -1,3 +1,4 @@
+// server/index.ts
 import express, { type Request, type Response, type NextFunction } from "express";
 import session from "express-session";
 import path from "path";
@@ -5,95 +6,68 @@ import { registerRoutes } from "./routes";
 
 const app = express();
 
-/* -------------------------------------------
- * 1) Confiar en el proxy en producción (Railway)
- *    Necesario para que cookie.secure funcione bien
- * ------------------------------------------- */
+// 1) Proxy en prod (cookies secure detrás del proxy de Railway)
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-/* -------------------------------------------
- * 2) Healthcheck para Railway
- *    Debe responder 200 rápido
- * ------------------------------------------- */
+// 2) Healthcheck (debe responder 200 rápido)
 app.get("/api/health", (_req: Request, res: Response) => {
   res.status(200).json({ ok: true, env: process.env.NODE_ENV || "development" });
 });
 
-/* -------------------------------------------
- * 3) Parsers
- * ------------------------------------------- */
+// 3) Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-/* -------------------------------------------
- * 4) Assets estáticos “crudos” (opcional)
- *    Para servir /assets/* si subes archivos sueltos
- * ------------------------------------------- */
+// 4) Assets “crudos” opcionales
 app.use("/assets", express.static(path.join(process.cwd(), "assets")));
 
-/* -------------------------------------------
- * 5) Sesiones
- * ------------------------------------------- */
+// 5) Sesiones
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "sigerist-session-secret-key",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // requiere HTTPS detrás del proxy
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24h
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
 
-/* -------------------------------------------
- * 6) Logger de requests para /api/*
- * ------------------------------------------- */
+// 6) Logger simple para /api/*
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
-  const reqPath = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json.bind(res);
-  // @ts-expect-error - sobrescribimos tipo para capturar body
-  res.json = (bodyJson: any, ...args: any[]) => {
-    capturedJsonResponse = bodyJson;
-    return originalResJson(bodyJson, ...args);
+  let captured: any;
+  const orig = res.json.bind(res);
+  // @ts-expect-error: capturamos cuerpo
+  res.json = (body: any, ...args: any[]) => {
+    captured = body;
+    return orig(body, ...args);
   };
-
   res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (reqPath.startsWith("/api")) {
-      let line = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
+    if (req.path.startsWith("/api")) {
+      const ms = Date.now() - start;
+      let line = `${req.method} ${req.path} ${res.statusCode} in ${ms}ms`;
+      if (captured) {
         try {
-          line += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-        } catch {
-          // ignore stringify errors
-        }
+          const txt = JSON.stringify(captured);
+          line += ` :: ${txt.length > 300 ? txt.slice(0, 299) + "…" : txt}`;
+        } catch {}
       }
-      if (line.length > 300) line = line.slice(0, 299) + "…";
       console.log(line);
     }
   });
-
   next();
 });
 
-/* -------------------------------------------
- * 7) Registro de rutas API
- *    (tu función debe montar /api/* en app)
- * ------------------------------------------- */
-(async () => {
-  const server = await registerRoutes(app);
+async function main() {
+  // 7) Monta rutas de API
+  await registerRoutes(app);
 
-  /* -------------------------------------------
-   * 8) Static del frontend (build de Vite)
-   *    Sirve dist/public y fallback al index.html
-   * ------------------------------------------- */
+  // 8) Static del frontend y fallback SPA
   if (process.env.NODE_ENV === "production") {
     const publicDir = path.join(process.cwd(), "dist/public");
     app.use(express.static(publicDir));
@@ -102,22 +76,24 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     });
   }
 
-  /* -------------------------------------------
-   * 9) Manejo de errores
-   * ------------------------------------------- */
+  // 9) Errores
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
     console.error(err);
-    res.status(status).json({ message });
+    res.status(err.status || err.statusCode || 500).json({
+      message: err.message || "Internal Server Error",
+    });
   });
 
-  /* -------------------------------------------
-   * 10) Arranque del servidor
-   * ------------------------------------------- */
+  // 10) Escuchar
   const PORT = parseInt(process.env.PORT || "8080", 10);
-  server.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`🌱 NODE_ENV: ${process.env.NODE_ENV || "development"}`);
+    console.log(`🩺 Healthcheck ready at /api/health`);
   });
-})();
+}
+
+main().catch((e) => {
+  console.error("Fatal server error:", e);
+  process.exit(1);
+});

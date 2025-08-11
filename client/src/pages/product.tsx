@@ -1,53 +1,36 @@
-import { useState, useMemo } from "react";
+// client/src/pages/product.tsx
+import { useState } from "react";
 import { useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/hooks/use-cart";
+import { useCart } from "@/components/cart-provider"; // <-- asegúrate de esta ruta
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@shared/schema";
 
-// Soporta /product/:id y /products/:id (singular y plural)
-function useProductRouteId() {
-  const [matchSingular, paramsSingular] = useRoute("/product/:id");
-  const [matchPlural, paramsPlural] = useRoute("/products/:id");
-  return useMemo(() => {
-    if (matchSingular) return paramsSingular?.id;
-    if (matchPlural) return paramsPlural?.id;
-    return undefined;
-  }, [matchSingular, matchPlural, paramsSingular, paramsPlural]);
-}
-
 function ProductPage() {
-  const productId = useProductRouteId();
+  const [, params] = useRoute("/product/:id");
   const { addItem } = useCart();
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [personalization, setPersonalization] = useState("");
 
   const { data: product, isLoading, error } = useQuery<Product>({
-    queryKey: ["/api/products", productId],
-    enabled: !!productId,
-    queryFn: async () => {
-      const res = await fetch(`/api/products/${productId}`);
-      if (!res.ok) throw new Error("No se pudo cargar el producto");
-      return res.json();
-    },
+    queryKey: ["/api/products", params?.id],
+    enabled: !!params?.id,
   });
 
   const handleAddToCart = () => {
     if (!product) return;
-
     addItem({
       productId: product.id,
       name: product.name,
-      price: product.price, // lo guardamos como viene (string/decimal)
+      price: product.price,
       quantity,
       personalization,
     });
-
     toast({
       title: "Producto agregado",
       description: `${product.name} ha sido agregado al carrito`,
@@ -102,7 +85,9 @@ function ProductPage() {
               <Badge className="mb-4" variant="secondary">
                 {product.category}
               </Badge>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {product.name}
+              </h1>
               <p className="text-gray-600 text-lg leading-relaxed">
                 {product.description}
               </p>
@@ -111,7 +96,7 @@ function ProductPage() {
             <div className="border-t pt-6">
               <div className="flex items-center justify-between mb-6">
                 <span className="text-4xl font-bold text-gray-900">
-                  {formatPrice(Number(product.price))}
+                  {formatPrice(product.price)}
                 </span>
                 <Badge variant={product.inStock ? "default" : "destructive"}>
                   {product.inStock ? "En Stock" : "Agotado"}
@@ -139,13 +124,15 @@ function ProductPage() {
                         className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         maxLength={15}
                       />
-                      <p className="text-xs text-gray-500 mt-1">Máximo 15 caracteres</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Máximo 15 caracteres
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Cantidad + Agregar */}
+              {/* Cantidad + agregar */}
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <label className="font-medium">Cantidad:</label>
