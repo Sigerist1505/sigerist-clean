@@ -1,27 +1,17 @@
-import express, { type Request, type Response, type NextFunction } from "express";
+import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import path from "path";
+import { registerRoutes } from "./routes";
 
 const app = express();
 
-// ---------- Middleware básicos
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Assets estáticos opcionales (si usas /assets locales)
+// Servir assets estáticos crudos (imágenes, etc.)
 app.use("/assets", express.static(path.join(process.cwd(), "assets")));
 
-// ---------- Healthcheck PRIMERO (no depende de DB ni rutas)
-app.get("/api/health", (_req: Request, res: Response) => {
-  res.status(200).json({
-    ok: true,
-    status: "healthy",
-    env: process.env.NODE_ENV || "development",
-    time: new Date().toISOString(),
-  });
-});
-
-// ---------- Sesión
+// Session (asegúrate de tener SESSION_SECRET en Railway)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "sigerist-session-secret-key",
@@ -35,73 +25,69 @@ app.use(
   })
 );
 
-// ---------- Logging de peticiones /api
+// Middleware de logging seguro (sin el error TS2556)
 app.use((req, res, next) => {
   const start = Date.now();
-  const p = req.path;
-  let captured: any;
+  const reqPath = req.path; // evita conflicto con import de 'path'
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-  const orig = res.json.bind(res);
-  (res as any).json = (body: any, ...args: any[]) => {
-    captured = body;
-    return orig(body, ...args);
-  };
+  // conserva 'this' y la firma de res.json
+  const originalJson = res.json.bind(res) as typeof res.json;
+
+  // reasignación sin rest args (previene TS2556)
+  res.json = ((body: any) => {
+    capturedJsonResponse = body;
+    return originalJson(body);
+  }) as typeof res.json;
 
   res.on("finish", () => {
-    if (p.startsWith("/api")) {
-      const ms = Date.now() - start;
-      let line = `${req.method} ${p} ${res.statusCode} in ${ms}ms`;
-      if (captured) {
-        const txt = JSON.stringify(captured);
-        if (txt.length < 200) line += ` :: ${txt}`;
+    const duration = Date.now() - start;
+    if (reqPath.startsWith("/api")) {
+      let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        try {
+          logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        } catch {
+          // por si body no es serializable
+        }
       }
-      console.log(line);
+      if (logLine.length > 80) logLine = logLine.slice(0, 79) + "…";
+      console.log(logLine);
     }
   });
 
   next();
 });
 
-// ---------- Errores (handler global)
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  const status = err?.status || err?.statusCode || 500;
-  const message = err?.message || "Internal Server Error";
-  console.error("Unhandled error:", err);
-  res.status(status).json({ message });
+// Ruta de healthcheck explícita (Railway apunta a /api/health)
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ ok: true });
 });
 
-// ---------- Servir frontend (SPA) en producción
-if (process.env.NODE_ENV === "production") {
-  const publicDir = path.join(process.cwd(), "dist/public");
-  app.use(express.static(publicDir));
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(publicDir, "index.html"));
-  });
-}
-
-// ---------- Arrancar servidor primero (para que /api/health esté vivo)
-const PORT = parseInt(process.env.PORT || "8080", 10);
-const HOST = "0.0.0.0";
-
-const server = app.listen(PORT, HOST, () => {
-  console.log(`✅ Server listening on http://${HOST}:${PORT}`);
-});
-
-// ---------- Cargar rutas API sin bloquear el arranque
 (async () => {
-  try {
-    const { registerRoutes } = await import("./routes");
-    await registerRoutes(app);
-    console.log("✅ API routes registered");
-  } catch (err) {
-    console.error("⚠️ Failed to register API routes:", err);
-  }
-})();
+  // Registra todas las rutas de tu API (productos, carrito, etc.)
+  const server = await registerRoutes(app);
 
-// ---------- Seguridad extra: logs de crashes
-process.on("unhandledRejection", (reason) => {
-  console.error("UNHANDLED REJECTION:", reason);
-});
-process.on("uncaughtException", (err) => {
-  console.error("UNCAUGHT EXCEPTION:", err);
-});
+  // Manejo de errores centralizado
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({ message });
+    console.error(err);
+  });
+
+  // Producción: servir el frontend compilado por Vite
+  if (process.env.NODE_ENV === "production") {
+    const publicDir = path.join(process.cwd(), "dist/public");
+    app.use(express.static(publicDir));
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(publicDir, "index.html"));
+    });
+  }
+
+  // Respeta PORT de Railway (ella lo inyecta). Por defecto 8080.
+  const PORT = Number(process.env.PORT || 8080);
+  server.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+})();

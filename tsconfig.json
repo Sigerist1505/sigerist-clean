@@ -20,7 +20,8 @@
       "@/*": ["./client/src/*"],
       "@shared/*": ["./shared/*"],
       "@assets/*": ["./assets/*"]
-    }
+    },
+    "types": ["node", "express", "express-session"]
   },
   "include": ["client/src", "shared", "server", "assets"],
   "references": [{ "path": "./tsconfig.node.json" }]
