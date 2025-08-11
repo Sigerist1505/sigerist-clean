@@ -1,20 +1,51 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { insertRegisteredUserSchema } from "@shared/schema";
 import { ArrowLeft, User, Mail, Phone, MapPin, Lock, Eye, EyeOff } from "lucide-react";
 import type { InsertRegisteredUser } from "@shared/schema";
+
+// ----------------------
+// Schema local del form
+// ----------------------
+const registerFormSchema = z
+  .object({
+    firstName: z.string().min(1, "El nombre es obligatorio"),
+    lastName: z.string().min(1, "El apellido es obligatorio"),
+    email: z.string().email("Correo inválido"),
+    password: z
+      .string()
+      .min(8, "Mínimo 8 caracteres")
+      .regex(/[A-Z]/, "Incluye al menos una mayúscula")
+      .regex(/[0-9]/, "Incluye al menos un número")
+      .regex(/[^A-Za-z0-9]/, "Incluye al menos un símbolo"),
+    confirmPassword: z.string().min(8, "Confirma tu contraseña"),
+    phoneNumber: z.string().optional(),
+    address: z.string().optional(),
+    acceptsMarketing: z.boolean().default(false),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Las contraseñas no coinciden",
+  });
+
+type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
 export default function RegisterPage() {
   const { toast } = useToast();
@@ -23,8 +54,8 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login } = useAuth();
 
-  const form = useForm<InsertRegisteredUser>({
-    resolver: zodResolver(insertRegisteredUserSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -33,7 +64,7 @@ export default function RegisterPage() {
       confirmPassword: "",
       address: "",
       phoneNumber: "",
-      acceptsMarketing: "false",
+      acceptsMarketing: false,
     },
   });
 
@@ -42,46 +73,57 @@ export default function RegisterPage() {
       const response = await fetch("/api/register", {
         method: "POST",
         body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
-      
+
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({}));
         throw new Error(error.message || "Error en el registro");
       }
-      
       return response.json();
     },
     onSuccess: (data) => {
-      // Automatically log in user after successful registration
+      // si tu backend devuelve { user: { id, name, email, ... } }
+      const fullName: string = data?.user?.name ?? "";
+      const [firstName, ...rest] = fullName.trim().split(/\s+/);
+      const lastName = rest.join(" ");
+
       login({
         id: data.user.id,
-        firstName: data.user.firstName,
-        lastName: data.user.lastName,
+        firstName: firstName || "",
+        lastName: lastName || "",
         email: data.user.email,
       });
+
       toast({
         title: "¡Registro exitoso!",
-        description: `Bienvenido ${data.user.firstName}. Tu cuenta ha sido creada correctamente.`,
+        description: `Bienvenido ${firstName || fullName}. Tu cuenta ha sido creada correctamente.`,
       });
+
       setIsRegistered(true);
       form.reset();
     },
     onError: (error: any) => {
       toast({
         title: "Error en el registro",
-        description: error.message || "No se pudo completar el registro. Intenta nuevamente.",
+        description:
+          error?.message || "No se pudo completar el registro. Intenta nuevamente.",
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = (data: InsertRegisteredUser) => {
-    console.log("Form submitted with data:", data);
-    console.log("Form errors:", form.formState.errors);
-    registerMutation.mutate(data);
+  // Mapear del schema del form -> payload del server (InsertRegisteredUser)
+  const onSubmit = (data: RegisterFormValues) => {
+    const payload: InsertRegisteredUser = {
+      name: `${data.firstName} ${data.lastName}`.trim(),
+      email: data.email,
+      passwordHash: data.password, // el hash real se hace en el server
+      phone: data.phoneNumber || null,
+      shippingAddress: data.address || null,
+    };
+
+    registerMutation.mutate(payload);
   };
 
   if (isRegistered) {
@@ -105,8 +147,8 @@ export default function RegisterPage() {
                     Explorar Productos
                   </Button>
                 </Link>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsRegistered(false)}
                   className="w-full border-[#ebc005] text-[#ffffff] hover:bg-[#ebc005]/10 bg-transparent"
                 >
@@ -126,7 +168,11 @@ export default function RegisterPage() {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-8">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="gap-2 text-[#ffffff] hover:text-accent/80 bg-transparent border border-[#ebc005]">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-[#ffffff] hover:text-accent/80 bg-transparent border border-[#ebc005]"
+            >
               <ArrowLeft className="h-4 w-4" />
               Volver al inicio
             </Button>
@@ -135,14 +181,12 @@ export default function RegisterPage() {
 
         <Card className="bg-black border border-accent/30 shadow-xl">
           <CardHeader className="text-center pb-2">
-            <CardTitle className="text-3xl font-bold text-accent">
-              Crear Cuenta
-            </CardTitle>
+            <CardTitle className="text-3xl font-bold text-accent">Crear Cuenta</CardTitle>
             <CardDescription className="text-lg text-muted-foreground">
               Regístrate para acceder a productos exclusivos y personalización premium
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="p-8">
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Name Fields */}
@@ -159,7 +203,9 @@ export default function RegisterPage() {
                     className="bg-background border-accent/30 focus:border-accent text-foreground"
                   />
                   {form.formState.errors.firstName && (
-                    <p className="text-gray-400 text-sm">{form.formState.errors.firstName.message}</p>
+                    <p className="text-gray-400 text-sm">
+                      {form.formState.errors.firstName.message}
+                    </p>
                   )}
                 </div>
 
@@ -175,7 +221,9 @@ export default function RegisterPage() {
                     className="bg-background border-accent/30 focus:border-accent text-foreground"
                   />
                   {form.formState.errors.lastName && (
-                    <p className="text-gray-400 text-sm">{form.formState.errors.lastName.message}</p>
+                    <p className="text-gray-400 text-sm">
+                      {form.formState.errors.lastName.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -227,7 +275,9 @@ export default function RegisterPage() {
                   </Button>
                 </div>
                 {form.formState.errors.password && (
-                  <p className="text-gray-400 text-sm">{form.formState.errors.password.message}</p>
+                  <p className="text-gray-400 text-sm">
+                    {form.formState.errors.password.message}
+                  </p>
                 )}
               </div>
 
@@ -260,7 +310,9 @@ export default function RegisterPage() {
                   </Button>
                 </div>
                 {form.formState.errors.confirmPassword && (
-                  <p className="text-gray-400 text-sm">{form.formState.errors.confirmPassword.message}</p>
+                  <p className="text-gray-400 text-sm">
+                    {form.formState.errors.confirmPassword.message}
+                  </p>
                 )}
               </div>
 
@@ -268,7 +320,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber" className="text-accent font-medium">
                   <Phone className="h-4 w-4 inline mr-2" />
-                  Número de Celular *
+                  Número de Celular
                 </Label>
                 <Input
                   id="phoneNumber"
@@ -278,7 +330,9 @@ export default function RegisterPage() {
                   className="bg-background border-accent/30 focus:border-accent text-foreground"
                 />
                 {form.formState.errors.phoneNumber && (
-                  <p className="text-gray-400 text-sm">{form.formState.errors.phoneNumber.message}</p>
+                  <p className="text-gray-400 text-sm">
+                    {form.formState.errors.phoneNumber.message}
+                  </p>
                 )}
               </div>
 
@@ -286,7 +340,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label htmlFor="address" className="text-accent font-medium">
                   <MapPin className="h-4 w-4 inline mr-2" />
-                  Dirección Completa *
+                  Dirección Completa
                 </Label>
                 <Textarea
                   id="address"
@@ -305,10 +359,10 @@ export default function RegisterPage() {
                 <div className="flex items-start space-x-3">
                   <Checkbox
                     id="acceptsMarketing"
-                    checked={form.watch("acceptsMarketing") === "true"}
-                    onCheckedChange={(checked) => {
-                      form.setValue("acceptsMarketing", checked ? "true" : "false");
-                    }}
+                    checked={!!form.watch("acceptsMarketing")}
+                    onCheckedChange={(checked) =>
+                      form.setValue("acceptsMarketing", Boolean(checked))
+                    }
                     className="border-accent/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent"
                   />
                   <div className="space-y-1">
@@ -319,43 +373,37 @@ export default function RegisterPage() {
                       Recibir ofertas especiales y novedades por email
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Mantente al día con nuestras colecciones exclusivas, descuentos especiales 
+                      Mantente al día con nuestras colecciones exclusivas, descuentos especiales
                       y lanzamientos de productos únicos. Puedes cancelar en cualquier momento.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Debug: Show form errors */}
+              {/* Debug: errores del form */}
               {Object.keys(form.formState.errors).length > 0 && (
                 <div className="bg-orange-900/20 border border-orange-500/50 rounded-lg p-4">
                   <h4 className="text-red-400 font-medium mb-2">Errores en el formulario:</h4>
                   <ul className="text-red-300 text-sm space-y-1">
                     {Object.entries(form.formState.errors).map(([field, error]) => (
                       <li key={field}>
-                        <strong>{field}:</strong> {error?.message}
+                        <strong>{field}:</strong> {(error as any)?.message}
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Submit Button */}
+              {/* Submit */}
               <Button
                 type="submit"
                 size="lg"
                 disabled={registerMutation.isPending}
                 className="w-full bg-[#ebc005] hover:bg-[#d4a804] text-[#000000] font-semibold text-lg py-3"
-                onClick={() => {
-                  console.log("Button clicked!");
-                  console.log("Form valid:", form.formState.isValid);
-                  console.log("Form errors:", form.formState.errors);
-                }}
               >
                 {registerMutation.isPending ? "Registrando..." : "Crear Cuenta"}
               </Button>
 
-              {/* Terms */}
               <p className="text-sm text-muted-foreground text-center">
                 Al registrarte, aceptas nuestros términos de servicio y política de privacidad.
                 Tu información será utilizada únicamente para mejorar tu experiencia de compra.

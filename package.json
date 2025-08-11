@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js",
+    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=cjs --outfile=dist/index.cjs",
     "postbuild": "node migrate-complete-products.js",
     "start": "node dist/index.js",
     "migrate": "node migrate-clean.js",

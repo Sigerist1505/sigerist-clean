@@ -12,22 +12,30 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCart();
+  // ⬇⬇⬇ usar addToCart (no addItem)
+  const { addToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    addItem({
-      productId: product.id,
-      name: product.name,
-      quantity: 1,
-      price: product.price,
-    });
 
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 2000);
+    // addToCart es un mutate(variables, options?)
+    addToCart(
+      {
+        productId: product.id,
+        quantity: 1,
+        // Si tu tipo AddToCartData NO incluye name/price, no los envíes.
+        // name: product.name,
+        // price: product.price,
+      },
+      {
+        onSuccess: () => {
+          setIsAdded(true);
+          setTimeout(() => setIsAdded(false), 2000);
+        },
+      }
+    );
   };
 
   return (
@@ -44,7 +52,7 @@ export function ProductCard({ product }: ProductCardProps) {
               Personalizable
             </Badge>
           </div>
-          
+
           <div className="space-y-3">
             <div>
               <h4 className="font-bold text-xl text-sigerist-charcoal mb-1">
@@ -54,7 +62,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 {product.description}
               </p>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-sigerist-charcoal">
                 {formatPrice(product.price)}
@@ -64,11 +72,11 @@ export function ProductCard({ product }: ProductCardProps) {
                 disabled={!product.inStock}
                 className={`px-6 py-2 font-semibold transition-colors ${
                   isAdded
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-sigerist-gold hover:bg-yellow-600 text-sigerist-charcoal'
+                    ? "bg-green-500 hover:bg-green-600 text-white"
+                    : "bg-sigerist-gold hover:bg-yellow-600 text-sigerist-charcoal"
                 }`}
               >
-                {isAdded ? 'Agregado!' : 'Agregar'}
+                {isAdded ? "Agregado!" : "Agregar"}
               </Button>
             </div>
           </div>
