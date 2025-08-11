@@ -1,27 +1,27 @@
-// server/index.ts
 import express, { type Request, type Response, type NextFunction } from "express";
 import session from "express-session";
 import path from "path";
 
 const app = express();
-app.set("trust proxy", 1); // importante detrás de proxy (Railway)
+
+// ---------- Middleware básicos
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// 1) Healthcheck ultra-temprano
+// Assets estáticos opcionales (si usas /assets locales)
+app.use("/assets", express.static(path.join(process.cwd(), "assets")));
+
+// ---------- Healthcheck PRIMERO (no depende de DB ni rutas)
 app.get("/api/health", (_req: Request, res: Response) => {
   res.status(200).json({
     ok: true,
     status: "healthy",
-    uptime: process.uptime(),
-    ts: new Date().toISOString(),
+    env: process.env.NODE_ENV || "development",
+    time: new Date().toISOString(),
   });
 });
 
-// 2) Static assets opcionales
-app.use("/assets", express.static(path.join(process.cwd(), "assets")));
-
-// 3) Session (después del health)
+// ---------- Sesión
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "sigerist-session-secret-key",
@@ -30,29 +30,31 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000, // 24h
     },
   })
 );
 
-// 4) Logging ligero para /api
+// ---------- Logging de peticiones /api
 app.use((req, res, next) => {
-  const t0 = Date.now();
+  const start = Date.now();
   const p = req.path;
-  let bodyJson: any;
+  let captured: any;
 
   const orig = res.json.bind(res);
-  (res as any).json = (b: any, ...args: any[]) => {
-    bodyJson = b;
-    return orig(b, ...args);
+  (res as any).json = (body: any, ...args: any[]) => {
+    captured = body;
+    return orig(body, ...args);
   };
 
   res.on("finish", () => {
     if (p.startsWith("/api")) {
-      const ms = Date.now() - t0;
+      const ms = Date.now() - start;
       let line = `${req.method} ${p} ${res.statusCode} in ${ms}ms`;
-      if (bodyJson) line += ` :: ${JSON.stringify(bodyJson)}`;
-      if (line.length > 200) line = line.slice(0, 199) + "…";
+      if (captured) {
+        const txt = JSON.stringify(captured);
+        if (txt.length < 200) line += ` :: ${txt}`;
+      }
       console.log(line);
     }
   });
@@ -60,56 +62,46 @@ app.use((req, res, next) => {
   next();
 });
 
-// 5) Bootstrap robusto
-async function bootstrap() {
-  // Arranca el listener YA, así /api/health responde aunque falle lo demás
-  const PORT = parseInt(process.env.PORT || "8080", 10);
-  const server = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`✅ Server listening on ${PORT}`);
-    console.log(`✅ Healthcheck ready at /api/health`);
-    console.log("🔧 NODE_ENV:", process.env.NODE_ENV);
-    console.log("🔧 DATABASE_URL present:", Boolean(process.env.DATABASE_URL));
-  });
+// ---------- Errores (handler global)
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err?.status || err?.statusCode || 500;
+  const message = err?.message || "Internal Server Error";
+  console.error("Unhandled error:", err);
+  res.status(status).json({ message });
+});
 
-  // 5.1) Carga dinámica de rutas (evita fallos de import en frío)
+// ---------- Servir frontend (SPA) en producción
+if (process.env.NODE_ENV === "production") {
+  const publicDir = path.join(process.cwd(), "dist/public");
+  app.use(express.static(publicDir));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(publicDir, "index.html"));
+  });
+}
+
+// ---------- Arrancar servidor primero (para que /api/health esté vivo)
+const PORT = parseInt(process.env.PORT || "8080", 10);
+const HOST = "0.0.0.0";
+
+const server = app.listen(PORT, HOST, () => {
+  console.log(`✅ Server listening on http://${HOST}:${PORT}`);
+});
+
+// ---------- Cargar rutas API sin bloquear el arranque
+(async () => {
   try {
     const { registerRoutes } = await import("./routes");
     await registerRoutes(app);
     console.log("✅ API routes registered");
   } catch (err) {
-    console.error("⚠️ Error registering routes, API endpoints may be unavailable:", err);
-    // No cerramos el proceso: el healthcheck seguirá vivo
+    console.error("⚠️ Failed to register API routes:", err);
   }
+})();
 
-  // 6) Servir el frontend (SPA) en prod
-  if (process.env.NODE_ENV === "production") {
-    const publicDir = path.join(process.cwd(), "dist/public");
-    app.use(express.static(publicDir));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(publicDir, "index.html"));
-    });
-  }
-
-  // 7) Error handler final
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-    console.error("❌ Unhandled error:", err);
-    res.status(status).json({ message });
-  });
-
-  // 8) Manejadores globales para que el proceso no muera
-  process.on("unhandledRejection", (reason) => {
-    console.error("⚠️ UnhandledRejection:", reason);
-  });
-  process.on("uncaughtException", (err) => {
-    console.error("⚠️ UncaughtException:", err);
-  });
-
-  return server;
-}
-
-bootstrap().catch((e) => {
-  console.error("💥 Fatal bootstrap error:", e);
-  // NO salgas del proceso; dejamos /api/health funcionando
+// ---------- Seguridad extra: logs de crashes
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err);
 });

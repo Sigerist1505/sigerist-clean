@@ -1,21 +1,22 @@
+# Dockerfile
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Instalar deps de producción
+# Instalar deps de producción primero (más cacheable)
 COPY package*.json ./
 RUN npm ci --omit=dev
 
 # Copiar código
 COPY . .
 
-# Build (cliente + servidor)
+# Build
 RUN npm run build
 
-# Variables/puerto
 ENV NODE_ENV=production
+# Usa el mismo puerto que configuraste en Railway (si usas 8080, déjalo así)
 ENV PORT=8080
 EXPOSE 8080
 
-# Arranque del servidor Node (el mismo que npm start)
+# ⬇️ IMPORTANTE: arranca el servidor Node de tu build
 CMD ["node", "dist/index.js"]
