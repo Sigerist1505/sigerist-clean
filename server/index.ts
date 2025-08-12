@@ -2,19 +2,26 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import session from "express-session";
 import path from "path";
+import { fileURLToPath } from "url";
 import { registerRoutes } from "./routes";
 
-const app = express();
-app.set("trust proxy", 1); // cookies secure detrás de proxy (Railway)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Parsers
+const app = express();
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Archivos estáticos crudos (fuera del build de Vite)
-app.use("/assets", express.static(path.join(process.cwd(), "assets")));
+// 🔴 NO montes /assets aquí: tus imágenes viven en dist/public/assets
 
-// Sesión (usa SESSION_SECRET en Railway)
+// Healthcheck SIEMPRE 200 (Railway apunta aquí)
+app.get("/api/health", (_req, res) => res.status(200).json({ ok: true }));
+
+// (opcional) Readiness
+app.get("/api/ready", (_req, res) => res.json({ ready: true }));
+
+// Sesiones
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "sigerist-session-secret-key",
@@ -24,80 +31,61 @@ app.use(
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000, // 24h
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
 
-// Health SIEMPRE 200 (no dependas de DB aquí)
-app.get("/api/health", (_req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-
-// Ready opcional (si quieres testear DB, hazlo aquí sin romper health)
-app.get("/api/ready", (_req, res) => {
-  res.json({ ready: true });
-});
-
-// Logger simple para /api
+// Log simple
 app.use((req, res, next) => {
-  const start = Date.now();
+  const t0 = Date.now();
   res.on("finish", () => {
     if (req.path.startsWith("/api")) {
-      const ms = Date.now() - start;
-      console.log(`${req.method} ${req.path} -> ${res.statusCode} ${ms}ms`);
+      console.log(`${req.method} ${req.path} -> ${res.statusCode} ${Date.now() - t0}ms`);
     }
   });
   next();
 });
 
 (async () => {
-  // Registra rutas; si devuelve un http.Server (p.ej. websockets), lo usamos para listen
-  let serverLike: any = null;
+  // Registra tus rutas de API, pero si fallan no tumbes el server
   try {
-    const maybeServer = await registerRoutes(app);
-    if (maybeServer && typeof (maybeServer as any).listen === "function") {
-      serverLike = maybeServer;
-    }
+    await registerRoutes(app);
   } catch (e) {
-    console.error("❌ Error registrando rutas:", e);
-    process.exit(1);
+    console.error("❌ Error en registerRoutes:", e);
   }
 
-  // 404 para /api después de registrar rutas
+  // 404 para /api cuando no matchee nada
   app.use("/api", (_req, res) => res.status(404).json({ message: "Not Found" }));
 
-  // Servir frontend de Vite en producción
+  // Sirve el frontend compilado por Vite
   if (process.env.NODE_ENV === "production") {
-    // Compilas a CJS y ejecutas dist/index.cjs → __dirname apunta a /app/dist
+    // Nota: __dirname apunta a dist/ → public está en dist/public
     const publicDir = path.join(__dirname, "public");
-    app.use(express.static(publicDir, { index: "index.html", maxAge: "1h" }));
+    app.use(express.static(publicDir));
 
-    // SPA fallback: todo lo que no sea /api/* devuelve index.html
+    // SPA fallback (no interceptar /api)
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api/")) return next();
       res.sendFile(path.join(publicDir, "index.html"));
     });
   }
 
-  // Manejador de errores global
+  // Manejador de errores
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err?.status || err?.statusCode || 500;
-    const message = err?.message || "Internal Server Error";
     console.error("API Error:", err);
-    res.status(status).json({ message });
+    res.status(status).json({ message: err?.message || "Internal Server Error" });
   });
 
-  // Arranque
-  const PORT = Number(process.env.PORT) || 3000; // Railway inyecta PORT
-  const HOST = "0.0.0.0";
-  const listener = serverLike ?? app;
-
-  listener.listen(PORT, HOST, () => {
-    console.log(`🚀 Server listening on http://${HOST}:${PORT}`);
+  // 👉 Escucha en el puerto que Railway inyecta
+  const PORT = Number(process.env.PORT) || 3000;
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server listening on http://0.0.0.0:${PORT}`);
+    console.log(`NODE_ENV=${process.env.NODE_ENV}`);
   });
 })().catch((err) => {
-  console.error("❌ Fatal startup error:", err);
+  console.error("❌ Startup error:", err);
   process.exit(1);
 });
 

@@ -1,65 +1,63 @@
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { WompiService } from "./wompi-service";
 import { z } from "zod";
-import { insertCartItemSchema, insertOrderSchema, insertContactMessageSchema } from "@shared/schema";
-// import { advancedAiChatbot } from "./advanced-ai-chatbot"; // Disabled for clean version
-import Stripe from "stripe";
+import {
+  insertCartItemSchema,
+  insertOrderSchema,
+  insertContactMessageSchema,
+} from "@shared/schema";
 
-// Initialize Stripe
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY environment variable is required');
+// ⚠️ Stripe deshabilitado: NO importamos "stripe" ni exigimos STRIPE_SECRET_KEY.
+// Si algún endpoint legado intenta usar Stripe, devolvemos 501 para no tumbar el server.
+function stripeGuard(res: Response) {
+  return res
+    .status(501)
+    .json({ message: "Stripe deshabilitado; el backend usa Wompi." });
 }
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
   // Health check
-  app.get("/api/health", (req, res) => {
+  app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Get all products
-  app.get("/api/products", async (req, res) => {
+  // Products
+  app.get("/api/products", async (_req, res) => {
     try {
       const products = await storage.getProducts();
       res.json(products);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Error fetching products" });
     }
   });
 
-  // Get single product
   app.get("/api/products/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = Number(req.params.id);
       const product = await storage.getProduct(id);
-      
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-      
+      if (!product) return res.status(404).json({ message: "Product not found" });
       res.json(product);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Error fetching product" });
     }
   });
 
-  // Cart operations
-  app.get("/api/cart", async (req, res) => {
+  // Cart
+  app.get("/api/cart", async (_req, res) => {
     try {
       const items = await storage.getCartItems();
       res.json(items);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Error fetching cart items" });
     }
   });
 
   app.post("/api/cart", async (req, res) => {
     try {
-      const validatedData = insertCartItemSchema.parse(req.body);
-      const item = await storage.addCartItem(validatedData);
+      const validated = insertCartItemSchema.parse(req.body);
+      const item = await storage.addCartItem(validated);
       res.json(item);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -71,40 +69,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/cart/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = Number(req.params.id);
       const { quantity } = req.body;
-      
       const item = await storage.updateCartItem(id, quantity);
-      if (!item) {
-        return res.status(404).json({ message: "Cart item not found" });
-      }
-      
+      if (!item) return res.status(404).json({ message: "Cart item not found" });
       res.json(item);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Error updating cart item" });
     }
   });
 
   app.delete("/api/cart/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const success = await storage.removeCartItem(id);
-      
-      if (!success) {
-        return res.status(404).json({ message: "Cart item not found" });
-      }
-      
+      const id = Number(req.params.id);
+      const ok = await storage.removeCartItem(id);
+      if (!ok) return res.status(404).json({ message: "Cart item not found" });
       res.json({ message: "Item removed from cart" });
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Error removing cart item" });
     }
   });
 
-  app.delete("/api/cart", async (req, res) => {
+  app.delete("/api/cart", async (_req, res) => {
     try {
       await storage.clearCart();
       res.json({ message: "Cart cleared" });
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Error clearing cart" });
     }
   });
@@ -112,8 +102,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Orders
   app.post("/api/orders", async (req, res) => {
     try {
-      const validatedData = insertOrderSchema.parse(req.body);
-      const order = await storage.createOrder(validatedData);
+      const validated = insertOrderSchema.parse(req.body);
+      const order = await storage.createOrder(validated);
       res.json(order);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -123,11 +113,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Contact messages
+  // Contact
   app.post("/api/contact", async (req, res) => {
     try {
-      const validatedData = insertContactMessageSchema.parse(req.body);
-      const message = await storage.createContactMessage(validatedData);
+      const validated = insertContactMessageSchema.parse(req.body);
+      const message = await storage.createContactMessage(validated);
       res.json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -137,71 +127,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Payment integration
-  app.post("/api/payment/stripe/create-payment-intent", async (req, res) => {
-    try {
-      const { amount, currency = 'usd' } = req.body;
-
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency,
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
-
-      res.json({
-        clientSecret: paymentIntent.client_secret,
-      });
-    } catch (error) {
-      console.error('Error creating payment intent:', error);
-      res.status(500).json({ message: 'Error creating payment intent' });
-    }
+  // 🔵 Endpoint legacy de Stripe → ahora responde 501 (no implementado)
+  app.post("/api/payment/stripe/create-payment-intent", (_req, res) => {
+    return stripeGuard(res);
   });
 
-  // Wompi payment integration
+  // 🟣 Wompi (placeholder simple; ajusta con tu lógica del servicio)
   const wompiService = new WompiService();
-  
+
   app.post("/api/payment/wompi/create-payment", async (req, res) => {
     try {
-      const { amount, currency, customerEmail, orderReference } = req.body;
-      
-      // Wompi integration would go here
-      const paymentData = {
-        payment_url: 'https://checkout.wompi.co/p/test',
-        reference: orderReference
-      };
-      
-      res.json(paymentData);
+      const { amount, currency = "COP", customerEmail, orderReference } = req.body;
+      // Aquí puedes usar wompiService para firmar o crear la transacción.
+      // const link = await wompiService.createCheckoutLink(...)
+
+      // Placeholder: URL de prueba
+      res.json({
+        payment_url: "https://checkout.wompi.co/p/test",
+        reference: orderReference,
+        amount,
+        currency,
+        customerEmail,
+      });
     } catch (error) {
-      console.error('Error creating Wompi payment:', error);
-      res.status(500).json({ message: 'Error creating payment' });
+      console.error("Error creating Wompi payment:", error);
+      res.status(500).json({ message: "Error creating payment" });
     }
   });
 
   app.post("/api/payment/wompi/webhook", async (req, res) => {
     try {
-      const event = req.body;
-      console.log('Wompi webhook received:', event);
-      
-      // Process the webhook event (would implement here)
-      console.log('Wompi webhook processed:', event);
-      
+      // Valida y procesa el evento
+      console.log("Wompi webhook received:", req.body);
       res.status(200).json({ received: true });
     } catch (error) {
-      console.error('Error processing Wompi webhook:', error);
-      res.status(500).json({ message: 'Error processing webhook' });
+      console.error("Error processing Wompi webhook:", error);
+      res.status(500).json({ message: "Error processing webhook" });
     }
   });
 
-  // WhatsApp chatbot (simplified for clean version)
+  // WhatsApp (simplificado)
   app.post("/webhook/whatsapp", async (req, res) => {
     try {
-      console.log('WhatsApp message received:', req.body);
-      res.status(200).json({ message: 'Message received' });
+      console.log("WhatsApp message received:", req.body);
+      res.status(200).json({ message: "Message received" });
     } catch (error) {
-      console.error('WhatsApp webhook error:', error);
-      res.status(500).json({ message: 'Error processing WhatsApp message' });
+      console.error("WhatsApp webhook error:", error);
+      res.status(500).json({ message: "Error processing WhatsApp message" });
     }
   });
 
@@ -210,11 +182,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const mode = req.query["hub.mode"];
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
-
     if (mode && token) {
       if (mode === "subscribe" && token === verifyToken) {
         console.log("Webhook verified successfully!");
-        res.status(200).send(challenge);
+        res.status(200).send(challenge as any);
       } else {
         res.status(403).send("Forbidden");
       }
@@ -223,12 +194,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Authentication (basic implementation)
-  app.get("/api/auth/check", (req, res) => {
-    res.json({ 
-      isAuthenticated: false, 
-      user: null 
-    });
+  // Auth (dummy)
+  app.get("/api/auth/check", (_req, res) => {
+    res.json({ isAuthenticated: false, user: null });
   });
 
   const server = createServer(app);
