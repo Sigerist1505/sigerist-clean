@@ -391,21 +391,21 @@ export class DatabaseStorage implements IStorage {
         name: "Pañalera Multifuncional",
         description: "Pañalera multifuncional con bordado personalizado y múltiples compartimentos - ¡Nuestro producto estrella!",
         price: "445000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Multifuncional 3_1754160626677.jpg", // Samuel de primera
-        blankImageUrl: "/attached_assets/Multifuncional 3sinB_1754160704825.jpg", // Sin bordado
-        referenceImageUrl: "/attached_assets/Multifuncional 3_1754160626677.jpg", // Con bordado Samuel
+        imageUrl: "/assets/Multifuncional 3sinB.jpg", // Samuel de primera
+        blankImageUrl: "/assets/Multifuncional 2.jpg", // Sin bordado
+        referenceImageUrl: "/assets/Multifuncional 3.jpg", // Con bordado Samuel
         category: "Pañaleras",
         animalType: "León",
         colors: ["Tierra", "Beige", "Azul"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/Multifuncional 3_1754160626677.jpg",
-          galleryImages: ["/attached_assets/Multifuncional 3sinB_1754160704825.jpg"],
+          bordadoImageUrl: "/assets/Multifuncional 3.jpg",
+          galleryImages: ["/assets/Multifuncional 3sinB.jpg"],
           bordadoGalleryImages: [
-            "/attached_assets/Multifuncional 3_1754160626677.jpg", // 1. Samuel
-            "/attached_assets/Multifuncional 2 Bordada_1754093212913.jpg", // 2. Azul Zamir
-            "/attached_assets/Multifuncional 3 Bordada_1754093212913.jpg"  // 3. Abierta
+            "/assets/Multifuncional 3.jpg", // 1. Samuel
+            "/assets/Multifuncional 2 Bordada_1754093212913.jpg", // 2. Azul Zamir
+            "/assets/Multifuncional 3 Bordada_1754093212913.jpg"  // 3. Abierta
           ]
         },
       },
