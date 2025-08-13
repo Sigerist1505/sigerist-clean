@@ -103,7 +103,7 @@ export default function Home() {
           playsInline
           className="w-full h-full object-cover"
         >
-          <source src="/attached_assets/Video Kit_1754097764163.mp4" type="video/mp4" />
+          <source src="/assets/Video Kit.mp4" type="video/mp4" />
         </video>
         
         {/* Overlay simple para no tapar el video */}
