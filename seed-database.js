@@ -160,7 +160,7 @@ async function seedDatabase() {
         category: 'Mochilas',
         has_embroidery_option: true,
         embroidery_price: 15000,
-        image_url: '/assets/mochila-clasica.jpg'
+        image_url: '/assets/Mochila clasica.jpg'
       },
       {
         name: 'Mochila Milano',
@@ -178,7 +178,7 @@ async function seedDatabase() {
         category: 'Pañaleras',
         has_embroidery_option: true,
         embroidery_price: 15000,
-        image_url: '/assets/panalera-multifuncional.jpg'
+        image_url: '/assets/Multifuncional 3.jpg'
       },
       {
         name: 'Maleta Viajera',
@@ -187,7 +187,7 @@ async function seedDatabase() {
         category: 'Maletas',
         has_embroidery_option: true,
         embroidery_price: 20000,
-        image_url: '/assets/maleta-viajera.jpg'
+        image_url: '/assets/Maleta viajera_Bordada.jpg'
       },
       {
         name: 'Bolso de Mano Elegante',
