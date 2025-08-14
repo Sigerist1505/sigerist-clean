@@ -187,7 +187,7 @@ export default function Home() {
               <div>
                 {/* ✅ CAMBIO: Usar ruta absoluta en lugar de variable importada */}
                 <img 
-                  src="/attached_assets/MaletaMilan_ConBordado.jpg" 
+                  src="/assets/MaletaMilan_ConBordado.jpg" 
                   alt="Maleta Milano con bordado personalizado" 
                   className="w-full rounded-2xl shadow-2xl border border-gray-600" 
                 />
@@ -262,57 +262,82 @@ export default function Home() {
                 <p className="text-gray-400">Diseños únicos</p>
               </div>
             </div>
-            
-            <WhatsAppButton 
-              phone="573160183418" 
-              message="¡Hola! Quiero aprovechar la oferta especial. ¿Podrían darme más información sobre sus productos?"
-              className="mx-auto"
-            />
+
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section id="productos" className="py-20 bg-gradient-to-br from-black via-gray-900 to-black">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6 text-gray-300" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Nuestros Productos Destacados
-            </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Descubre nuestra exclusiva colección de bolsos de lujo, diseñados con amor y 
-              bordados artesanalmente para hacer cada pieza única y especial.
-            </p>
+    {/* Featured Products - VERSIÓN CORREGIDA PARA RAILWAY */}
+<section id="productos" className="py-20 bg-gradient-to-br from-black via-gray-900 to-black">
+  <div className="max-w-7xl mx-auto px-4">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-bold mb-6 text-gray-300" style={{ fontFamily: 'Playfair Display, serif' }}>
+        Nuestros Productos Destacados
+      </h2>
+      <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+        Descubre nuestra exclusiva colección de bolsos de lujo, diseñados con amor y 
+        bordados artesanalmente para hacer cada pieza única y especial.
+      </p>
+    </div>
+
+    {isLoading ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="bg-gray-700 rounded-xl h-64 mb-4"></div>
+            <div className="bg-gray-700 rounded h-4 mb-2"></div>
+            <div className="bg-gray-700 rounded h-4 w-2/3"></div>
           </div>
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-gray-700 rounded-xl h-64 mb-4"></div>
-                  <div className="bg-gray-700 rounded h-4 mb-2"></div>
-                  <div className="bg-gray-700 rounded h-4 w-2/3"></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredProducts.slice(0, 6).map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-
-          <div className="text-center mt-12">
-            <Link href="/productos">
-              <Button className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-3 rounded-full">
-                Ver Todos los Productos
-              </Button>
-            </Link>
+        ))}
+      </div>
+    ) : (
+      <>
+        {/* 🔥 DIAGNÓSTICO: Verificar si featuredProducts tiene datos */}
+        {featuredProducts && featuredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredProducts.slice(0, 6).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
-        </div>
-      </section>
+        ) : (
+          /* 🚨 FALLBACK: Si no hay productos, mostrar mensaje elegante */
+          <div className="text-center py-16">
+            <div className="bg-gray-800/50 rounded-2xl p-8 max-w-md mx-auto border border-gray-600">
+              <h3 className="text-2xl font-bold text-gray-300 mb-4">
+                Catálogo en Carga
+              </h3>
+              <p className="text-gray-400 mb-6">
+                Estamos preparando nuestros productos exclusivos para ti.
+              </p>
+              <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
+            </div>
+          </div>
+        )}
+        
+        {/* 🔧 DEBUG: Mostrar información de productos en desarrollo */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-8 p-4 bg-gray-800 rounded-lg text-sm text-gray-400">
+            <strong>Debug Info:</strong>
+            <br />
+            Products loaded: {featuredProducts?.length || 0}
+            <br />
+            Products data: {JSON.stringify(featuredProducts?.slice(0, 2), null, 2)}
+          </div>
+        )}
+      </>
+    )}
 
+    <div className="text-center mt-12">
+      <Link href="/productos">
+        <Button className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-3 rounded-full">
+          Ver Todos los Productos
+        </Button>
+      </Link>
+    </div>
+  </div>
+</section>
+
+{/* 
       {/* About Section */}
       <section id="nosotros" className="py-20 bg-black">
         <div className="max-w-6xl mx-auto px-4">
