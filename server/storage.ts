@@ -415,16 +415,16 @@ export class DatabaseStorage implements IStorage {
         name: "Organizador de Higiene",
         description: "Organizador de higiene transparente con bordado personalizado de flores - Perfecto para viajes",
         price: "145000",
-        imageUrl: "/attached_assets/Organizador Bordado_1754160554308.jpg",
-        blankImageUrl: "/attached_assets/Organizador Bordado_1754160554308.jpg", // Solo tiene versión con bordado
-        referenceImageUrl: "/attached_assets/Organizador Bordado_1754160554308.jpg",
+        imageUrl: "/attached_assets/Organizador Bordado.jpg",
+        blankImageUrl: "/assets/Organizado.jpg", // Solo tiene versión con bordado
+        referenceImageUrl: "/assets/Organizador Bordado_1754160554308.jpg",
         category: "Organizadores",
         animalType: "Flores",
         colors: ["Rosa", "Beige"],
         inStock: true,
         variants: { 
           bordado: false, // No tiene opción sin bordado según tus instrucciones
-          galleryImages: ["/attached_assets/Organizador Bordado_1754160554308.jpg"]
+          galleryImages: ["/assets/Organizador Bordado.jpg"]
         },
       },
       {
