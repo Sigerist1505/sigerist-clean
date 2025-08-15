@@ -102,7 +102,7 @@ export default function Home() {
           playsInline
           className="w-full h-full object-cover"
         >
-          <source src="/assets/Video_Kit.mp4" type="video/mp4" />
+          <source src="/assets/Video Kit.mp4" type="video/mp4" />
         </video>
 
         <div className="absolute inset-0 bg-black/20" />
@@ -235,7 +235,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 text-center">
           <div className="bg-gradient-to-br from-black/80 to-gray-800/80 rounded-3xl p-8 border border-gray-600/50 backdrop-blur-sm">
             <img
-              src="/assets/promocion-especial.png"
+              src="/assets/logo.png"
               alt="Promoción especial Sigerist"
               className="w-full max-w-4xl mx-auto rounded-2xl shadow-2xl mb-8"
             />
