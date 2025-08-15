@@ -23,6 +23,22 @@ interface AddToCartData {
   productId: number;
   quantity: number;
   personalization?: string;
+  addPompon?: boolean;
+  addPersonalizedKeychain?: boolean;
+  addDecorativeBow?: boolean;
+  addNameEmbroidery?: boolean;
+  expressService?: boolean;
+  keychainPersonalization?: string;
+  hasBordado?: boolean;
+  specifications?: {
+    bordado?: boolean;
+    llavero?: boolean;
+    mono?: boolean;
+    pompon?: boolean;
+    nombreBordado?: boolean;
+    servicioExpress?: boolean;
+    personalizacion?: string;
+  };
 }
 
 export function useCart() {

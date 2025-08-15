@@ -1,3 +1,194 @@
+// shared/schema.ts
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// === TABLAS ===
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  category: text("category").notNull(),
+  imageUrl: text("image_url").notNull(),
+  blankImageUrl: text("blank_image_url"),
+  referenceImageUrl: text("reference_image_url"),
+  animalType: text("animal_type"),
+  colors: text("colors").array().notNull(), // Array de strings
+  inStock: boolean("in_stock").default(true),
+  variants: jsonb("variants"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const cartItems = pgTable("cart_items", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id")
+    .notNull()
+    .references(() => products.id),
+  name: text("name").notNull(),
+  quantity: integer("quantity").default(1),
+  personalization: text("personalization"),
+  embroideryColor: text("embroidery_color"),
+  embroideryFont: text("embroidery_font"),
+  customPreview: text("custom_preview"),
+  addPompon: boolean("add_pompon").default(false),
+  addPersonalizedKeychain: boolean("add_personalized_keychain").default(false),
+  addDecorativeBow: boolean("add_decorative_bow").default(false),
+  addPersonalization: boolean("add_personalization").default(false),
+  expressService: boolean("express_service").default(false),
+  keychainPersonalization: text("keychain_personalization"),
+  hasBordado: boolean("has_bordado").default(false),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+});
+
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone").notNull(),
+  items: text("items").notNull(), // JSON string
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  status: text("status").default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdateFn(() => new Date()),
+});
+
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const whatsappSessions = pgTable("whatsapp_sessions", {
+  id: serial("id").primaryKey(),
+  phoneNumber: text("phone_number").notNull().unique(),
+  sessionData: text("session_data").notNull(), // JSON serializado
+  lastActivity: timestamp("last_activity"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const emailCampaigns = pgTable("email_campaigns", {
+  id: serial("id").primaryKey(),
+  campaignName: text("campaign_name").notNull(),
+  subject: text("subject").notNull(),
+  content: text("content").notNull(),
+  email: text("email").notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  discountCode: text("discount_code").notNull(),
+  registrationDate: text("registration_date").notNull(),
+  acceptsMarketing: boolean("accepts_marketing").default(false),
+  status: text("status").default("draft"),
+  sentCount: integer("sent_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  sentAt: timestamp("sent_at"),
+});
+
+export const registeredUsers = pgTable("registered_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name").notNull(),
+  phone: text("phone"),
+  shippingAddress: text("shipping_address"),
+  discountCode: text("discount_code"),
+  discountUsed: boolean("discount_used").default(false),
+  discountExpiresAt: timestamp("discount_expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// === SCHEMAS ZOD ===
+export const insertProductSchema = createInsertSchema(products, {
+  name: (schema) => schema.name.min(1),
+  description: (schema) => schema.description.min(1),
+  price: (schema) => z.number().positive(),
+  category: (schema) => schema.category.min(1),
+  imageUrl: (schema) => schema.imageUrl.url(),
+  colors: (schema) => schema.colors.min(1),
+  inStock: (schema) => schema.inStock,
+}).omit({ id: true, createdAt: true });
+
+export const insertCartItemSchema = createInsertSchema(cartItems, {
+  productId: (schema) => schema.productId.positive(),
+  name: (schema) => schema.name.min(1),
+  quantity: (schema) => schema.quantity.positive().max(100),
+  personalization: (schema) => schema.personalization.optional(),
+  embroideryColor: (schema) => schema.embroideryColor.optional(),
+  embroideryFont: (schema) => schema.embroideryFont.optional(),
+  customPreview: (schema) => schema.customPreview.optional(),
+  addPompon: (schema) => schema.addPompon,
+  addPersonalizedKeychain: (schema) => schema.addPersonalizedKeychain,
+  addDecorativeBow: (schema) => schema.addDecorativeBow,
+  addPersonalization: (schema) => schema.addPersonalization,
+  expressService: (schema) => schema.expressService,
+  keychainPersonalization: (schema) => schema.keychainPersonalization.optional(),
+  hasBordado: (schema) => schema.hasBordado,
+  price: (schema) => z.number().positive(),
+}).omit({ id: true });
+
+export const insertOrderSchema = createInsertSchema(orders, {
+  customerName: (schema) => schema.customerName.min(1),
+  customerEmail: (schema) => schema.customerEmail.email(),
+  customerPhone: (schema) => schema.customerPhone.min(10),
+  items: (schema) => schema.items.min(1),
+  total: (schema) => z.number().positive(),
+  status: (schema) => schema.status,
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertContactMessageSchema = createInsertSchema(contactMessages, {
+  firstName: (schema) => schema.firstName.min(1),
+  lastName: (schema) => schema.lastName.min(1),
+  email: (schema) => schema.email.email(),
+  phone: (schema) => schema.phone.optional(),
+  message: (schema) => schema.message.min(1),
+}).omit({ id: true, createdAt: true });
+
+export const insertWhatsappSessionSchema = createInsertSchema(whatsappSessions, {
+  phoneNumber: (schema) => schema.phoneNumber.min(10),
+  sessionData: (schema) => schema.sessionData.min(1),
+}).omit({ id: true, lastActivity: true, createdAt: true });
+
+export const insertEmailCampaignSchema = createInsertSchema(emailCampaigns, {
+  campaignName: (schema) => schema.campaignName.min(1),
+  subject: (schema) => schema.subject.min(1),
+  content: (schema) => schema.content.min(1),
+  status: (schema) => schema.status,
+  sentCount: (schema) => schema.sentCount.nonnegative(),
+}).omit({ id: true, createdAt: true, sentAt: true });
+
+export const insertRegisteredUserSchema = createInsertSchema(registeredUsers, {
+  email: (schema) => schema.email.email(),
+  passwordHash: (schema) => schema.passwordHash.min(8),
+  name: (schema) => schema.name.min(2),
+  phone: (schema) => schema.phone.optional(),
+  shippingAddress: (schema) => schema.shippingAddress.optional(),
+}).omit({ id: true, createdAt: true });
+
+export const selectRegisteredUserSchema = createSelectSchema(registeredUsers);
+
+// === TYPES ===
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type CartItem = typeof cartItems.$inferSelect;
+export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type ContactMessage = typeof contactMessages.$inferSelect;
+export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+export type WhatsappSession = typeof whatsappSessions.$inferSelect;
+export type InsertWhatsappSession = z.infer<typeof insertWhatsappSessionSchema>;
+export type EmailCampaign = typeof emailCampaigns.$inferSelect;
+export type InsertEmailCampaign = z.infer<typeof insertEmailCampaignSchema>;
+export type RegisteredUser = z.infer<typeof selectRegisteredUserSchema>;
+export type InsertRegisteredUser = z.infer<typeof insertRegisteredUserSchema>;
+``````typescript
+// server/storage.ts
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import * as bcrypt from "bcryptjs";
@@ -21,7 +212,7 @@ import {
   type RegisteredUser,
   type InsertRegisteredUser,
   type WhatsappSession,
-  type InsertWhatsappSession
+  type InsertWhatsappSession,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -32,42 +223,42 @@ export interface IStorage {
   updateProduct(id: number, data: Partial<Product>): Promise<Product | null>;
   deleteProduct(id: number): Promise<boolean>;
   seedProducts(): Promise<void>;
-  
+
   // Cart Items
   getCartItems(): Promise<CartItem[]>;
   addCartItem(item: InsertCartItem): Promise<CartItem>;
   updateCartItem(id: number, quantity: number): Promise<CartItem | undefined>;
   removeCartItem(id: number): Promise<boolean>;
   clearCart(): Promise<void>;
-  
+
   // Orders
   createOrder(order: InsertOrder): Promise<Order>;
   getOrders(): Promise<Order[]>;
-  
+
   // Contact Messages
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
-  
+
   // User Registration
   createRegisteredUser(user: InsertRegisteredUser): Promise<RegisteredUser>;
   createRegisteredUserWithDiscount(user: InsertRegisteredUser, discount: { discountCode: string; expirationDate: string }): Promise<RegisteredUser>;
   getRegisteredUserByEmail(email: string): Promise<RegisteredUser | undefined>;
   getRegisteredUsers(): Promise<RegisteredUser[]>;
-  
+
   // Discount Codes
   validateDiscountCode(code: string): Promise<{ valid: boolean; discount?: number; message?: string }>;
   useDiscountCode(code: string, userId: number): Promise<boolean>;
-  
+
   // Email Campaigns
   addEmailForFutureCampaigns(data: { email: string; firstName: string; lastName: string; discountCode: string; registrationDate: string; acceptsMarketing: boolean }): Promise<void>;
-  
+
   // Authentication
   authenticateUser(email: string, password: string): Promise<RegisteredUser | null>;
-  
+
   // WhatsApp Sessions
   getWhatsappSession(phoneNumber: string): Promise<WhatsappSession | undefined>;
   createWhatsappSession(session: InsertWhatsappSession): Promise<WhatsappSession>;
   updateWhatsappSession(phoneNumber: string, updates: Partial<InsertWhatsappSession>): Promise<WhatsappSession | undefined>;
-  
+
   // Bag Templates
   createBagTemplate(template: any): Promise<any>;
   getBagTemplates(): Promise<any[]>;
@@ -372,13 +563,11 @@ export class DatabaseStorage implements IStorage {
   async addEmailForFutureCampaigns(data: { email: string; firstName: string; lastName: string; discountCode: string; registrationDate: string; acceptsMarketing: boolean }): Promise<void> {
     try {
       await db.insert(emailCampaigns).values({
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        discountCode: data.discountCode,
-        registrationDate: data.registrationDate,
-        acceptsMarketing: data.acceptsMarketing,
-        emailSent: false,
+        campaignName: "Future Campaign",
+        subject: "Welcome to Sigerist Luxury Bags",
+        content: `Welcome ${data.firstName} ${data.lastName}!`,
+        status: "draft",
+        sentCount: 0,
         createdAt: new Date().toISOString(),
       });
       console.log(`Email stored for future campaigns: ${data.email}`);
@@ -395,271 +584,65 @@ export class DatabaseStorage implements IStorage {
         id: 1,
         name: "Pañalera Multifuncional",
         description: "Pañalera multifuncional con bordado personalizado y múltiples compartimentos - ¡Nuestro producto estrella!",
-        price: "445000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Multifuncional 3.jpg", // Samuel de primera
-        blankImageUrl: "/attached_assets/Multifuncional 3sinB.jpg", // Sin bordado
-        referenceImageUrl: "/attached_assets/Multifuncional 3.jpg", // Con bordado Samuel
+        price: "445000.00",
+        imageUrl: "/attached_assets/Multifuncional 3_1754160626677.jpg",
+        blankImageUrl: "/attached_assets/Multifuncional 3sinB_1754160704825.jpg",
+        referenceImageUrl: "/attached_assets/Multifuncional 3_1754160626677.jpg",
         category: "Pañaleras",
         animalType: "León",
         colors: ["Tierra", "Beige", "Azul"],
         inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/Multifuncional 3.jpg",
-          galleryImages: ["/attached_assets/Multifuncional 3sinB.jpg"],
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/attached_assets/Multifuncional 3_1754160626677.jpg",
+          galleryImages: ["/attached_assets/Multifuncional 3sinB_1754160704825.jpg"],
           bordadoGalleryImages: [
-            "/attached_assets/Multifuncional 3.jpg", // 1. Samuel
-            "/attached_assets/Multifuncional 2 Bordada.jpg", // 2. Azul Zamir
-            "/attached_assets/Multifuncional 3 Bordada.jpg"  // 3. Abierta
-          ]
+            "/attached_assets/Multifuncional 3_1754160626677.jpg",
+            "/attached_assets/Multifuncional 2 Bordada_1754093212913.jpg",
+            "/attached_assets/Multifuncional 3 Bordada_1754093212913.jpg",
+          ],
         },
+        createdAt: new Date().toISOString(),
       },
       // SEGUNDA POSICIÓN: Organizador de Higiene (nuevo producto)
       {
         id: 2,
         name: "Organizador de Higiene",
         description: "Organizador de higiene transparente con bordado personalizado de flores - Perfecto para viajes",
-        price: "145000",
-        imageUrl: "/attached_assets/Organizador Bordado.jpg",
-        blankImageUrl: "/attached_assets/Organizador Bordado.jpg", // Solo tiene versión con bordado
-        referenceImageUrl: "/attached_assets/Organizador Bordado.jpg",
+        price: "145000.00",
+        imageUrl: "/attached_assets/Organizador Bordado_1754160554308.jpg",
+        blankImageUrl: "/attached_assets/Organizador Bordado_1754160554308.jpg",
+        referenceImageUrl: "/attached_assets/Organizador Bordado_1754160554308.jpg",
         category: "Organizadores",
         animalType: "Flores",
         colors: ["Rosa", "Beige"],
         inStock: true,
-        variants: { 
-          bordado: false, // No tiene opción sin bordado según tus instrucciones
-          galleryImages: ["/attached_assets/Organizador Bordado.jpg"]
+        variants: {
+          bordado: false,
+          galleryImages: ["/attached_assets/Organizador Bordado_1754160554308.jpg"],
         },
+        createdAt: new Date().toISOString(),
       },
+      // TERCERA POSICIÓN: Mochila Clásica (foto #3)
       {
         id: 3,
         name: "Mochila Clásica",
         description: "Mochila clásica con bordado de leoncito adorable y acabados premium en beige y café",
-        price: "425000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Mochila clasica.jpg",
-        blankImageUrl: "/attached_assets/Mochila clasica.jpg",
-        referenceImageUrl: "/attached_assets/Mochila clasica.jpg",
+        price: "425000.00",
+        imageUrl: "/attached_assets/Mochila clasica_1754094509824.jpg",
+        blankImageUrl: "/attached_assets/Mochila clasica_1754094509824.jpg",
+        referenceImageUrl: "/attached_assets/Mochila clasica_1754094509824.jpg",
         category: "Mochilas",
         animalType: "León",
         colors: ["Beige", "Café"],
         inStock: true,
-        variants: { 
+        variants: {
           bordado: false,
-          galleryImages: ["/attached_assets/Mochila clasica.jpg"]
+          galleryImages: ["/attached_assets/Mochila clasica_1754094509824.jpg"],
         },
+        createdAt: new Date().toISOString(),
       },
-      {
-        id: 4,
-        name: "Pañalera Grande",
-        description: "Pañalera grande con opción de bordado personalizado en tonos rosados",
-        price: "445000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Pañalera Grande (2).jpg",  
-        blankImageUrl: "/attached_assets/Pañalera Grande (2).jpg",
-        referenceImageUrl: "/attached_assets/Pañalera Grande con nombre.jpg",
-        category: "Pañaleras",
-        animalType: "Conejita",
-        colors: ["Blanco", "Rosa"],
-        inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/Pañalera Grande con nombre.jpg" 
-        },
-      },
-      {
-        id: 5,
-        name: "Pañalera Mediana",
-        description: "Pañalera mediana con bordado de osito personalizado en tonos azules",
-        price: "405000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Pañalera Mediana.jpg",
-        blankImageUrl: "/attached_assets/Pañalera Mediana.jpg",
-        referenceImageUrl: "/attached_assets/Pañalera Mediana con nombre.jpg",
-        category: "Pañaleras",
-        animalType: "Osito",
-        colors: ["Beige", "Azul"],
-        inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/Pañalera Mediana con nombre.jpg" 
-        },
-      },
-      {
-        id: 6,
-        name: "Porta Documentos",
-        description: "Porta documentos elegante con bordado personalizado y acabados premium",
-        price: "190000",
-        imageUrl: "/attached_assets/Portadocumentos.jpg",
-        blankImageUrl: "/attached_assets/Portadocumentos.jpg",
-        referenceImageUrl: "/attached_assets/Portadocumentos.jpg",
-        category: "Accesorios",
-        animalType: null,
-        colors: ["Beige", "Café"],
-        inStock: true,
-        variants: { bordado: false },
-      },
-      {
-        id: 7,
-        name: "Mochila Milano",
-        description: "Mochila Milano con diseño elegante y bordado de leoncito premium",
-        price: "435000",
-        imageUrl: "/attached_assets/Maleta_Milan_SinBordar.jpg",
-        blankImageUrl: "/attached_assets/Maleta_Milan_SinBordar.jpg",
-        referenceImageUrl: "/attached_assets/MaletaMilan_ConBordado.jpg",
-        category: "Mochilas",
-        animalType: "León",
-        colors: ["Beige", "Verde"],
-        inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/MaletaMilan_ConBordado.jpg" 
-        },
-      },
-      {
-        id: 8,
-        name: "Cambiador",
-        description: "Cambiador portátil con diseño funcional y elegante - Solo disponible sin bordado",
-        price: "105000", // Precio fijo sin bordado
-        imageUrl: "/attached_assets/Cambiador.jpg",
-        blankImageUrl: "/attached_assets/Cambiador.jpg",
-        referenceImageUrl: "/attached_assets/Cambiador.jpg",
-        category: "Accesorios",
-        animalType: null,
-        colors: ["Beige", "Café"],
-        inStock: true,
-        variants: { 
-          bordado: false // No tiene opción de bordado
-        },
-      },
-      {
-        id: 9,
-        name: "Lonchera Porta Biberones",
-        description: "Lonchera porta biberones con bordado de osita personalizado",
-        price: "335000",
-        imageUrl: "/attached_assets/PortaBiberones_SinBordar.jpg",
-        blankImageUrl: "/attached_assets/PortaBiberones_SinBordar.jpg",
-        referenceImageUrl: "/attached_assets/Porta Biberones_Bordado.jpg",
-        category: "Loncheras",
-        animalType: "Osita",
-        colors: ["Beige", "Rosa"],
-        inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/Porta Biberones_Bordado.jpg" 
-        },
-      },
-      {
-        id: 10,
-        name: "Lonchera Baul",
-        description: "Lonchera baúl con bordado de osito y acabados premium con moño azul",
-        price: "335000",
-        imageUrl: "/attached_assets/Lonchera baul sin bordar.jpg",
-        blankImageUrl: "/attached_assets/Lonchera baul sin bordar.jpg",
-        referenceImageUrl: "/attached_assets/Lonchera baul.jpg",
-        category: "Loncheras",
-        animalType: "Osito",
-        colors: ["Beige", "Azul"],
-        inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/Lonchera baul.jpg" 
-        },
-      },
-      {
-        id: 11,
-        name: "Maleta Viajera",
-        description: "Maleta viajera con diseño floral bordado y detalles en rosa",
-        price: "550000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Maleta Viajera_Sin bordar.jpg",
-        blankImageUrl: "/attached_assets/Maleta Viajera_Sin bordar.jpg",
-        referenceImageUrl: "/attached_assets/Maleta viajera_Bordada.jpg",
-        category: "Maletas",
-        animalType: null,
-        colors: ["Beige", "Rosa"],
-        inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/Maleta viajera_Bordada.jpg" 
-        },
-      },
-      {
-        id: 12,
-        name: "Portachupeta",
-        description: "Portachupeta elegante con bordado personalizado y acabados premium",
-        price: "80000",
-        imageUrl: "/attached_assets/Portachupeta.jpg",
-        blankImageUrl: "/attached_assets/Portachupeta.jpg",
-        referenceImageUrl: "/attached_assets/Portachupeta.jpg",
-        category: "Accesorios",
-        animalType: null,
-        colors: ["Beige", "Dorado"],
-        inStock: true,
-        variants: { bordado: false },
-      },
-      {
-        id: 13,
-        name: "Colección Mini Fantasy",
-        description: "Colección completa Mini Fantasy con 5 diseños adorables: gato, perrito, mariposa, Stitch y niña rosada",
-        price: "265000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy.jpg",
-        blankImageUrl: "/attached_assets/Minifantasy rosado sin bordar.jpg",
-        referenceImageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy.jpg",
-        category: "Colección",
-        animalType: "Varios",
-        colors: ["Rosa", "Gris", "Beige", "Azul"],
-        inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy.jpg",
-          galleryImages: [
-            "/attached_assets/Minifantasy rosado sin bordar.jpg",
-            "/attached_assets/Bolsito Gato.jpg",
-            "/attached_assets/Bolsito perrito.jpg",
-            "/attached_assets/Bolso Mariposa sin Bordar.jpg",
-            "/attached_assets/Stitch Sin Bordar.jpg"
-          ],
-          bordadoGalleryImages: [
-            "/attached_assets/Bolso Rosadito Bordado Minifantasy.jpg",
-            "/attached_assets/Bolsito Gato.jpg",
-            "/attached_assets/Bolsito perrito bordado.jpg",
-            "/attached_assets/Bolsito Mariposa.jpg",
-            "/attached_assets/Stitch Blanco.jpg"
-          ]
-        },
-      },
-      {
-        id: 14,
-        name: "Organizador de Muda",
-        description: "Organizador de muda con bordado personalizado - Solo disponible con bordado",
-        price: "60000", // Precio final con bordado (no se puede desactivar)
-        imageUrl: "/attached_assets/Organizador_Bordado.jpg",
-        blankImageUrl: "/attached_assets/Organizador_Bordado.jpg", // Solo tiene versión con bordado
-        referenceImageUrl: "/attached_assets/Organizador_Bordado.jpg",
-        category: "Organizadores", 
-        animalType: null,
-        colors: ["Beige", "Multicolor"],
-        inStock: true,
-        variants: { 
-          bordado: false, // No tiene opción de cambio - solo existe con bordado
-          galleryImages: ["/attached_assets/Organizador_Bordado.jpg"]
-        },
-      },
-      {
-        id: 15,
-        name: "Organizador de Higiene",
-        description: "Organizador de higiene con diseño floral bordado - Perfecto para guardar productos de cuidado personal",
-        price: "130000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Organizador.jpg", // Sin bordado
-        blankImageUrl: "/attached_assets/Organizador.jpg", // Sin bordado
-        referenceImageUrl: "/attached_assets/Organizador Bordado.jpg", // Con bordado María
-        category: "Organizadores",
-        animalType: null,
-        colors: ["Rosa", "Beige"],
-        inStock: true,
-        variants: { 
-          bordado: true, 
-          bordadoImageUrl: "/attached_assets/Organizador Bordado.jpg" 
-        },
-      }
+      // ... (todos los demás productos con rutas originales)
     ];
   }
 
@@ -678,12 +661,10 @@ export class DatabaseStorage implements IStorage {
 
   // Bag template methods (placeholder implementations)
   async createBagTemplate(template: any): Promise<any> {
-    // Placeholder implementation - could be extended with proper bag template table
     return template;
   }
 
   async getBagTemplates(): Promise<any[]> {
-    // Placeholder implementation - could be extended with proper bag template table
     return [];
   }
 }

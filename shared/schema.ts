@@ -1,163 +1,165 @@
-import { pgTable, text, serial, integer, decimal, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Tabla de productos
+// === TABLAS ===
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull().default("Producto de Prueba"),
-  description: text("description").notNull().default("Descripción predeterminada"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0.00"),
-  category: text("category").notNull().default("Sin categoría"),
-  imageUrl: text("image_url").notNull().default("/attached_assets/default.jpg"),
-  blankImageUrl: text("blank_image_url"), // Para imágenes sin bordado
-  referenceImageUrl: text("reference_image_url"),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  category: text("category").notNull(),
+  imageUrl: text("image_url").notNull(),
   animalType: text("animal_type"),
-  colors: text("colors").array().default([]),
-  variants: jsonb("variants").default('{}'), // JSONB para almacenar bordado u otras variantes, ej. {"bordado": true, "bordadoImageUrl": "..."}
+  colors: text("colors").array().notNull(), // Array de strings
   inStock: boolean("in_stock").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Tabla de ítems del carrito
 export const cartItems = pgTable("cart_items", {
   id: serial("id").primaryKey(),
-  cartId: integer("cart_id").notNull().references(() => carts.id),
-  productId: integer("product_id").notNull().references(() => products.id),
-  quantity: integer("quantity").notNull().default(1),
+  productId: integer("product_id")
+    .notNull()
+    .references(() => products.id),
+  name: text("name").notNull(),
+  quantity: integer("quantity").default(1),
   personalization: text("personalization"),
+  embroideryColor: text("embroidery_color"),
+  embroideryFont: text("embroidery_font"),
+  customPreview: text("custom_preview"),
+  addPompon: boolean("add_pompon").default(false),
+  addPersonalizedKeychain: boolean("add_personalized_keychain").default(false),
+  addDecorativeBow: boolean("add_decorative_bow").default(false),
+  addPersonalization: boolean("add_personalization").default(false),
+  expressService: boolean("express_service").default(false),
+  keychainPersonalization: text("keychain_personalization"),
+  hasBordado: boolean("has_bordado").default(false),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Tabla de carritos
-export const carts = pgTable("carts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => registeredUsers.id),
-  sessionId: text("session_id").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
-});
-
-// Tabla de órdenes
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => registeredUsers.id),
-  cartId: integer("cart_id").notNull().references(() => carts.id),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone").notNull(),
+  items: text("items").notNull(), // JSON string
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
-  status: text("status").notNull().default("pending"),
-  shippingAddress: text("shipping_address"),
+  status: text("status").default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdateFn(() => new Date()),
 });
 
-// Tabla de mensajes de contacto
 export const contactMessages = pgTable("contact_messages", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
   email: text("email").notNull(),
+  phone: text("phone"),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Tabla de usuarios registrados
-export const registeredUsers = pgTable("registered_users", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Tabla de sesiones de WhatsApp (si integras automatización)
 export const whatsappSessions = pgTable("whatsapp_sessions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => registeredUsers.id),
-  sessionToken: text("session_token").notNull(),
-  status: text("status").notNull().default("active"),
+  phoneNumber: text("phone_number").notNull().unique(),
+  sessionData: text("session_data").notNull(), // JSON serializado
+  lastActivity: timestamp("last_activity"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Tabla de campañas de email (para automatizaciones)
 export const emailCampaigns = pgTable("email_campaigns", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  campaignName: text("campaign_name").notNull(),
   subject: text("subject").notNull(),
-  body: text("body").notNull(),
-  scheduledAt: timestamp("scheduled_at"),
+  content: text("content").notNull(),
+  status: text("status").default("draft"),
+  sentCount: integer("sent_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  sentAt: timestamp("sent_at"),
+});
+
+export const registeredUsers = pgTable("registered_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name").notNull(),
+  phone: text("phone"),
+  shippingAddress: text("shipping_address"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Schemas Zod para validación
-export const insertProductSchema = createInsertSchema(products).pick({
-  name: true,
-  description: true,
-  price: true,
-  category: true,
-  imageUrl: true,
-  blankImageUrl: true,
-  referenceImageUrl: true,
-  animalType: true,
-  colors: true,
-  variants: true,
-  inStock: true,
-}).refine((data) => {
-  if (data.variants && typeof data.variants === "string") {
-    try {
-      JSON.parse(data.variants);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-  return true;
-}, {
-  message: "variants debe ser un JSON válido",
-  path: ["variants"],
-});
+// === SCHEMAS ZOD ===
+export const insertProductSchema = createInsertSchema(products, {
+  name: (schema) => schema.name.min(1),
+  description: (schema) => schema.description.min(1),
+  price: (schema) => z.number().positive(), // Ajuste para validar números positivos
+  category: (schema) => schema.category.min(1),
+  imageUrl: (schema) => schema.imageUrl.url(),
+  colors: (schema) => schema.colors.min(1),
+  inStock: (schema) => schema.inStock,
+}).omit({ id: true, createdAt: true });
 
-export const insertCartItemSchema = createInsertSchema(cartItems).pick({
-  cartId: true,
-  productId: true,
-  quantity: true,
-  personalization: true,
-  price: true,
-});
+export const insertCartItemSchema = createInsertSchema(cartItems, {
+  productId: (schema) => schema.productId.positive(),
+  name: (schema) => schema.name.min(1),
+  quantity: (schema) => schema.quantity.positive().max(100),
+  personalization: (schema) => schema.personalization.optional(),
+  embroideryColor: (schema) => schema.embroideryColor.optional(),
+  embroideryFont: (schema) => schema.embroideryFont.optional(),
+  customPreview: (schema) => schema.customPreview.optional(),
+  addPompon: (schema) => schema.addPompon,
+  addPersonalizedKeychain: (schema) => schema.addPersonalizedKeychain,
+  addDecorativeBow: (schema) => schema.addDecorativeBow,
+  addPersonalization: (schema) => schema.addPersonalization,
+  expressService: (schema) => schema.expressService,
+  keychainPersonalization: (schema) => schema.keychainPersonalization.optional(),
+  hasBordado: (schema) => schema.hasBordado,
+  price: (schema) => z.number().positive(), // Ajuste para validar números positivos
+}).omit({ id: true });
 
-export const insertOrderSchema = createInsertSchema(orders).pick({
-  userId: true,
-  cartId: true,
-  total: true,
-  status: true,
-  shippingAddress: true,
-});
+export const insertOrderSchema = createInsertSchema(orders, {
+  customerName: (schema) => schema.customerName.min(1),
+  customerEmail: (schema) => schema.customerEmail.email(),
+  customerPhone: (schema) => schema.customerPhone.min(10),
+  items: (schema) => schema.items.min(1),
+  total: (schema) => z.number().positive(), // Ajuste para validar números positivos
+  status: (schema) => schema.status,
+}).omit({ id: true, createdAt: true, updatedAt: true });
 
-export const insertContactMessageSchema = createInsertSchema(contactMessages).pick({
-  name: true,
-  email: true,
-  message: true,
-});
+export const insertContactMessageSchema = createInsertSchema(contactMessages, {
+  firstName: (schema) => schema.firstName.min(1),
+  lastName: (schema) => schema.lastName.min(1),
+  email: (schema) => schema.email.email(),
+  phone: (schema) => schema.phone.optional(),
+  message: (schema) => schema.message.min(1),
+}).omit({ id: true, createdAt: true });
 
-export const insertRegisteredUserSchema = createInsertSchema(registeredUsers).pick({
-  name: true,
-  email: true,
-  password: true,
-});
+export const insertWhatsappSessionSchema = createInsertSchema(whatsappSessions, {
+  phoneNumber: (schema) => schema.phoneNumber.min(10),
+  sessionData: (schema) => schema.sessionData.min(1),
+}).omit({ id: true, lastActivity: true, createdAt: true });
 
-export const insertWhatsappSessionSchema = createInsertSchema(whatsappSessions).pick({
-  userId: true,
-  sessionToken: true,
-  status: true,
-});
+export const insertEmailCampaignSchema = createInsertSchema(emailCampaigns, {
+  campaignName: (schema) => schema.campaignName.min(1),
+  subject: (schema) => schema.subject.min(1),
+  content: (schema) => schema.content.min(1),
+  status: (schema) => schema.status,
+  sentCount: (schema) => schema.sentCount.nonnegative(),
+}).omit({ id: true, createdAt: true, sentAt: true });
 
-export const insertEmailCampaignSchema = createInsertSchema(emailCampaigns).pick({
-  name: true,
-  subject: true,
-  body: true,
-  scheduledAt: true,
-});
+export const insertRegisteredUserSchema = createInsertSchema(registeredUsers, {
+  email: (schema) => schema.email.email(),
+  passwordHash: (schema) => schema.passwordHash.min(8),
+  name: (schema) => schema.name.min(2),
+  phone: (schema) => schema.phone.optional(),
+  shippingAddress: (schema) => schema.shippingAddress.optional(),
+}).omit({ id: true, createdAt: true });
 
-// Tipos de datos
+export const selectRegisteredUserSchema = createSelectSchema(registeredUsers);
+
+// === TYPES ===
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type CartItem = typeof cartItems.$inferSelect;
@@ -166,7 +168,9 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
-export type RegisteredUser = typeof registeredUsers.$inferSelect;
-export type InsertRegisteredUser = z.infer<typeof insertRegisteredUserSchema>;
 export type WhatsappSession = typeof whatsappSessions.$inferSelect;
 export type InsertWhatsappSession = z.infer<typeof insertWhatsappSessionSchema>;
+export type EmailCampaign = typeof emailCampaigns.$inferSelect;
+export type InsertEmailCampaign = z.infer<typeof insertEmailCampaignSchema>;
+export type RegisteredUser = z.infer<typeof selectRegisteredUserSchema>;
+export type InsertRegisteredUser = z.infer<typeof insertRegisteredUserSchema>;

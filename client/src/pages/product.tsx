@@ -1,40 +1,106 @@
 import { useState } from "react";
 import { useRoute } from "wouter";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/hooks/use-cart"; // Corrección: usa addToCart
+import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/utils";
+import { ImageGallery } from "@/components/image-gallery";
+import {
+  ArrowLeft,
+  Heart,
+  Share2,
+  Star,
+  Truck,
+  Shield,
+  Clock,
+  Award,
+  ShoppingCart,
+  MessageCircle,
+} from "lucide-react";
 import type { Product } from "@shared/schema";
+
+interface ProductVariants {
+  bordado?: boolean;
+  galleryImages?: string[];
+  bordadoGalleryImages?: string[];
+  bordadoImageUrl?: string;
+  blankImageUrl?: string | null;
+  referenceImageUrl?: string | null;
+}
 
 function ProductPage() {
   const [, params] = useRoute("/product/:id");
-  const { addToCart } = useCart(); // Cambiado de addItem a addToCart
+  const { addToCart } = useCart();
   const { toast } = useToast();
+  const productId = params?.id ? parseInt(params.id) : 0;
+
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [showEmbroidery, setShowEmbroidery] = useState(true);
   const [personalization, setPersonalization] = useState("");
+  const [addPompon, setAddPompon] = useState(false);
+  const [addKeychain, setAddKeychain] = useState(false);
+  const [addBow, setAddBow] = useState(false);
+  const [addNameEmbroidery, setAddNameEmbroidery] = useState(false);
+  const [addExpressService, setAddExpressService] = useState(false);
+  const [keychainText, setKeychainText] = useState("");
 
   const {
     data: product,
     isLoading,
     error,
-  } = useQuery<Product>({
-    queryKey: ["products", params?.id],
-    enabled: !!params?.id,
-    retry: 1, // Limita reintentos en caso de error
+  } = useQuery<Product & { variants?: ProductVariants }>({
+    queryKey: ["products", productId],
+    enabled: !!productId,
+    retry: 1,
   });
+
+  const calculateFinalPrice = () => {
+    if (!product) return 0;
+
+    const basePrice = parseFloat(product.price);
+    let totalPrice = basePrice;
+
+    if (addPompon) totalPrice += 45000;
+    if (addKeychain) totalPrice += 55000;
+    if (addBow) totalPrice += 55000;
+    if (addNameEmbroidery) totalPrice += 15000;
+    if (addExpressService) totalPrice += 50000;
+
+    return totalPrice;
+  };
 
   const handleAddToCart = () => {
     if (!product) return;
+
+    const totalPrice = calculateFinalPrice();
+
     addToCart(
       {
         productId: product.id,
-        name: product.name,
-        price: Number(product.price), // Convertir a número si es string
         quantity,
-        personalization: personalization || undefined, // Envía undefined si está vacío
+        personalization: personalization || undefined,
+        addPompon,
+        addPersonalizedKeychain: addKeychain,
+        addDecorativeBow: addBow,
+        addNameEmbroidery,
+        expressService: addExpressService,
+        keychainPersonalization: keychainText,
+        hasBordado: product.variants?.bordado === true && showEmbroidery,
+        specifications: {
+          bordado: product.variants?.bordado === true && showEmbroidery,
+          llavero: addKeychain,
+          mono: addBow,
+          pompon: addPompon,
+          nombreBordado: addNameEmbroidery,
+          servicioExpress: addExpressService,
+          personalizacion: personalization,
+        },
       },
       {
         onSuccess: () => {
@@ -55,9 +121,9 @@ function ProductPage() {
     return (
       <div className="min-h-screen pt-16 flex items-center justify-center">
         <div className="animate-pulse text-center">
-          <div className="w-64 h-64 bg-muted rounded-xl mx-auto mb-4" />
-          <div className="h-6 bg-muted rounded w-3/4 mx-auto mb-2" />
-          <div className="h-4 bg-muted rounded w-1/2 mx-auto" />
+          <div className="w-32 h-32 bg-muted rounded-full mx-auto mb-4" />
+          <div className="h-4 bg-muted rounded w-48 mx-auto mb-2" />
+          <div className="h-4 bg-muted rounded w-32 mx-auto" />
         </div>
       </div>
     );
@@ -68,131 +134,337 @@ function ProductPage() {
       <div className="min-h-screen pt-16 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="pt-6 text-center">
-            <h2 className="text-xl font-semibold mb-2">Producto no encontrado</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Producto no encontrado</h2>
+            <p className="text-muted-foreground mb-4">
               El producto que buscas no existe o ha sido eliminado.
             </p>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => window.location.href = "/products"}
-            >
-              Volver a la lista
-            </Button>
+            <Link href="/">
+              <Button>Volver al inicio</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
     );
   }
 
+  const hasBordado = product.variants?.bordado === true;
+
+  const getGalleryImages = () => {
+    if (!hasBordado) {
+      return product.variants?.galleryImages || [product.imageUrl];
+    }
+    if (!showEmbroidery) {
+      return product.variants?.galleryImages || [product.variants?.blankImageUrl || product.imageUrl];
+    } else {
+      return (
+        product.variants?.bordadoGalleryImages ||
+        [product.variants?.bordadoImageUrl || product.variants?.referenceImageUrl || product.imageUrl]
+      );
+    }
+  };
+
+  const galleryImages = getGalleryImages();
+
   return (
-    <div className="min-h-screen pt-16 bg-gradient-to-br from-gray-50 to-white">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Imagen */}
+    <div
+      className="min-h-screen pt-16"
+      style={{
+        background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #1a1a1a 50%, #0f0f0f 75%, #000000 100%)",
+        color: "#ffffff",
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center gap-2 mb-8">
+          <Link href="/">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Volver
+            </Button>
+          </Link>
+          <Separator orientation="vertical" className="h-4" />
+          <span className="text-gray-400 text-sm">{product.category}</span>
+          <Separator orientation="vertical" className="h-4 bg-gray-400" />
+          <span className="text-sm font-medium text-white">{product.name}</span>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-12">
           <div className="space-y-4">
-            <div className="aspect-square bg-white rounded-2xl p-6 shadow-lg">
-              <img
-                src={`/assets/${product.imageUrl.replace(/^\/assets\//, '')}`} // Cambiado de image_url a imageUrl
-                alt={product.name}
-                className="w-full h-full object-cover rounded-xl"
-                loading="lazy"
-              />
+            <div className="relative">
+              <ImageGallery images={galleryImages} alt={product.name} className="aspect-square" />
+              {hasBordado && (
+                <div className="absolute top-6 left-6 flex gap-3 z-20">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowEmbroidery(true);
+                    }}
+                    className={`w-12 h-12 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg ${
+                      showEmbroidery
+                        ? "bg-gradient-to-br from-yellow-400 to-yellow-500 border-yellow-300 scale-110"
+                        : "bg-black/80 border-gray-600 hover:border-gray-400 hover:scale-105"
+                    }`}
+                    title="Con bordado"
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-full ${
+                        showEmbroidery ? "bg-white" : "bg-gradient-to-br from-amber-400 to-yellow-500"
+                      }`}
+                    />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowEmbroidery(false);
+                    }}
+                    className={`w-12 h-12 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg ${
+                      !showEmbroidery
+                        ? "bg-gradient-to-br from-gray-600 to-gray-700 border-gray-500 scale-110"
+                        : "bg-black/80 border-gray-600 hover:border-gray-500 hover:scale-105"
+                    }`}
+                    title="Sin bordado"
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 ${
+                        !showEmbroidery ? "border-white" : "border-slate-400"
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
+              {hasBordado && (
+                <div className="absolute bottom-6 left-6 bg-black/70 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {showEmbroidery ? "Con bordado" : "Sin bordado"}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Detalles */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <Badge className="mb-4" variant="secondary">
-                {product.category}
-              </Badge>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <div className="flex items-center gap-2 mb-4">
+                <Badge variant="outline" className="text-[#c9a920] border-[#c9a920]">
+                  {product.category}
+                </Badge>
+                <div className="flex items-center">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                  <span className="ml-2 text-sm text-gray-400">(4.9)</span>
+                </div>
+              </div>
+
+              <h1
+                className="text-3xl font-bold text-[#c9a920] mb-4"
+                style={{ textShadow: "0 0 15px rgba(201, 169, 32, 0.6)" }}
+              >
                 {product.name}
               </h1>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                {product.description}
-              </p>
-              {product.animalType && ( // Cambiado de animal_type a animalType
-                <p className="text-gray-600 mt-2">
-                  <strong>Diseño:</strong> {product.animalType}
-                </p>
-              )}
-            </div>
 
-            <div className="border-t pt-6">
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-4xl font-bold text-gray-900">
-                  {formatPrice(Number(product.price))}
-                </span>
-                <Badge variant={product.inStock ? "default" : "destructive"}>
-                  {product.inStock ? "En Stock" : "Agotado"}
-                </Badge>
+              <div className="text-3xl font-bold text-amber-400 mb-6">
+                {formatPrice(calculateFinalPrice())}
+                {hasBordado && showEmbroidery && (
+                  <span className="text-sm font-normal text-gray-400 ml-2">
+                    (incluye bordado personalizado)
+                  </span>
+                )}
               </div>
 
-              {/* Personalización */}
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    ✨ Personalización
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Nombre para bordar (opcional)
-                      </label>
+              <p className="text-gray-300 text-lg leading-relaxed">{product.description}</p>
+            </div>
+
+            {hasBordado && (
+              <div className="bg-gradient-to-br from-black/80 to-gray-900/80 rounded-xl p-6 border border-gray-600/50">
+                <h3
+                  className="text-lg font-semibold mb-4 text-gray-300"
+                  style={{ fontFamily: "Playfair Display, serif" }}
+                >
+                  Personalización
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-300 mb-2 block">
+                      Nombre para bordado (incluido en el precio)
+                    </label>
+                    <input
+                      type="text"
+                      value={personalization}
+                      onChange={(e) => setPersonalization(e.target.value)}
+                      placeholder="Escribe el nombre a bordar..."
+                      className="w-full px-4 py-2 border border-gray-600/50 bg-black/60 text-white rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400"
+                      maxLength={20}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Máximo 20 caracteres</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-gray-300">Adicionales Opcionales</h4>
+
+                    <div className="flex items-center justify-between p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                      <div>
+                        <label className="font-medium text-white">Nombre Bordado</label>
+                        <p className="text-xs text-gray-300">+$15.000</p>
+                      </div>
                       <input
-                        type="text"
-                        value={personalization}
-                        onChange={(e) => setPersonalization(e.target.value)}
-                        placeholder="Ej: María"
-                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        maxLength={15}
-                        disabled={!product.inStock}
+                        type="checkbox"
+                        checked={addNameEmbroidery}
+                        onChange={(e) => setAddNameEmbroidery(e.target.checked)}
+                        className="w-5 h-5 text-gray-400 rounded focus:ring-gray-400"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Máximo 15 caracteres
-                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Cantidad + agregar */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <label className="font-medium">Cantidad:</label>
-                  <div className="flex items-center border rounded-lg">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50"
-                      disabled={!product.inStock}
-                    >
-                      -
-                    </button>
-                    <span className="px-4 py-2 border-x">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50"
-                      disabled={!product.inStock}
-                    >
-                      +
-                    </button>
-                  </div>
                 </div>
+              </div>
+            )}
 
-                <Button
-                  onClick={handleAddToCart}
-                  disabled={!product.inStock}
-                  size="lg"
-                  className="w-full bg-sigerist-gold hover:bg-yellow-600 text-sigerist-charcoal font-semibold text-lg py-3"
-                >
-                  {product.inStock ? "Agregar al Carrito" : "Producto Agotado"}
-                </Button>
+            <div className="bg-gradient-to-br from-black/80 to-gray-900/80 rounded-xl p-6 border border-gray-600/50">
+              <h3
+                className="text-lg font-semibold mb-4 text-gray-300"
+                style={{ fontFamily: "Playfair Display, serif" }}
+              >
+                Servicio de Entrega
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                  <div>
+                    <label className="font-medium text-white">Servicio Express</label>
+                    <p className="text-xs text-gray-300">Entrega prioritaria +$50.000</p>
+                    <p className="text-xs text-gray-400">
+                      El envío regular ($25.000) se paga contraentrega
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={addExpressService}
+                    onChange={(e) => setAddExpressService(e.target.checked)}
+                    className="w-5 h-5 text-gray-400 rounded focus:ring-gray-400"
+                  />
+                </div>
               </div>
             </div>
+
+            <div className="bg-gradient-to-br from-black/80 to-gray-900/80 rounded-xl p-6 border border-gray-600/50">
+              <h3
+                className="text-lg font-semibold mb-4 text-gray-300"
+                style={{ fontFamily: "Playfair Display, serif" }}
+              >
+                Accesorios Adicionales
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                  <div>
+                    <label className="font-medium text-white">Llavero</label>
+                    <p className="text-xs text-gray-300">+$55.000</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={addKeychain}
+                    onChange={(e) => setAddKeychain(e.target.checked)}
+                    className="w-5 h-5 text-gray-400 rounded focus:ring-gray-400"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                  <div>
+                    <label className="font-medium text-white">Moño</label>
+                    <p className="text-xs text-gray-300">+$55.000</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={addBow}
+                    onChange={(e) => setAddBow(e.target.checked)}
+                    className="w-5 h-5 text-gray-400 rounded focus:ring-gray-400"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                  <div>
+                    <label className="font-medium text-white">Pompón</label>
+                    <p className="text-xs text-gray-300">+$45.000</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={addPompon}
+                    onChange={(e) => setAddPompon(e.target.checked)}
+                    className="w-5 h-5 text-gray-400 rounded focus:ring-gray-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <Button
+                onClick={handleAddToCart}
+                size="lg"
+                className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-semibold"
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Agregar al Carrito
+              </Button>
+
+              <a
+                href={`https://wa.me/573160183418?text=Hola, estoy interesado en el producto: ${encodeURIComponent(
+                  product.name
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex"
+              >
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-green-600 text-green-400 hover:bg-green-600 hover:text-white"
+                >
+                  <MessageCircle className="h-5 w-5 mr-2" />
+                  WhatsApp
+                </Button>
+              </a>
+            </div>
+
+            <Card className="bg-gradient-to-br from-gray-900/95 to-black/95 border-2 border-[#C0C0C0]/30">
+              <CardContent className="p-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-3 text-[#C0C0C0] text-lg">Modalidades de Pago</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                        <div className="w-2 h-2 bg-[#C0C0C0] rounded-full"></div>
+                        <span className="text-gray-300 text-sm">Pago online con tarjeta (Wompi/Stripe)</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                        <div className="w-2 h-2 bg-[#C0C0C0] rounded-full"></div>
+                        <span className="text-gray-300 text-sm">Pago contra entrega (solo costo de envío)</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                        <div className="w-2 h-2 bg-[#C0C0C0] rounded-full"></div>
+                        <span className="text-gray-300 text-sm">Transferencia bancaria</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-3 text-[#C0C0C0] text-lg">Condiciones Especiales</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                        <Clock className="h-4 w-4 text-[#C0C0C0] mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-gray-300 text-sm font-medium">Productos Bordados</p>
+                          <p className="text-xs text-gray-400">Servicio estándar: 15-20 días | Express: 5-8 días</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 bg-black/40 rounded-lg border border-gray-600/50">
+                        <Shield className="h-4 w-4 text-[#C0C0C0] mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-gray-300 text-sm font-medium">Garantía de Entrega</p>
+                          <p className="text-xs text-gray-400">Seguimiento completo del pedido hasta tu puerta</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
