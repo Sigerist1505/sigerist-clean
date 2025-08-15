@@ -237,7 +237,7 @@ export default function Home() {
             <img
               src="/assets/logo.png"
               alt="Promoción especial Sigerist"
-              className="w-full max-w-4xl mx-auto rounded-2xl shadow-2xl mb-8"
+              className="mx-auto mb-8 h-20 w-auto md:h-24 lg:h-28 object-contain"
             />
 
             <h2

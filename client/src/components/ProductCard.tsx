@@ -11,15 +11,6 @@ interface ProductCardProps {
   product: Product;
 }
 
-const backgroundColors = {
-  cream: 'bg-amber-50',
-  softPink: 'bg-pink-50',
-  green: 'bg-green-50',
-  blue: 'bg-blue-50',
-  pink: 'bg-rose-50',
-  purple: 'bg-purple-50',
-};
-
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart, isAddingToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
@@ -27,46 +18,67 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    addToCart({
-      productId: product.id,
-      quantity: 1,
-    });
 
+    addToCart({ productId: product.id, quantity: 1 });
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  const bgColor = 'bg-gray-50'; // Simplified background
+  // Asegura que la imagen funcione tanto si viene con "/assets/..." como si es solo el nombre
+  const imgSrc = product.imageUrl?.startsWith('/')
+    ? product.imageUrl
+    : `/assets/${product.imageUrl || ''}`;
 
   return (
     <Link href={`/product/${product.id}`}>
-      <Card className="group cursor-pointer hover:shadow-xl transition-all duration-300">
-        <CardContent className={`${bgColor} rounded-2xl p-6 m-6`}>
+      <Card className="
+        relative rounded-2xl border-2 border-gray-600/30 
+        bg-gradient-to-br from-gray-900/95 to-black/95 
+        shadow-2xl hover:border-[#ECC000]/60 
+        hover:shadow-[0_0_25px_rgba(236,192,0,.25)]
+        transition-all duration-500 hover:scale-[1.02]
+        overflow-hidden backdrop-blur-sm
+        text-card-foreground
+      ">
+        {/* Estado (stock) */}
+        <span
+          className={`absolute right-3 top-3 text-xs px-3 py-1 rounded-full
+            ${product.inStock ? 'bg-green-600/80 text-white' : 'bg-gray-500/60 text-gray-200'}
+          `}
+        >
+          {product.inStock ? 'En Stock' : 'Agotado'}
+        </span>
+
+        <CardContent className="p-6">
+          {/* Imagen */}
           <div className="relative mb-4">
             <img
-              src={product.imageUrl}
+              src={imgSrc}
               alt={product.name}
-              className="w-full h-64 object-cover rounded-xl"
+              className="w-full h-64 object-cover rounded-xl bg-white/5"
+              loading="lazy"
             />
+            {/* Si tu catálogo indica si es personalizable, muéstralo; si no, quítalo */}
             <Badge className="absolute top-2 left-2 bg-sigerist-gold text-sigerist-charcoal">
               Personalizable
             </Badge>
           </div>
-          
+
+          {/* Texto */}
           <div className="space-y-3">
             <div>
-              <h4 className="font-bold text-xl text-sigerist-charcoal mb-1">
+              <h4 className="font-bold text-xl text-[#EDEDED] mb-1">
                 {product.name}
               </h4>
-              <p className="text-gray-600 text-sm line-clamp-2">
+              <p className="text-gray-300/80 text-sm line-clamp-2">
                 {product.description}
               </p>
             </div>
-            
+
+            {/* Precio + botón */}
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-sigerist-charcoal">
-                {formatPrice(product.price)}
+              <span className="text-2xl font-bold text-[#EDEDED]">
+                {formatPrice(Number(product.price))}
               </span>
               <Button
                 onClick={handleAddToCart}
@@ -80,15 +92,20 @@ export function ProductCard({ product }: ProductCardProps) {
                 {isAdded ? 'Agregado!' : isAddingToCart ? 'Agregando...' : 'Agregar'}
               </Button>
             </div>
-            
-            {product.animalType && (
+
+            {/* Chips opcionales */}
+            {(product.animalType || product.category) && (
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs">
-                  {product.animalType}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {product.category}
-                </Badge>
+                {product.animalType && (
+                  <Badge variant="secondary" className="text-xs">
+                    {product.animalType}
+                  </Badge>
+                )}
+                {product.category && (
+                  <Badge variant="outline" className="text-xs">
+                    {product.category}
+                  </Badge>
+                )}
               </div>
             )}
           </div>
