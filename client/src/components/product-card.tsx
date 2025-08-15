@@ -12,7 +12,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  // ⬇⬇⬇ usar addToCart (no addItem)
   const { addToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
 
@@ -20,33 +19,33 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    // addToCart es un mutate(variables, options?)
     addToCart(
       {
         productId: product.id,
         quantity: 1,
-        // Si tu tipo AddToCartData NO incluye name/price, no los envíes.
-        // name: product.name,
-        // price: product.price,
       },
       {
         onSuccess: () => {
           setIsAdded(true);
           setTimeout(() => setIsAdded(false), 2000);
         },
+        onError: (error) => {
+          console.error("Error adding to cart:", error);
+        },
       }
     );
   };
 
   return (
-    <Link href={`/product/${product.id}`}>
-      <Card className="group cursor-pointer hover:shadow-xl transition-all duration-300">
+    <Link href={`/product/${product.id}`} className="group">
+      <Card className="group-hover:shadow-xl transition-all duration-300">
         <CardContent className="bg-gray-50 rounded-2xl p-6 m-6">
           <div className="relative mb-4">
             <img
-              src={product.imageUrl}
+              src={`/assets/${product.imageUrl.replace(/^\/assets\//, '')}`}
               alt={product.name}
               className="w-full h-64 object-cover rounded-xl"
+              loading="lazy"
             />
             <Badge className="absolute top-2 left-2 bg-sigerist-gold text-sigerist-charcoal">
               Personalizable
@@ -65,7 +64,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-sigerist-charcoal">
-                {formatPrice(product.price)}
+                {formatPrice(Number(product.price))} {/* Convertir a número si es string */}
               </span>
               <Button
                 onClick={handleAddToCart}
@@ -75,6 +74,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     ? "bg-green-500 hover:bg-green-600 text-white"
                     : "bg-sigerist-gold hover:bg-yellow-600 text-sigerist-charcoal"
                 }`}
+                aria-label={isAdded ? "Producto agregado" : "Agregar al carrito"}
               >
                 {isAdded ? "Agregado!" : "Agregar"}
               </Button>

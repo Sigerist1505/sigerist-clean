@@ -5,17 +5,18 @@ import path from "path";
 import { registerRoutes } from "./routes";
 
 const app = express();
+
+// Confía en el proxy de Railway para manejar secure cookies correctamente
 app.set("trust proxy", 1);
+
+// Parsers para JSON y form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Healthcheck para Railway
-app.get("/api/health", (_req, res) => res.status(200).json({ ok: true }));
+// Servir assets estáticos crudos (imágenes originales en /attached_assets/)
+app.use("/attached_assets", express.static(path.join(process.cwd(), "client", "public", "assets")));
 
-// (opcional) Readiness
-app.get("/api/ready", (_req, res) => res.json({ ready: true }));
-
-// Sesiones
+// Session (requiere SESSION_SECRET en Railway)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "sigerist-session-secret-key",
@@ -25,63 +26,60 @@ app.use(
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000, // 24h
     },
   })
 );
 
-// Log simple
+// Logger sencillo y eficiente (solo para rutas API, sin monkey-patching para evitar errores TS)
 app.use((req, res, next) => {
-  const t0 = Date.now();
+  const start = Date.now();
   res.on("finish", () => {
-    if (req.path.startsWith("/api"))
-      console.log(`${req.method} ${req.path} -> ${res.statusCode} ${Date.now() - t0}ms`);
+    if (req.path.startsWith("/api")) {
+      const duration = Date.now() - start;
+      console.log(`${req.method} ${req.path} -> ${res.statusCode} ${duration}ms`);
+    }
   });
   next();
 });
 
+// Ruta de healthcheck obligatoria para Railway (siempre responde 200, sin depender de DB para un despliegue impecable)
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ ok: true, status: "Luxury service ready" });
+});
+
+// Bootstrap asíncrono para registrar rutas y manejar errores con elegancia
 (async () => {
-  // Registra rutas y usa el server HTTP que retorna
-  let server;
-  try {
-    server = await registerRoutes(app);
-  } catch (e) {
-    console.error("❌ Error en registerRoutes:", e);
-    // Si fallara, crea igualmente un server para no tumbar el proceso
-    const { createServer } = await import("http");
-    server = createServer(app);
-  }
+  // Registra todas las rutas de tu API (productos de lujo, carrito personalizado, etc.)
+  await registerRoutes(app);
 
-  // 404 para endpoints /api no encontrados
-  app.use("/api", (_req, res) => res.status(404).json({ message: "Not Found" }));
+  // Manejo de errores centralizado (después de rutas, para capturar todo con estilo)
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err?.status || err?.statusCode || 500;
+    console.error("Error en el servidor de Sigerist:", err);
+    res.status(status).json({ message: err?.message || "Error interno - Nuestro equipo de lujo lo resolverá pronto" });
+  });
 
-  // Servir el frontend compilado por Vite (dist/public)
+  // En producción: sirve el frontend compilado por Vite desde dist/public (para una experiencia web premium)
   if (process.env.NODE_ENV === "production") {
     const publicDir = path.join(process.cwd(), "dist", "public");
     app.use(express.static(publicDir));
-    // SPA fallback (no interceptar /api/*)
+    // SPA fallback: rutas no-API devuelven index.html para navegación fluida
     app.get("*", (req, res, next) => {
-      if (req.path.startsWith("/api/")) return next();
+      if (req.path.startsWith("/api/")) return next(); // Evita interferir con APIs
       res.sendFile(path.join(publicDir, "index.html"));
     });
   }
 
-  // Manejador de errores (al final)
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err?.status || err?.statusCode || 500;
-    console.error("API Error:", err);
-    res.status(status).json({ message: err?.message || "Internal Server Error" });
-  });
-
-  // 👉 Usa el PORT que inyecta Railway (no lo definas en Railway)
+  // Usa el PORT dinámico inyectado por Railway (no lo fijes en variables) y bind a 0.0.0.0 para accesibilidad total
   const PORT = Number(process.env.PORT) || 3000;
-  server.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server listening on http://0.0.0.0:${PORT}`);
-    console.log(`NODE_ENV=${process.env.NODE_ENV}`);
+  const HOST = "0.0.0.0";
+
+  app.listen(PORT, HOST, () => {
+    console.log(`🚀 Servidor de Sigerist Luxury Bags corriendo en http://${HOST}:${PORT} - Listo para ventas exclusivas`);
   });
 })().catch((err) => {
-  console.error("❌ Startup error:", err);
+  console.error("❌ Error fatal al iniciar el servidor de bolsos personalizados:", err);
   process.exit(1);
 });
-
 export { app };

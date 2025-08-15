@@ -3,13 +3,13 @@ import { eq } from "drizzle-orm";
 import * as bcrypt from "bcryptjs";
 import {
   products,
-  cartItems, 
+  cartItems,
   orders,
   contactMessages,
   registeredUsers,
   whatsappSessions,
   emailCampaigns,
-  type Product, 
+  type Product,
   type ProductVariants,
   type InsertProduct,
   type CartItem,
@@ -31,6 +31,7 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, data: Partial<Product>): Promise<Product | null>;
   deleteProduct(id: number): Promise<boolean>;
+  seedProducts(): Promise<void>;
   
   // Cart Items
   getCartItems(): Promise<CartItem[]>;
@@ -66,6 +67,10 @@ export interface IStorage {
   getWhatsappSession(phoneNumber: string): Promise<WhatsappSession | undefined>;
   createWhatsappSession(session: InsertWhatsappSession): Promise<WhatsappSession>;
   updateWhatsappSession(phoneNumber: string, updates: Partial<InsertWhatsappSession>): Promise<WhatsappSession | undefined>;
+  
+  // Bag Templates
+  createBagTemplate(template: any): Promise<any>;
+  getBagTemplates(): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -391,21 +396,21 @@ export class DatabaseStorage implements IStorage {
         name: "Pañalera Multifuncional",
         description: "Pañalera multifuncional con bordado personalizado y múltiples compartimentos - ¡Nuestro producto estrella!",
         price: "445000", // Precio base SIN bordado
-        imageUrl: "/assets/Multifuncional 3sinB.jpg", // Samuel de primera
-        blankImageUrl: "/assets/Multifuncional 2.jpg", // Sin bordado
-        referenceImageUrl: "/assets/Multifuncional 3.jpg", // Con bordado Samuel
+        imageUrl: "/attached_assets/Multifuncional 3.jpg", // Samuel de primera
+        blankImageUrl: "/attached_assets/Multifuncional 3sinB.jpg", // Sin bordado
+        referenceImageUrl: "/attached_assets/Multifuncional 3.jpg", // Con bordado Samuel
         category: "Pañaleras",
         animalType: "León",
         colors: ["Tierra", "Beige", "Azul"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/assets/Multifuncional 3.jpg",
-          galleryImages: ["/assets/Multifuncional 3sinB.jpg"],
+          bordadoImageUrl: "/attached_assets/Multifuncional 3.jpg",
+          galleryImages: ["/attached_assets/Multifuncional 3sinB.jpg"],
           bordadoGalleryImages: [
-            "/assets/Multifuncional 3.jpg", // 1. Samuel
-            "/assets/Multifuncional 2 Bordada_1754093212913.jpg", // 2. Azul Zamir
-            "/assets/Multifuncional 3 Bordada_1754093212913.jpg"  // 3. Abierta
+            "/attached_assets/Multifuncional 3.jpg", // 1. Samuel
+            "/attached_assets/Multifuncional 2 Bordada.jpg", // 2. Azul Zamir
+            "/attached_assets/Multifuncional 3 Bordada.jpg"  // 3. Abierta
           ]
         },
       },
@@ -416,15 +421,15 @@ export class DatabaseStorage implements IStorage {
         description: "Organizador de higiene transparente con bordado personalizado de flores - Perfecto para viajes",
         price: "145000",
         imageUrl: "/attached_assets/Organizador Bordado.jpg",
-        blankImageUrl: "/assets/Organizado.jpg", // Solo tiene versión con bordado
-        referenceImageUrl: "/assets/Organizador Bordado_1754160554308.jpg",
+        blankImageUrl: "/attached_assets/Organizador Bordado.jpg", // Solo tiene versión con bordado
+        referenceImageUrl: "/attached_assets/Organizador Bordado.jpg",
         category: "Organizadores",
         animalType: "Flores",
         colors: ["Rosa", "Beige"],
         inStock: true,
         variants: { 
           bordado: false, // No tiene opción sin bordado según tus instrucciones
-          galleryImages: ["/assets/Organizador Bordado.jpg"]
+          galleryImages: ["/attached_assets/Organizador Bordado.jpg"]
         },
       },
       {
@@ -432,61 +437,60 @@ export class DatabaseStorage implements IStorage {
         name: "Mochila Clásica",
         description: "Mochila clásica con bordado de leoncito adorable y acabados premium en beige y café",
         price: "425000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Mochila clasica_1754094509824.jpg",
-        blankImageUrl: "/attached_assets/Mochila clasica_1754094509824.jpg",
-        referenceImageUrl: "/attached_assets/Mochila clasica_1754094509824.jpg",
+        imageUrl: "/attached_assets/Mochila clasica.jpg",
+        blankImageUrl: "/attached_assets/Mochila clasica.jpg",
+        referenceImageUrl: "/attached_assets/Mochila clasica.jpg",
         category: "Mochilas",
         animalType: "León",
         colors: ["Beige", "Café"],
         inStock: true,
         variants: { 
           bordado: false,
-          galleryImages: ["/attached_assets/Mochila clasica_1754094509824.jpg"]
+          galleryImages: ["/attached_assets/Mochila clasica.jpg"]
         },
       },
       {
-        id: 2,
+        id: 4,
         name: "Pañalera Grande",
         description: "Pañalera grande con opción de bordado personalizado en tonos rosados",
         price: "445000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Pañalera Grande (2)_1754094149307.jpg",  
-        blankImageUrl: "/attached_assets/Pañalera Grande (2)_1754094149307.jpg",
-        referenceImageUrl: "/attached_assets/Pañalera Grande con nombre_1754093212915.jpg",
+        imageUrl: "/attached_assets/Pañalera Grande (2).jpg",  
+        blankImageUrl: "/attached_assets/Pañalera Grande (2).jpg",
+        referenceImageUrl: "/attached_assets/Pañalera Grande con nombre.jpg",
         category: "Pañaleras",
         animalType: "Conejita",
         colors: ["Blanco", "Rosa"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/Pañalera Grande con nombre_1754093212915.jpg" 
+          bordadoImageUrl: "/attached_assets/Pañalera Grande con nombre.jpg" 
         },
       },
       {
-        id: 3,
+        id: 5,
         name: "Pañalera Mediana",
         description: "Pañalera mediana con bordado de osito personalizado en tonos azules",
         price: "405000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Pañalera Mediana_1754094149308.jpg",
-        blankImageUrl: "/attached_assets/Pañalera Mediana_1754094149308.jpg",
-        referenceImageUrl: "/attached_assets/Pañalera Mediana con nombre_1754093212915.jpg",
+        imageUrl: "/attached_assets/Pañalera Mediana.jpg",
+        blankImageUrl: "/attached_assets/Pañalera Mediana.jpg",
+        referenceImageUrl: "/attached_assets/Pañalera Mediana con nombre.jpg",
         category: "Pañaleras",
         animalType: "Osito",
         colors: ["Beige", "Azul"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/Pañalera Mediana con nombre_1754093212915.jpg" 
+          bordadoImageUrl: "/attached_assets/Pañalera Mediana con nombre.jpg" 
         },
       },
-
       {
-        id: 5,
+        id: 6,
         name: "Porta Documentos",
         description: "Porta documentos elegante con bordado personalizado y acabados premium",
         price: "190000",
-        imageUrl: "/attached_assets/Portadocumentos_1754094149309.jpg",
-        blankImageUrl: "/attached_assets/Portadocumentos_1754094149309.jpg",
-        referenceImageUrl: "/attached_assets/Portadocumentos_1754094149309.jpg",
+        imageUrl: "/attached_assets/Portadocumentos.jpg",
+        blankImageUrl: "/attached_assets/Portadocumentos.jpg",
+        referenceImageUrl: "/attached_assets/Portadocumentos.jpg",
         category: "Accesorios",
         animalType: null,
         colors: ["Beige", "Café"],
@@ -494,30 +498,30 @@ export class DatabaseStorage implements IStorage {
         variants: { bordado: false },
       },
       {
-        id: 6,
+        id: 7,
         name: "Mochila Milano",
         description: "Mochila Milano con diseño elegante y bordado de leoncito premium",
         price: "435000",
-        imageUrl: "/attached_assets/Maleta_Milan_SinBordar_1754094149304.jpg",
-        blankImageUrl: "/attached_assets/Maleta_Milan_SinBordar_1754094149304.jpg",
-        referenceImageUrl: "/attached_assets/MaletaMilan_ConBordado_1754093212912.jpg",
+        imageUrl: "/attached_assets/Maleta_Milan_SinBordar.jpg",
+        blankImageUrl: "/attached_assets/Maleta_Milan_SinBordar.jpg",
+        referenceImageUrl: "/attached_assets/MaletaMilan_ConBordado.jpg",
         category: "Mochilas",
         animalType: "León",
         colors: ["Beige", "Verde"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/MaletaMilan_ConBordado_1754093212912.jpg" 
+          bordadoImageUrl: "/attached_assets/MaletaMilan_ConBordado.jpg" 
         },
       },
       {
-        id: 7,
+        id: 8,
         name: "Cambiador",
         description: "Cambiador portátil con diseño funcional y elegante - Solo disponible sin bordado",
         price: "105000", // Precio fijo sin bordado
-        imageUrl: "/attached_assets/Cambiador_1754094149302.jpg",
-        blankImageUrl: "/attached_assets/Cambiador_1754094149302.jpg",
-        referenceImageUrl: "/attached_assets/Cambiador_1754094149302.jpg",
+        imageUrl: "/attached_assets/Cambiador.jpg",
+        blankImageUrl: "/attached_assets/Cambiador.jpg",
+        referenceImageUrl: "/attached_assets/Cambiador.jpg",
         category: "Accesorios",
         animalType: null,
         colors: ["Beige", "Café"],
@@ -527,65 +531,64 @@ export class DatabaseStorage implements IStorage {
         },
       },
       {
-        id: 8,
+        id: 9,
         name: "Lonchera Porta Biberones",
         description: "Lonchera porta biberones con bordado de osita personalizado",
         price: "335000",
-        imageUrl: "/attached_assets/PortaBiberones_SinBordar_1754094149308.jpg",
-        blankImageUrl: "/attached_assets/PortaBiberones_SinBordar_1754094149308.jpg",
-        referenceImageUrl: "/attached_assets/Porta Biberones_Bordado_1754093212916.jpg",
+        imageUrl: "/attached_assets/PortaBiberones_SinBordar.jpg",
+        blankImageUrl: "/attached_assets/PortaBiberones_SinBordar.jpg",
+        referenceImageUrl: "/attached_assets/Porta Biberones_Bordado.jpg",
         category: "Loncheras",
         animalType: "Osita",
         colors: ["Beige", "Rosa"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/Porta Biberones_Bordado_1754093212916.jpg" 
+          bordadoImageUrl: "/attached_assets/Porta Biberones_Bordado.jpg" 
         },
       },
       {
-        id: 9,
+        id: 10,
         name: "Lonchera Baul",
         description: "Lonchera baúl con bordado de osito y acabados premium con moño azul",
         price: "335000",
-        imageUrl: "/attached_assets/Lonchera baul sin bordar_1754094149302.jpg",
-        blankImageUrl: "/attached_assets/Lonchera baul sin bordar_1754094149302.jpg",
-        referenceImageUrl: "/attached_assets/Lonchera baul_1754093212911.jpg",
+        imageUrl: "/attached_assets/Lonchera baul sin bordar.jpg",
+        blankImageUrl: "/attached_assets/Lonchera baul sin bordar.jpg",
+        referenceImageUrl: "/attached_assets/Lonchera baul.jpg",
         category: "Loncheras",
         animalType: "Osito",
         colors: ["Beige", "Azul"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/Lonchera baul_1754093212911.jpg" 
+          bordadoImageUrl: "/attached_assets/Lonchera baul.jpg" 
         },
       },
       {
-        id: 10,
+        id: 11,
         name: "Maleta Viajera",
         description: "Maleta viajera con diseño floral bordado y detalles en rosa",
         price: "550000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Maleta Viajera_Sin bordar_1754094149303.jpg",
-        blankImageUrl: "/attached_assets/Maleta Viajera_Sin bordar_1754094149303.jpg",
-        referenceImageUrl: "/attached_assets/Maleta viajera_Bordada_1754093212912.jpg",
+        imageUrl: "/attached_assets/Maleta Viajera_Sin bordar.jpg",
+        blankImageUrl: "/attached_assets/Maleta Viajera_Sin bordar.jpg",
+        referenceImageUrl: "/attached_assets/Maleta viajera_Bordada.jpg",
         category: "Maletas",
         animalType: null,
         colors: ["Beige", "Rosa"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/Maleta viajera_Bordada_1754093212912.jpg" 
+          bordadoImageUrl: "/attached_assets/Maleta viajera_Bordada.jpg" 
         },
       },
-
       {
         id: 12,
         name: "Portachupeta",
         description: "Portachupeta elegante con bordado personalizado y acabados premium",
         price: "80000",
-        imageUrl: "/attached_assets/Portachupeta_1754094149309.jpg",
-        blankImageUrl: "/attached_assets/Portachupeta_1754094149309.jpg",
-        referenceImageUrl: "/attached_assets/Portachupeta_1754094149309.jpg",
+        imageUrl: "/attached_assets/Portachupeta.jpg",
+        blankImageUrl: "/attached_assets/Portachupeta.jpg",
+        referenceImageUrl: "/attached_assets/Portachupeta.jpg",
         category: "Accesorios",
         animalType: null,
         colors: ["Beige", "Dorado"],
@@ -597,68 +600,91 @@ export class DatabaseStorage implements IStorage {
         name: "Colección Mini Fantasy",
         description: "Colección completa Mini Fantasy con 5 diseños adorables: gato, perrito, mariposa, Stitch y niña rosada",
         price: "265000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy_1754093212911.jpg",
-        blankImageUrl: "/attached_assets/Minifantasy rosado sin bordar_1754094149304.jpg",
-        referenceImageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy_1754093212911.jpg",
+        imageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy.jpg",
+        blankImageUrl: "/attached_assets/Minifantasy rosado sin bordar.jpg",
+        referenceImageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy.jpg",
         category: "Colección",
         animalType: "Varios",
         colors: ["Rosa", "Gris", "Beige", "Azul"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy_1754093212911.jpg",
+          bordadoImageUrl: "/attached_assets/Bolso Rosadito Bordado Minifantasy.jpg",
           galleryImages: [
-            "/attached_assets/Minifantasy rosado sin bordar_1754094149304.jpg",
-            "/attached_assets/Bolsito Gato_1754094149297.jpg",
-            "/attached_assets/Bolsito perrito_1754094149299.jpg",
-            "/attached_assets/Bolso Mariposa sin Bordar_1754094149300.jpg",
-            "/attached_assets/Stitch Sin Bordar_1754094149310.jpg"
+            "/attached_assets/Minifantasy rosado sin bordar.jpg",
+            "/attached_assets/Bolsito Gato.jpg",
+            "/attached_assets/Bolsito perrito.jpg",
+            "/attached_assets/Bolso Mariposa sin Bordar.jpg",
+            "/attached_assets/Stitch Sin Bordar.jpg"
           ],
           bordadoGalleryImages: [
-            "/attached_assets/Bolso Rosadito Bordado Minifantasy_1754093212911.jpg",
-            "/attached_assets/Bolsito Gato_1754094149297.jpg",
-            "/attached_assets/Bolsito perrito bordado_1754093212910.jpg",
-            "/attached_assets/Bolsito Mariposa_1754093212910.jpg",
-            "/attached_assets/Stitch Blanco_1754093212916.jpg"
+            "/attached_assets/Bolso Rosadito Bordado Minifantasy.jpg",
+            "/attached_assets/Bolsito Gato.jpg",
+            "/attached_assets/Bolsito perrito bordado.jpg",
+            "/attached_assets/Bolsito Mariposa.jpg",
+            "/attached_assets/Stitch Blanco.jpg"
           ]
         },
       },
-
       {
-        id: 118,
+        id: 14,
         name: "Organizador de Muda",
         description: "Organizador de muda con bordado personalizado - Solo disponible con bordado",
         price: "60000", // Precio final con bordado (no se puede desactivar)
-        imageUrl: "/attached_assets/Organizador_Bordado_1754119979271.jpg",
-        blankImageUrl: "/attached_assets/Organizador_Bordado_1754119979271.jpg", // Solo tiene versión con bordado
-        referenceImageUrl: "/attached_assets/Organizador_Bordado_1754119979271.jpg",
+        imageUrl: "/attached_assets/Organizador_Bordado.jpg",
+        blankImageUrl: "/attached_assets/Organizador_Bordado.jpg", // Solo tiene versión con bordado
+        referenceImageUrl: "/attached_assets/Organizador_Bordado.jpg",
         category: "Organizadores", 
         animalType: null,
         colors: ["Beige", "Multicolor"],
         inStock: true,
         variants: { 
           bordado: false, // No tiene opción de cambio - solo existe con bordado
-          galleryImages: ["/attached_assets/Organizador_Bordado_1754119979271.jpg"]
+          galleryImages: ["/attached_assets/Organizador_Bordado.jpg"]
         },
       },
       {
-        id: 119, 
+        id: 15,
         name: "Organizador de Higiene",
         description: "Organizador de higiene con diseño floral bordado - Perfecto para guardar productos de cuidado personal",
         price: "130000", // Precio base SIN bordado
-        imageUrl: "/attached_assets/Organizador_1754162008500.jpg", // Sin bordado
-        blankImageUrl: "/attached_assets/Organizador_1754162008500.jpg", // Sin bordado
-        referenceImageUrl: "/attached_assets/Organizador Bordado_1754160554308.jpg", // Con bordado María
+        imageUrl: "/attached_assets/Organizador.jpg", // Sin bordado
+        blankImageUrl: "/attached_assets/Organizador.jpg", // Sin bordado
+        referenceImageUrl: "/attached_assets/Organizador Bordado.jpg", // Con bordado María
         category: "Organizadores",
         animalType: null,
         colors: ["Rosa", "Beige"],
         inStock: true,
         variants: { 
           bordado: true, 
-          bordadoImageUrl: "/attached_assets/Organizador Bordado_1754160554308.jpg" 
+          bordadoImageUrl: "/attached_assets/Organizador Bordado.jpg" 
         },
       }
     ];
+  }
+
+  // Seed products method
+  async seedProducts(): Promise<void> {
+    try {
+      const existingProducts = await db.select().from(products);
+      if (existingProducts.length === 0) {
+        await this.initializeSampleProducts();
+      }
+    } catch (error) {
+      console.error("Error seeding products:", error);
+      throw error;
+    }
+  }
+
+  // Bag template methods (placeholder implementations)
+  async createBagTemplate(template: any): Promise<any> {
+    // Placeholder implementation - could be extended with proper bag template table
+    return template;
+  }
+
+  async getBagTemplates(): Promise<any[]> {
+    // Placeholder implementation - could be extended with proper bag template table
+    return [];
   }
 }
 

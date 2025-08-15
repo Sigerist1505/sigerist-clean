@@ -51,7 +51,7 @@ async function migrateComplete() {
         description: 'Kit completo con maleta, bolsos y accesorios. Ahorra $170,500 COP',
         price: 1534500,
         category: 'kits',
-        image_url: '/images/kit-luxury.jpg',
+        image_url: '/assets/kit-luxury.jpg',
         animal_type: null,
         colors: ['Negro', 'Café', 'Rosa', 'Azul'],
         in_stock: true
@@ -62,7 +62,7 @@ async function migrateComplete() {
         description: 'Elegante maleta de viaje con bordado personalizado artesanal',
         price: 350000,
         category: 'maletas',
-        image_url: '/images/maleta-viajera-bordada.jpg',
+        image_url: '/assets/maleta-viajera-bordada.jpg',
         animal_type: 'personalizado',
         colors: ['Negro', 'Café', 'Rosa'],
         in_stock: true
@@ -72,7 +72,7 @@ async function migrateComplete() {
         description: 'Maleta Milan de alta calidad con bordado personalizado',
         price: 330000,
         category: 'maletas',
-        image_url: '/images/maleta-milan-bordada.jpg',
+        image_url: '/assets/maleta-milan-bordada.jpg',
         animal_type: 'personalizado',
         colors: ['Negro', 'Café', 'Beige'],
         in_stock: true
@@ -82,7 +82,7 @@ async function migrateComplete() {
         description: 'Maleta Milan elegante sin personalización',
         price: 280000,
         category: 'maletas',
-        image_url: '/images/maleta-milan-sin-bordar.jpg',
+        image_url: '/assets/maleta-milan-sin-bordar.jpg',
         animal_type: null,
         colors: ['Negro', 'Café', 'Beige'],
         in_stock: true
@@ -93,7 +93,7 @@ async function migrateComplete() {
         description: 'Hermoso bolso con diseño de mariposa bordada a mano',
         price: 180000,
         category: 'bolsos',
-        image_url: '/images/bolso-mariposa-bordado.jpg',
+        image_url: '/assets/bolso-mariposa-bordado.jpg',
         animal_type: 'mariposa',
         colors: ['Rosa', 'Azul', 'Lila'],
         in_stock: true
@@ -103,7 +103,7 @@ async function migrateComplete() {
         description: 'Elegante bolso con diseño de mariposa sin bordado',
         price: 130000,
         category: 'bolsos',
-        image_url: '/images/bolso-mariposa-sin-bordar.jpg',
+        image_url: '/assets/bolso-mariposa-sin-bordar.jpg',
         animal_type: null,
         colors: ['Rosa', 'Azul', 'Lila'],
         in_stock: true
@@ -113,7 +113,7 @@ async function migrateComplete() {
         description: 'Adorable bolsito con diseño de gato bordado',
         price: 95000,
         category: 'bolsos',
-        image_url: '/images/bolsito-gato.jpg',
+        image_url: '/assets/bolsito-gato.jpg',
         animal_type: 'gato',
         colors: ['Rosa', 'Celeste', 'Blanco'],
         in_stock: true
@@ -123,7 +123,7 @@ async function migrateComplete() {
         description: 'Tierno bolsito con diseño de perrito bordado',
         price: 95000,
         category: 'bolsos',
-        image_url: '/images/bolsito-perrito.jpg',
+        image_url: '/assets/bolsito-perrito.jpg',
         animal_type: 'perro',
         colors: ['Café', 'Beige', 'Blanco'],
         in_stock: true
@@ -134,7 +134,7 @@ async function migrateComplete() {
         description: 'Práctico cambiador para bebé, resistente y fácil de limpiar',
         price: 85000,
         category: 'accesorios',
-        image_url: '/images/cambiador.jpg',
+        image_url: '/assets/cambiador.jpg',
         animal_type: null,
         colors: ['Beige', 'Rosa', 'Azul'],
         in_stock: true
@@ -144,7 +144,7 @@ async function migrateComplete() {
         description: 'Organizador práctico para mudas de ropa con bordado personalizado',
         price: 75000,
         category: 'accesorios',
-        image_url: '/images/organizador-muda-bordado.jpg',
+        image_url: '/assets/organizador-muda-bordado.jpg',
         animal_type: 'personalizado',
         colors: ['Rosa', 'Azul', 'Amarillo'],
         in_stock: true
@@ -154,7 +154,7 @@ async function migrateComplete() {
         description: 'Organizador práctico para mudas de ropa sin personalización',
         price: 55000,
         category: 'accesorios',
-        image_url: '/images/organizador-muda.jpg',
+        image_url: '/assets/organizador-muda.jpg',
         animal_type: null,
         colors: ['Rosa', 'Azul', 'Amarillo'],
         in_stock: true
@@ -165,7 +165,7 @@ async function migrateComplete() {
         description: 'Lonchera espaciosa tipo baúl con bordado personalizado',
         price: 95000,
         category: 'loncheras',
-        image_url: '/images/lonchera-baul-bordada.jpg',
+        image_url: '/assets/lonchera-baul-bordada.jpg',
         animal_type: 'personalizado',
         colors: ['Rosa', 'Verde', 'Azul'],
         in_stock: true
@@ -175,7 +175,7 @@ async function migrateComplete() {
         description: 'Lonchera espaciosa tipo baúl sin personalización',
         price: 65000,
         category: 'loncheras',
-        image_url: '/images/lonchera-baul.jpg',
+        image_url: '/assets/lonchera-baul.jpg',
         animal_type: null,
         colors: ['Rosa', 'Verde', 'Azul'],
         in_stock: true
@@ -186,7 +186,7 @@ async function migrateComplete() {
         description: 'Mochila con diseño de león y nombre bordado',
         price: 140000,
         category: 'mochilas',
-        image_url: '/images/mochila-leon.jpg',
+        image_url: '/assets/mochila-leon.jpg',
         animal_type: 'leon',
         colors: ['Amarillo', 'Café'],
         in_stock: true
