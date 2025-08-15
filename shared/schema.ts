@@ -2,6 +2,14 @@ import { pgTable, text, serial, integer, boolean, decimal, timestamp, jsonb } fr
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// === TIPOS Y ENUMS ===
+export type ProductVariants = {
+  bordado?: boolean;
+  bordadoImageUrl?: string;
+  galleryImages?: string[];
+  bordadoGalleryImages?: string[];
+};
+
 // === TABLAS ===
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -10,9 +18,12 @@ export const products = pgTable("products", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   category: text("category").notNull(),
   imageUrl: text("image_url").notNull(),
+  blankImageUrl: text("blank_image_url"),
+  referenceImageUrl: text("reference_image_url"),
   animalType: text("animal_type"),
-  colors: text("colors").array().notNull(), // Array de strings
+  colors: text("colors").array().notNull(),
   inStock: boolean("in_stock").default(true),
+  variants: jsonb("variants").$type<ProductVariants>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -74,6 +85,12 @@ export const emailCampaigns = pgTable("email_campaigns", {
   campaignName: text("campaign_name").notNull(),
   subject: text("subject").notNull(),
   content: text("content").notNull(),
+  email: text("email").notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  discountCode: text("discount_code").notNull(),
+  registrationDate: text("registration_date").notNull(),
+  acceptsMarketing: boolean("accepts_marketing").default(false),
   status: text("status").default("draft"),
   sentCount: integer("sent_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
@@ -87,6 +104,9 @@ export const registeredUsers = pgTable("registered_users", {
   name: text("name").notNull(),
   phone: text("phone"),
   shippingAddress: text("shipping_address"),
+  discountCode: text("discount_code"),
+  discountUsed: boolean("discount_used").default(false),
+  discountExpiresAt: timestamp("discount_expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -94,12 +114,12 @@ export const registeredUsers = pgTable("registered_users", {
 export const insertProductSchema = createInsertSchema(products, {
   name: (schema) => schema.name.min(1),
   description: (schema) => schema.description.min(1),
-  price: (schema) => z.number().positive(), // Ajuste para validar números positivos
+  price: (schema) => z.number().positive(),
   category: (schema) => schema.category.min(1),
   imageUrl: (schema) => schema.imageUrl.url(),
   colors: (schema) => schema.colors.min(1),
   inStock: (schema) => schema.inStock,
-}).omit({ id: true, createdAt: true });
+}).omit({ id: true, createdAt: true, variants: true });
 
 export const insertCartItemSchema = createInsertSchema(cartItems, {
   productId: (schema) => schema.productId.positive(),
@@ -116,7 +136,7 @@ export const insertCartItemSchema = createInsertSchema(cartItems, {
   expressService: (schema) => schema.expressService,
   keychainPersonalization: (schema) => schema.keychainPersonalization.optional(),
   hasBordado: (schema) => schema.hasBordado,
-  price: (schema) => z.number().positive(), // Ajuste para validar números positivos
+  price: (schema) => z.number().positive(),
 }).omit({ id: true });
 
 export const insertOrderSchema = createInsertSchema(orders, {
@@ -124,7 +144,7 @@ export const insertOrderSchema = createInsertSchema(orders, {
   customerEmail: (schema) => schema.customerEmail.email(),
   customerPhone: (schema) => schema.customerPhone.min(10),
   items: (schema) => schema.items.min(1),
-  total: (schema) => z.number().positive(), // Ajuste para validar números positivos
+  total: (schema) => z.number().positive(),
   status: (schema) => schema.status,
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
@@ -157,8 +177,6 @@ export const insertRegisteredUserSchema = createInsertSchema(registeredUsers, {
   shippingAddress: (schema) => schema.shippingAddress.optional(),
 }).omit({ id: true, createdAt: true });
 
-export const selectRegisteredUserSchema = createSelectSchema(registeredUsers);
-
 // === TYPES ===
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -172,5 +190,5 @@ export type WhatsappSession = typeof whatsappSessions.$inferSelect;
 export type InsertWhatsappSession = z.infer<typeof insertWhatsappSessionSchema>;
 export type EmailCampaign = typeof emailCampaigns.$inferSelect;
 export type InsertEmailCampaign = z.infer<typeof insertEmailCampaignSchema>;
-export type RegisteredUser = z.infer<typeof selectRegisteredUserSchema>;
+export type RegisteredUser = typeof registeredUsers.$inferSelect;
 export type InsertRegisteredUser = z.infer<typeof insertRegisteredUserSchema>;
