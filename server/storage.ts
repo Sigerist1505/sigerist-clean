@@ -131,14 +131,14 @@ export class DatabaseStorage implements IStorage {
         await db.insert(products).values({
           name: product.name,
           description: product.description,
-          price: product.price.toString(), // Convertir a string para coincidir con decimal
+          price: product.price.toString(),
           imageUrl: product.imageUrl,
           blankImageUrl: product.blankImageUrl,
           referenceImageUrl: product.referenceImageUrl,
           category: product.category,
           inStock: product.inStock,
           animalType: product.animalType,
-          colors: Array.isArray(product.colors) ? product.colors : [product.colors], // Asegurar que colors sea un array
+          colors: Array.isArray(product.colors) ? product.colors : [product.colors],
           variants: product.variants as ProductVariants | null,
         });
       } catch (error) {
@@ -162,8 +162,8 @@ export class DatabaseStorage implements IStorage {
       .insert(products)
       .values({
         ...insertProduct,
-        price: insertProduct.price.toString(), // Convertir price a string
-        colors: Array.isArray(insertProduct.colors) ? insertProduct.colors : [insertProduct.colors], // Asegurar que colors sea un array
+        price: insertProduct.price.toString(),
+        colors: Array.isArray(insertProduct.colors) ? insertProduct.colors : [insertProduct.colors],
       })
       .returning();
     return product ? { ...product, variants: product.variants as ProductVariants } : product;
@@ -175,7 +175,7 @@ export class DatabaseStorage implements IStorage {
         .update(products)
         .set({
           ...data,
-          colors: Array.isArray(data.colors) ? data.colors : data.colors ? [data.colors] : undefined, // Asegurar que colors sea un array
+          colors: Array.isArray(data.colors) ? data.colors : data.colors ? [data.colors] : undefined,
         })
         .where(eq(products.id, id))
         .returning();
@@ -208,7 +208,7 @@ export class DatabaseStorage implements IStorage {
   async addCartItem(insertItem: InsertCartItem): Promise<CartItem> {
     const [item] = await db
       .insert(cartItems)
-      .values({ ...insertItem, price: insertItem.price.toString() }) // Convertir price a string
+      .values({ ...insertItem, price: insertItem.price.toString() })
       .returning();
     return item;
   }
@@ -239,7 +239,7 @@ export class DatabaseStorage implements IStorage {
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
     const [order] = await db
       .insert(orders)
-      .values({ ...insertOrder, total: insertOrder.total.toString() }) // Convertir total a string
+      .values({ ...insertOrder, total: insertOrder.total.toString() })
       .returning();
     return order;
   }
