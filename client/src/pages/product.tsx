@@ -55,8 +55,8 @@ function ProductPage() {
     isLoading,
     error,
   } = useQuery<Product & { variants?: ProductVariants }>({
-    queryKey: ["products", productId],
-    enabled: !!productId,
+    queryKey: productId ? [`/api/products/${productId}`] : [], // Corrección: Usa la ruta completa con el ID
+    enabled: !!productId, // Solo ejecuta si hay un ID válido
     retry: 1,
   });
 

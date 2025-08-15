@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/product-card";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { InstagramButton } from "@/components/instagram-button";
-import { useCart } from "@/hooks/use-cart"; // Corrección de ruta
+import { useCart } from "@/hooks/use-cart";
 import { formatPrice } from "@/lib/utils";
 import {
   Clock,
@@ -28,13 +28,13 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-export default function Home() {
-  const { data: products, isLoading } = useQuery<Product[]>({
-    queryKey: ["products"],
-    retry: 1, // Limita reintentos en caso de error
+const Home = () => {
+  const { data: products, isLoading, isError, error } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+    retry: 1,
   });
 
-  const { cartCount } = useCart(); // Cambiado de itemCount a cartCount
+  const { cartCount } = useCart();
   const [contactForm, setContactForm] = useState({
     firstName: "",
     lastName: "",
@@ -587,4 +587,6 @@ export default function Home() {
       </section>
     </div>
   );
-}
+};
+
+export default Home;
