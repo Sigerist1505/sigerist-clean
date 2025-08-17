@@ -478,7 +478,7 @@ export class DatabaseStorage implements IStorage {
         name: "Organizador de Higiene",
         description: "Organizador de higiene transparente con bordado personalizado de flores - Perfecto para viajes",
         price: "145000.00",
-        imageUrl: "/assets/Organizador Bordado.jpg",
+        imageUrl: "/assets/Organizador.jpg",
         blankImageUrl: "/assets/Organizador.jpg",
         referenceImageUrl: "/assets/Organizador Bordado_1754160554308.jpg",
         category: "Organizadores",
