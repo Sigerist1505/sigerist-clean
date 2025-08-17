@@ -18,6 +18,7 @@ import RegisterPage from "@/pages/register";
 import LoginPage from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import FAQ from "@/pages/faq";
+import ProductsPage from "@/pages/products"; // Asegúrate de crear este archivo
 
 function Router() {
   return (
@@ -34,7 +35,8 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/chatbot-test" component={ChatbotTestPage} />
       <Route path="/faq" component={FAQ} />
-      <Route component={NotFound} />
+      <Route path="/productos" component={ProductsPage} /> {/* Nueva ruta */}
+      <Route component={NotFound} /> {/* Fallback 404 */}
     </Switch>
   );
 }
