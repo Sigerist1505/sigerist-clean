@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=cjs --outfile=dist/index.cjs",
-    "postbuild": "cp -r client/public/assets dist/public/assets",
+    "postbuild": "cpx \"client/public/assets/**/*\" dist/public/assets",
     "start": "node dist/index.cjs",
     "migrate": "node migrate-clean.js",
     "check": "tsc",
@@ -95,6 +95,7 @@
   },
   "devDependencies": {
     "@types/express-session": "^1.18.2",
-    "@types/ws": "^8.18.1"
+    "@types/ws": "^8.18.1",
+    "cpx": "^1.5.0"
   }
 }
