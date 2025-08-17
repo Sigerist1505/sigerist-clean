@@ -516,7 +516,7 @@ export class DatabaseStorage implements IStorage {
         price: "445000.00",
         imageUrl: "/assets/Pañalera Grande con nombre.jpg",
         blankImageUrl: "/assets/Pañalera Grande.jpg",
-        referenceImageUrl: "/assets/Pañalera Grande con nombre.jpg",
+        referenceImageUrl: "/assets/Pañalera Grande.jpg",
         category: "Pañaleras",
         animalType: "Conejita",
         colors: ["Blanco", "Rosa"],
