@@ -83,6 +83,8 @@ function ProductPage() {
     addToCart(
       {
         productId: product.id,
+        name: product.name,           // <-- agrega esto
+        price: product.price,         // <-- y esto
         quantity,
         personalization: personalization || undefined,
         addPompon,

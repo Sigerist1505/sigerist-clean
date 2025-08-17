@@ -23,7 +23,10 @@ export function ProductCard({ product }: ProductCardProps) {
     addToCart(
       {
         productId: product.id,
+        name: product.name,
+        price: Number(product.price),
         quantity: 1,
+
         
       },
       {

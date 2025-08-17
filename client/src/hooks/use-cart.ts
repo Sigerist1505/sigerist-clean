@@ -1,26 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState } from "react"; // Eliminé useEffect ya que no se usa
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { getSessionId } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-interface CartItemWithProduct {
+type CartItemWithProduct = {
   id: number;
-  sessionId: string;
   productId: number;
   quantity: number;
-  personalization?: string;
   product: {
     id: number;
     name: string;
     price: number;
-    image: string;
-    description: string;
+    // ...otros campos relevantes según tu modelo
   };
-}
+  // ...otros campos si los tienes
+};
 
 interface AddToCartData {
   productId: number;
+  name: string;      // Requerido por el backend
+  price: number;     // Requerido por el backend
   quantity: number;
   personalization?: string;
   addPompon?: boolean;
@@ -65,7 +65,10 @@ export function useCart() {
         ...data,
         sessionId,
       });
-      if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
       return response.json();
     },
     onSuccess: () => {
