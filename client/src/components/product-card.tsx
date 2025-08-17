@@ -12,37 +12,48 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addToCart } = useCart();
+  const { addToCart, isAddingToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // Evita que el clic active el Link
 
     addToCart(
       {
         productId: product.id,
         quantity: 1,
+        
       },
       {
         onSuccess: () => {
           setIsAdded(true);
-          setTimeout(() => setIsAdded(false), 2000);
+          setError(null);
+          setTimeout(() => setIsAdded(false), 2000); // Feedback de 2 segundos
         },
-        onError: (error) => {
-          console.error("Error adding to cart:", error);
+        onError: (error: any) => {
+          setError("No se pudo agregar al carrito. Intenta de nuevo.");
+          console.error("Add to cart error:", error);
         },
       }
     );
   };
 
+  // Ajuste de la imagen para compatibilidad
+  const imgSrc = product.imageUrl
+    ? product.imageUrl.startsWith("/")
+      ? product.imageUrl
+      : `/assets/${product.imageUrl}`
+    : "/assets/placeholder.jpg"; // Fallback si no hay imagen
+
   return (
     <Link href={`/product/${product.id}`} className="group">
-      <Card className="group-hover:shadow-xl transition-all duration-300">
-        <CardContent className="bg-gray-50 rounded-2xl p-6 m-6">
+      <Card className="group-hover:shadow-xl transition-all duration-300 bg-gray-50 rounded-2xl border border-gray-200">
+        <CardContent className="p-6">
           <div className="relative mb-4">
             <img
-              src={`/assets/${product.imageUrl.replace(/^\/assets\//, '')}`}
+              src={imgSrc}
               alt={product.name}
               className="w-full h-64 object-cover rounded-xl"
               loading="lazy"
@@ -64,11 +75,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-sigerist-charcoal">
-                {formatPrice(Number(product.price))} {/* Convertir a número si es string */}
+                {formatPrice(Number(product.price))}
               </span>
               <Button
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={isAddingToCart || !product.inStock}
                 className={`px-6 py-2 font-semibold transition-colors ${
                   isAdded
                     ? "bg-green-500 hover:bg-green-600 text-white"
@@ -76,9 +87,10 @@ export function ProductCard({ product }: ProductCardProps) {
                 }`}
                 aria-label={isAdded ? "Producto agregado" : "Agregar al carrito"}
               >
-                {isAdded ? "Agregado!" : "Agregar"}
+                {error ? "Error" : isAdded ? "Agregado!" : isAddingToCart ? "Agregando..." : "Agregar"}
               </Button>
             </div>
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           </div>
         </CardContent>
       </Card>

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { getSessionId } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { getSessionId } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface CartItemWithProduct {
   id: number;
@@ -50,17 +50,23 @@ export function useCart() {
     queryKey: ['/api/cart', sessionId],
     queryFn: async () => {
       const response = await fetch(`/api/cart/${sessionId}`);
-      if (!response.ok) throw new Error('Failed to fetch cart');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch cart: ${response.status} - ${errorText}`);
+      }
       return response.json() as Promise<CartItemWithProduct[]>;
     },
+    retry: 1, // Limita reintentos para evitar bucles
   });
 
   const addToCartMutation = useMutation({
     mutationFn: async (data: AddToCartData) => {
-      return apiRequest('POST', '/api/cart', {
+      const response = await apiRequest('POST', '/api/cart', {
         ...data,
         sessionId,
       });
+      if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cart', sessionId] });
@@ -69,10 +75,10 @@ export function useCart() {
         description: "El producto se agregó correctamente al carrito",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "No se pudo agregar el producto al carrito",
+        description: error.message || "No se pudo agregar el producto al carrito",
         variant: "destructive",
       });
     },
