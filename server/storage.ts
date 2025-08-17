@@ -523,7 +523,7 @@ export class DatabaseStorage implements IStorage {
         inStock: true,
         variants: {
           bordado: true,
-          bordadoImageUrl: "/assets/Pañalera Grande con nombre_1754093212915.jpg",
+          bordadoImageUrl: "/assets/Pañalera Grande con nombre.jpg",
         },
         createdAt: new Date(),
       },
@@ -532,7 +532,7 @@ export class DatabaseStorage implements IStorage {
         name: "Pañalera Mediana",
         description: "Pañalera mediana con bordado de osito personalizado en tonos azules",
         price: "405000.00",
-        imageUrl: "/assets/Pañalera Mediana.jpg",
+        imageUrl: "/assets/Pañalera Mediana con nombre.jpg",
         blankImageUrl: "/assets/Pañalera Mediana.jpg",
         referenceImageUrl: "/assets/Pañalera Mediana con nombre.jpg",
         category: "Pañaleras",
