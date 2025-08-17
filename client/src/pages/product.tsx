@@ -63,7 +63,7 @@ function ProductPage() {
   const calculateFinalPrice = () => {
     if (!product) return 0;
 
-    const basePrice = parseFloat(product.price);
+    const basePrice = product.price;
     let totalPrice = basePrice;
 
     if (addPompon) totalPrice += 45000;
