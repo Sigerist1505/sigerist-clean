@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=cjs --outfile=dist/index.cjs",
+    "postbuild": "cp -r client/public/assets dist/public/assets",
     "start": "node dist/index.cjs",
     "migrate": "node migrate-clean.js",
     "check": "tsc",
