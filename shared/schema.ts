@@ -59,7 +59,7 @@ export const cartItems = pgTable("cart_items", {
 
   quantity: integer("quantity").default(1).notNull(), // Cantidad, por defecto 1
 
-  personalization: text("personalization"), // Personalización, opcional
+  personalization: text("personalization"), // Personalización, opcional (se maneja en el carrito)
   embroideryColor: text("embroidery_color"), // Color del bordado, opcional
   embroideryFont: text("embroidery_font"), // Fuente del bordado, opcional
   customPreview: text("custom_preview"), // Vista previa personalizada, opcional

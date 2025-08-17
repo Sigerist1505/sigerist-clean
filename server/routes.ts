@@ -28,7 +28,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const products = await storage.getProducts();
       res.json(products);
-    } catch {
+    } catch (error) {
+      console.error("Error fetching products:", error);
       res.status(500).json({ message: "Error fetching products" });
     }
   });
@@ -39,7 +40,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const product = await storage.getProduct(id);
       if (!product) return res.status(404).json({ message: "Product not found" });
       res.json(product);
-    } catch {
+    } catch (error) {
+      console.error("Error fetching product:", error);
       res.status(500).json({ message: "Error fetching product" });
     }
   });
@@ -49,20 +51,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const items = await storage.getCartItems();
       res.json(items);
-    } catch {
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
       res.status(500).json({ message: "Error fetching cart items" });
     }
   });
 
   app.post("/api/cart", async (req, res) => {
     try {
+      // Depuración: log de los datos recibidos
+      console.log("Datos recibidos en /api/cart:", req.body);
+
+      // Validar con Zod
       const validated = insertCartItemSchema.parse(req.body);
-      const item = await storage.addCartItem(validated);
+
+      // Asegurar que price sea number (aunque Zod ya lo valida)
+      const cartItemData = {
+        ...validated,
+        price: Number(validated.price), // Forzar conversión explícita
+      };
+
+      // Guardar en storage
+      const item = await storage.addCartItem(cartItemData);
       res.json(item);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Zod validation error in /api/cart:", error.errors);
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
+      console.error("Error adding item to cart:", error); // Log detallado
       res.status(500).json({ message: "Error adding item to cart" });
     }
   });
@@ -74,7 +91,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const item = await storage.updateCartItem(id, quantity);
       if (!item) return res.status(404).json({ message: "Cart item not found" });
       res.json(item);
-    } catch {
+    } catch (error) {
+      console.error("Error updating cart item:", error);
       res.status(500).json({ message: "Error updating cart item" });
     }
   });
@@ -85,7 +103,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const ok = await storage.removeCartItem(id);
       if (!ok) return res.status(404).json({ message: "Cart item not found" });
       res.json({ message: "Item removed from cart" });
-    } catch {
+    } catch (error) {
+      console.error("Error removing cart item:", error);
       res.status(500).json({ message: "Error removing cart item" });
     }
   });
@@ -94,7 +113,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await storage.clearCart();
       res.json({ message: "Cart cleared" });
-    } catch {
+    } catch (error) {
+      console.error("Error clearing cart:", error);
       res.status(500).json({ message: "Error clearing cart" });
     }
   });
@@ -109,6 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
+      console.error("Error creating order:", error);
       res.status(500).json({ message: "Error creating order" });
     }
   });
@@ -123,6 +144,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
+      console.error("Error sending message:", error);
       res.status(500).json({ message: "Error sending message" });
     }
   });

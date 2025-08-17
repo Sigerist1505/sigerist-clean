@@ -99,7 +99,7 @@ export class DatabaseStorage implements IStorage {
         await db.insert(products).values({
           name: "Producto de Prueba",
           description: "Producto para probar la pasarela de pagos",
-          price: "1000.00",
+          price: "1000.00", // Mantengo como string para consistencia con tu código original
           imageUrl: "/assets/IMG-20250531-WA0015.jpg",
           blankImageUrl: "/assets/IMG-20250531-WA0015.jpg",
           referenceImageUrl: "/assets/IMG-20250531-WA0015.jpg",
@@ -131,7 +131,7 @@ export class DatabaseStorage implements IStorage {
         await db.insert(products).values({
           name: product.name,
           description: product.description,
-          price: product.price.toString(),
+          price: product.price.toString(), // Mantengo como string para consistencia
           imageUrl: product.imageUrl,
           blankImageUrl: product.blankImageUrl,
           referenceImageUrl: product.referenceImageUrl,
@@ -162,7 +162,7 @@ export class DatabaseStorage implements IStorage {
       .insert(products)
       .values({
         ...insertProduct,
-        price: insertProduct.price.toString(),
+        price: insertProduct.price.toString(), // Mantengo como string para consistencia
         colors: Array.isArray(insertProduct.colors) ? insertProduct.colors : [insertProduct.colors],
       })
       .returning();
@@ -175,6 +175,7 @@ export class DatabaseStorage implements IStorage {
         .update(products)
         .set({
           ...data,
+          price: data.price ? data.price.toString() : undefined, // Mantengo como string
           colors: Array.isArray(data.colors) ? data.colors : data.colors ? [data.colors] : undefined,
         })
         .where(eq(products.id, id))
@@ -201,16 +202,23 @@ export class DatabaseStorage implements IStorage {
     try {
       return await db.select().from(cartItems);
     } catch (error) {
+      console.error("Error fetching cart items:", error);
       return [];
     }
   }
 
   async addCartItem(insertItem: InsertCartItem): Promise<CartItem> {
-    const [item] = await db
-      .insert(cartItems)
-      .values({ ...insertItem, price: insertItem.price.toString() })
-      .returning();
-    return item;
+    try {
+      console.log("Inserting cart item:", insertItem); // Depuración
+      const [item] = await db
+        .insert(cartItems)
+        .values({ ...insertItem, price: Number(insertItem.price) }) // Corregido a number
+        .returning();
+      return item;
+    } catch (error) {
+      console.error("Error adding cart item:", error); // Log detallado
+      throw error; // Propaga el error para que se capture en routes.ts
+    }
   }
 
   async updateCartItem(id: number, quantity: number): Promise<CartItem | undefined> {
@@ -227,6 +235,7 @@ export class DatabaseStorage implements IStorage {
       await db.delete(cartItems).where(eq(cartItems.id, id));
       return true;
     } catch (error) {
+      console.error("Error removing cart item:", error);
       return false;
     }
   }
@@ -239,7 +248,7 @@ export class DatabaseStorage implements IStorage {
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
     const [order] = await db
       .insert(orders)
-      .values({ ...insertOrder, total: insertOrder.total.toString() })
+      .values({ ...insertOrder, total: insertOrder.total.toString() }) // Mantengo como string
       .returning();
     return order;
   }
@@ -453,7 +462,7 @@ export class DatabaseStorage implements IStorage {
         id: 1,
         name: "Pañalera Multifuncional",
         description: "Pañalera multifuncional con bordado personalizado y múltiples compartimentos - ¡Nuestro producto estrella!",
-        price: "445000.00",
+        price: "445000.00", // Mantengo como string para consistencia
         imageUrl: "/assets/Multifuncional 3.jpg",
         blankImageUrl: "/assets/Multifuncional 3sinB.jpg",
         referenceImageUrl: "/assets/Multifuncional 3_1754160626677.jpg",
