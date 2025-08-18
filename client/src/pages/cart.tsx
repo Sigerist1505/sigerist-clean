@@ -91,8 +91,6 @@ export default function CartPage() {
   // Los totales ya están calculados en el cart provider
   const subtotal = total;
 
-
-
   if (items.length === 0) {
     return (
       <div className="min-h-screen pt-16 bg-black">
@@ -213,7 +211,7 @@ export default function CartPage() {
                       </div>
                       
                       <div className="text-lg font-bold text-amber-400">
-                        {formatPrice(parseFloat(item.price) || 0)}
+                        {formatPrice(item.price)} {/* Cambiado a item.price directamente */}
                       </div>
                     </div>
 
@@ -352,7 +350,6 @@ export default function CartPage() {
                 <p className="text-sm text-gray-400">
                   * El envío regular ($25.000) se paga contraentrega
                 </p>
-
 
                 {/* Payment Information */}
                 <div className="space-y-3">

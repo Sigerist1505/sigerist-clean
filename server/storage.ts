@@ -209,7 +209,7 @@ export class DatabaseStorage implements IStorage {
 
   async addCartItem(insertItem: InsertCartItem): Promise<CartItem> {
     try {
-      console.log("Inserting cart item:", insertItem); // Depuración
+      console.log("Insertando en cartItems:", insertItem);
       const [item] = await db
         .insert(cartItems)
         .values({ ...insertItem, price: Number(insertItem.price) }) // Corregido a number

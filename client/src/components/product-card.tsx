@@ -26,8 +26,12 @@ export function ProductCard({ product }: ProductCardProps) {
         name: product.name,
         price: Number(product.price),
         quantity: 1,
-
-        
+        personalization: "", // Reemplazado addPersonalization por personalization (cadena vacía por defecto)
+        addPompon: false,
+        addPersonalizedKeychain: false,
+        addDecorativeBow: false,
+        expressService: false,
+        hasBordado: false,
       },
       {
         onSuccess: () => {
