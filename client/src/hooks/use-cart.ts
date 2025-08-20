@@ -1,4 +1,4 @@
-import { useState } from "react"; // Eliminé useEffect ya que no se usa
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { getSessionId } from "@/lib/utils";
@@ -12,15 +12,16 @@ type CartItemWithProduct = {
     id: number;
     name: string;
     price: number;
-    // ...otros campos relevantes según tu modelo
+    imageUrl?: string; // <-- Asegúrate de que el backend incluya esto
+    // ...otros campos relevantes
   };
   // ...otros campos si los tienes
 };
 
 interface AddToCartData {
   productId: number;
-  name: string;      // Requerido por el backend
-  price: number;     // Requerido por el backend
+  name: string;
+  price: number;
   quantity: number;
   personalization?: string;
   addPompon?: boolean;
@@ -46,7 +47,8 @@ export function useCart() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: cartItems = [], isLoading } = useQuery({
+  // Fetch cart items (con producto relacionado)
+  const { data: cartItems = [], isLoading } = useQuery<CartItemWithProduct[]>({
     queryKey: ['/api/cart', sessionId],
     queryFn: async () => {
       const response = await fetch(`/api/cart/${sessionId}`);
@@ -56,9 +58,10 @@ export function useCart() {
       }
       return response.json() as Promise<CartItemWithProduct[]>;
     },
-    retry: 1, // Limita reintentos para evitar bucles
+    retry: 1,
   });
 
+  // Add to cart mutation
   const addToCartMutation = useMutation({
     mutationFn: async (data: AddToCartData) => {
       const response = await apiRequest('POST', '/api/cart', {
@@ -87,9 +90,15 @@ export function useCart() {
     },
   });
 
+  // Update quantity mutation
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: number; quantity: number }) => {
-      return apiRequest('PUT', `/api/cart/${id}`, { quantity });
+      const response = await apiRequest('PUT', `/api/cart/${id}`, { quantity });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cart', sessionId] });
@@ -103,9 +112,15 @@ export function useCart() {
     },
   });
 
+  // Remove item mutation
   const removeItemMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/cart/${id}`);
+      const response = await apiRequest('DELETE', `/api/cart/${id}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cart', sessionId] });
@@ -123,15 +138,22 @@ export function useCart() {
     },
   });
 
+  // Clear cart mutation
   const clearCartMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('DELETE', `/api/cart/session/${sessionId}`);
+      const response = await apiRequest('DELETE', `/api/cart/session/${sessionId}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cart', sessionId] });
     },
   });
 
+  // Totals
   const cartTotal = cartItems.reduce(
     (total, item) => total + (item.product?.price || 0) * item.quantity,
     0
