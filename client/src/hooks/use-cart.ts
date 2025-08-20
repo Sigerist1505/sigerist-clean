@@ -8,7 +8,7 @@ type CartItemWithProduct = {
   id: number;
   productId: number;
   quantity: number;
-  price: number; // <-- Asegúrate de incluir el campo price aquí
+  price: number; // Asegúrate de incluir el campo price aquí
   product: {
     id: number;
     name: string;
@@ -50,22 +50,25 @@ export function useCart() {
 
   // Fetch cart items (con producto relacionado)
   const { data: cartItems = [], isLoading } = useQuery<CartItemWithProduct[]>({
-    queryKey: ['/api/cart', sessionId],
+    queryKey: ["/api/cart", sessionId],
     queryFn: async () => {
       const response = await fetch(`/api/cart/${sessionId}`);
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to fetch cart: ${response.status} - ${errorText}`);
       }
-      return response.json() as Promise<CartItemWithProduct[]>;
+      const data = await response.json();
+      console.log("Fetched cart items:", data); // Depuración
+      return data as Promise<CartItemWithProduct[]>;
     },
     retry: 1,
+    staleTime: 0, // Forzar refetch en cada consulta para actualización en tiempo real
   });
 
   // Add to cart mutation
   const addToCartMutation = useMutation({
     mutationFn: async (data: AddToCartData) => {
-      const response = await apiRequest('POST', '/api/cart', {
+      const response = await apiRequest("POST", "/api/cart", {
         ...data,
         sessionId,
       });
@@ -73,10 +76,12 @@ export function useCart() {
         const errorText = await response.text();
         throw new Error(`API error: ${response.status} - ${errorText}`);
       }
-      return response.json();
+      const result = await response.json();
+      console.log("Add to cart response:", result); // Depuración
+      return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart', sessionId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
       toast({
         title: "Producto agregado",
         description: "El producto se agregó correctamente al carrito",
@@ -94,7 +99,7 @@ export function useCart() {
   // Update quantity mutation
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: number; quantity: number }) => {
-      const response = await apiRequest('PUT', `/api/cart/${id}`, { quantity });
+      const response = await apiRequest("PUT", `/api/cart/${id}`, { quantity });
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`API error: ${response.status} - ${errorText}`);
@@ -102,7 +107,7 @@ export function useCart() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart', sessionId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
     },
     onError: () => {
       toast({
@@ -116,7 +121,7 @@ export function useCart() {
   // Remove item mutation
   const removeItemMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest('DELETE', `/api/cart/${id}`);
+      const response = await apiRequest("DELETE", `/api/cart/${id}`);
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`API error: ${response.status} - ${errorText}`);
@@ -124,7 +129,7 @@ export function useCart() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart', sessionId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
       toast({
         title: "Producto eliminado",
         description: "El producto se eliminó del carrito",
@@ -142,7 +147,7 @@ export function useCart() {
   // Clear cart mutation
   const clearCartMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('DELETE', `/api/cart/session/${sessionId}`);
+      const response = await apiRequest("DELETE", `/api/cart/session/${sessionId}`);
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`API error: ${response.status} - ${errorText}`);
@@ -150,7 +155,7 @@ export function useCart() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart', sessionId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
     },
   });
 

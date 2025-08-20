@@ -12,41 +12,40 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, isLoading } = useCart(); // <-- Usar addToCart del hook
-  const [isAdded, setIsAdded] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
+  const { addToCart, isAddingToCart } = useCart(); // Usamos isAddingToCart de useMutation
+  const [isAdded, setIsAdded] = useState(false); // Restauramos el estado para "Agregado!"
   const [error, setError] = useState<string | null>(null);
 
-  const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
-    setIsAdding(true);
-    setError(null);
-
-    try {
-      await addToCart({
+    addToCart(
+      {
         productId: product.id,
         name: product.name,
         price: Number(product.price),
         quantity: 1,
+        personalization: "",
         addPompon: false,
         addPersonalizedKeychain: false,
         addDecorativeBow: false,
         expressService: false,
         hasBordado: false,
-        personalization: "",
         keychainPersonalization: "",
-      });
-
-      setIsAdded(true);
-      setTimeout(() => setIsAdded(false), 2000);
-    } catch (err) {
-      setError("No se pudo agregar al carrito. Intenta de nuevo.");
-      console.error("Add to cart error:", err);
-    } finally {
-      setIsAdding(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          setError(null); // Limpiar error al éxito
+          setIsAdded(true); // Mostrar "Agregado!"
+          setTimeout(() => setIsAdded(false), 2000); // Temporizador restaurado
+        },
+        onError: (err: any) => {
+          setError("No se pudo agregar al carrito. Intenta de nuevo.");
+          console.error("Add to cart error:", err);
+        },
+      }
+    );
   };
 
   const imgSrc = product.imageUrl
@@ -87,7 +86,7 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
               <Button
                 onClick={handleAddToCart}
-                disabled={isAdding || isLoading || !product.inStock}
+                disabled={isAddingToCart || !product.inStock}
                 className={`px-6 py-2 font-semibold transition-colors ${
                   isAdded
                     ? "bg-green-500 hover:bg-green-600 text-white"
@@ -99,7 +98,7 @@ export function ProductCard({ product }: ProductCardProps) {
                   ? "Error"
                   : isAdded
                   ? "Agregado!"
-                  : isAdding || isLoading
+                  : isAddingToCart
                   ? "Agregando..."
                   : "Agregar"}
               </Button>
