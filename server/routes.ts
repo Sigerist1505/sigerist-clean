@@ -221,6 +221,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ isAuthenticated: false, user: null });
   });
 
+  // --- Carrito por sesión con producto relacionado ---
+  app.get("/api/cart/:sessionId", async (req, res) => {
+    try {
+      const items = await storage.getCartItems();
+      const products = await storage.getProducts();
+
+      // Une cada ítem con su producto
+      const cartWithProduct = items.map((item: any) => ({
+        ...item,
+        product: products.find((p: any) => p.id === item.productId) || null,
+      }));
+
+      res.json(cartWithProduct);
+    } catch (error) {
+      console.error("Error fetching cart items by session:", error);
+      res.status(500).json({ message: "Error fetching cart items" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }
