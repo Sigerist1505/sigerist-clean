@@ -26,18 +26,19 @@ export function ProductCard({ product }: ProductCardProps) {
         name: product.name,
         price: Number(product.price),
         quantity: 1,
-        personalization: "", // Reemplazado addPersonalization por personalization (cadena vacía por defecto)
         addPompon: false,
         addPersonalizedKeychain: false,
         addDecorativeBow: false,
         expressService: false,
         hasBordado: false,
+        personalization: "", // o undefined
+        keychainPersonalization: "", // o undefined
       },
       {
         onSuccess: () => {
           setIsAdded(true);
           setError(null);
-          setTimeout(() => setIsAdded(false), 2000); // Feedback de 2 segundos
+          setTimeout(() => setIsAdded(false), 2000);
         },
         onError: (error: any) => {
           setError("No se pudo agregar al carrito. Intenta de nuevo.");

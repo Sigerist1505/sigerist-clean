@@ -99,7 +99,7 @@ export class DatabaseStorage implements IStorage {
         await db.insert(products).values({
           name: "Producto de Prueba",
           description: "Producto para probar la pasarela de pagos",
-          price: "1000.00", // Mantengo como string para consistencia con tu código original
+          price: 1000.00,
           imageUrl: "/assets/IMG-20250531-WA0015.jpg",
           blankImageUrl: "/assets/IMG-20250531-WA0015.jpg",
           referenceImageUrl: "/assets/IMG-20250531-WA0015.jpg",
@@ -131,14 +131,18 @@ export class DatabaseStorage implements IStorage {
         await db.insert(products).values({
           name: product.name,
           description: product.description,
-          price: product.price.toString(), // Mantengo como string para consistencia
+          price: Number(product.price),
           imageUrl: product.imageUrl,
           blankImageUrl: product.blankImageUrl,
           referenceImageUrl: product.referenceImageUrl,
           category: product.category,
           inStock: product.inStock,
           animalType: product.animalType,
-          colors: Array.isArray(product.colors) ? product.colors : [product.colors],
+          colors: Array.isArray(product.colors)
+            ? product.colors.filter((c): c is string => typeof c === "string")
+            : product.colors
+            ? [product.colors]
+            : undefined,
           variants: product.variants as ProductVariants | null,
         });
       } catch (error) {
@@ -162,8 +166,12 @@ export class DatabaseStorage implements IStorage {
       .insert(products)
       .values({
         ...insertProduct,
-        price: insertProduct.price.toString(), // Mantengo como string para consistencia
-        colors: Array.isArray(insertProduct.colors) ? insertProduct.colors : [insertProduct.colors],
+        price: Number(insertProduct.price),
+        colors: Array.isArray(insertProduct.colors)
+          ? insertProduct.colors.filter((c): c is string => typeof c === "string")
+          : insertProduct.colors
+          ? [insertProduct.colors]
+          : undefined,
       })
       .returning();
     return product ? { ...product, variants: product.variants as ProductVariants } : product;
@@ -175,8 +183,12 @@ export class DatabaseStorage implements IStorage {
         .update(products)
         .set({
           ...data,
-          price: data.price ? data.price.toString() : undefined, // Mantengo como string
-          colors: Array.isArray(data.colors) ? data.colors : data.colors ? [data.colors] : undefined,
+          price: data.price !== undefined ? Number(data.price) : undefined,
+          colors: Array.isArray(data.colors)
+            ? data.colors.filter((c): c is string => typeof c === "string")
+            : data.colors
+            ? [data.colors]
+            : undefined,
         })
         .where(eq(products.id, id))
         .returning();
@@ -189,7 +201,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProduct(id: number): Promise<boolean> {
     try {
-      const result = await db.delete(products).where(eq(products.id, id));
+      await db.delete(products).where(eq(products.id, id));
       return true;
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -212,12 +224,12 @@ export class DatabaseStorage implements IStorage {
       console.log("Insertando en cartItems:", insertItem);
       const [item] = await db
         .insert(cartItems)
-        .values({ ...insertItem, price: Number(insertItem.price) }) // Corregido a number
+        .values({ ...insertItem, price: Number(insertItem.price) })
         .returning();
       return item;
     } catch (error) {
-      console.error("Error adding cart item:", error); // Log detallado
-      throw error; // Propaga el error para que se capture en routes.ts
+      console.error("Error adding cart item:", error);
+      throw error;
     }
   }
 
@@ -248,7 +260,7 @@ export class DatabaseStorage implements IStorage {
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
     const [order] = await db
       .insert(orders)
-      .values({ ...insertOrder, total: insertOrder.total.toString() }) // Mantengo como string
+      .values({ ...insertOrder, total: Number(insertOrder.total) })
       .returning();
     return order;
   }
@@ -462,7 +474,7 @@ export class DatabaseStorage implements IStorage {
         id: 1,
         name: "Pañalera Multifuncional",
         description: "Pañalera multifuncional con bordado personalizado y múltiples compartimentos - ¡Nuestro producto estrella!",
-        price: "445000.00", // Mantengo como string para consistencia
+        price: 445000.00,
         imageUrl: "/assets/Multifuncional 3.jpg",
         blankImageUrl: "/assets/Multifuncional 3sinB.jpg",
         referenceImageUrl: "/assets/Multifuncional 3_1754160626677.jpg",
@@ -486,7 +498,7 @@ export class DatabaseStorage implements IStorage {
         id: 2,
         name: "Organizador de Higiene",
         description: "Organizador de higiene transparente con bordado personalizado de flores - Perfecto para viajes",
-        price: "145000.00",
+        price: 145000.00,
         imageUrl: "/assets/Organizador Bordado.jpg",
         blankImageUrl: "/assets/Organizador.jpg",
         referenceImageUrl: "/assets/Organizador.jpg",
@@ -504,7 +516,7 @@ export class DatabaseStorage implements IStorage {
         id: 3,
         name: "Mochila Clásica",
         description: "Mochila clásica con bordado de leoncito adorable y acabados premium en beige y café",
-        price: "425000.00",
+        price: 425000.00,
         imageUrl: "/assets/Mochila clasica.jpg",
         blankImageUrl: "/assets/Mochila clasica.jpg",
         referenceImageUrl: "/assets/Mochila clasica.jpg",
@@ -522,7 +534,7 @@ export class DatabaseStorage implements IStorage {
         id: 4,
         name: "Pañalera Grande",
         description: "Pañalera grande con opción de bordado personalizado en tonos rosados",
-        price: "445000.00",
+        price: 445000.00,
         imageUrl: "/assets/Pañalera Grande con nombre.jpg",
         blankImageUrl: "/assets/Pañalera Grande.jpg",
         referenceImageUrl: "/assets/Pañalera Grande con nombre.jpg",
@@ -540,7 +552,7 @@ export class DatabaseStorage implements IStorage {
         id: 5,
         name: "Pañalera Mediana",
         description: "Pañalera mediana con bordado de osito personalizado en tonos azules",
-        price: "405000.00",
+        price: 405000.00,
         imageUrl: "/assets/Pañalera Mediana con nombre.jpg",
         blankImageUrl: "/assets/Pañalera Mediana.jpg",
         referenceImageUrl: "/assets/Pañalera Mediana con nombre.jpg",
@@ -558,7 +570,7 @@ export class DatabaseStorage implements IStorage {
         id: 6,
         name: "Porta Documentos",
         description: "Porta documentos elegante con bordado personalizado y acabados premium",
-        price: "190000.00",
+        price: 190000.00,
         imageUrl: "/assets/Portadocumentos_1754094149309.jpg",
         blankImageUrl: "/assets/Portadocumentos_1754094149309.jpg",
         referenceImageUrl: "/assets/Portadocumentos_1754094149309.jpg",
@@ -573,7 +585,7 @@ export class DatabaseStorage implements IStorage {
         id: 7,
         name: "Mochila Milano",
         description: "Mochila Milano con diseño elegante y bordado de leoncito premium",
-        price: "435000.00",
+        price: 435000.00,
         imageUrl: "/assets/Maleta_Milan_SinBordar_1754094149304.jpg",
         blankImageUrl: "/assets/Maleta_Milan_SinBordar_1754094149304.jpg",
         referenceImageUrl: "/assets/MaletaMilan_ConBordado_1754093212912.jpg",
@@ -591,7 +603,7 @@ export class DatabaseStorage implements IStorage {
         id: 8,
         name: "Cambiador",
         description: "Cambiador portátil con diseño funcional y elegante - Solo disponible sin bordado",
-        price: "105000.00",
+        price: 105000.00,
         imageUrl: "/assets/Cambiador_1754094149302.jpg",
         blankImageUrl: "/assets/Cambiador_1754094149302.jpg",
         referenceImageUrl: "/assets/Cambiador_1754094149302.jpg",
@@ -606,7 +618,7 @@ export class DatabaseStorage implements IStorage {
         id: 9,
         name: "Lonchera Porta Biberones",
         description: "Lonchera porta biberones con bordado de osita personalizado",
-        price: "335000.00",
+        price: 335000.00,
         imageUrl: "/assets/PortaBiberones_SinBordar_1754094149308.jpg",
         blankImageUrl: "/assets/PortaBiberones_SinBordar_1754094149308.jpg",
         referenceImageUrl: "/assets/Porta Biberones_Bordado_1754093212916.jpg",
@@ -624,7 +636,7 @@ export class DatabaseStorage implements IStorage {
         id: 10,
         name: "Lonchera Baul",
         description: "Lonchera baúl con bordado de osito y acabados premium con moño azul",
-        price: "335000.00",
+        price: 335000.00,
         imageUrl: "/assets/Lonchera baul sin bordar_1754094149302.jpg",
         blankImageUrl: "/assets/Lonchera baul sin bordar_1754094149302.jpg",
         referenceImageUrl: "/assets/Lonchera baul_1754093212911.jpg",
@@ -642,7 +654,7 @@ export class DatabaseStorage implements IStorage {
         id: 11,
         name: "Maleta Viajera",
         description: "Maleta viajera con diseño floral bordado y detalles en rosa",
-        price: "550000.00",
+        price: 550000.00,
         imageUrl: "/assets/Maleta Viajera_Sin bordar_1754094149303.jpg",
         blankImageUrl: "/assets/Maleta Viajera_Sin bordar_1754094149303.jpg",
         referenceImageUrl: "/assets/Maleta viajera_Bordada_1754093212912.jpg",
@@ -660,7 +672,7 @@ export class DatabaseStorage implements IStorage {
         id: 12,
         name: "Portachupeta",
         description: "Portachupeta elegante con bordado personalizado y acabados premium",
-        price: "80000.00",
+        price: 80000.00,
         imageUrl: "/assets/Portachupeta_1754094149309.jpg",
         blankImageUrl: "/assets/Portachupeta_1754094149309.jpg",
         referenceImageUrl: "/assets/Portachupeta_1754094149309.jpg",
@@ -675,7 +687,7 @@ export class DatabaseStorage implements IStorage {
         id: 13,
         name: "Colección Mini Fantasy",
         description: "Colección completa Mini Fantasy con 5 diseños adorables: gato, perrito, mariposa, Stitch y niña rosada",
-        price: "265000.00",
+        price: 265000.00,
         imageUrl: "/assets/Bolso Rosadito Bordado Minifantasy_1754093212911.jpg",
         blankImageUrl: "/assets/Minifantasy rosado sin bordar_1754094149304.jpg",
         referenceImageUrl: "/assets/Bolso Rosadito Bordado Minifantasy_1754093212911.jpg",
@@ -707,7 +719,7 @@ export class DatabaseStorage implements IStorage {
         id: 14,
         name: "Organizador de Muda",
         description: "Organizador de muda con bordado personalizado - Solo disponible con bordado",
-        price: "60000.00",
+        price: 60000.00,
         imageUrl: "/assets/Organizador_Bordado_1754119979271.jpg",
         blankImageUrl: "/assets/Organizador_Bordado_1754119979271.jpg",
         referenceImageUrl: "/assets/Organizador_Bordado_1754119979271.jpg",
@@ -725,7 +737,7 @@ export class DatabaseStorage implements IStorage {
         id: 15,
         name: "Organizador de Higiene",
         description: "Organizador de higiene con diseño floral bordado - Perfecto para guardar productos de cuidado personal",
-        price: "130000.00",
+        price: 130000.00,
         imageUrl: "/assets/Organizador_1754162008500.jpg",
         blankImageUrl: "/assets/Organizador_1754162008500.jpg",
         referenceImageUrl: "/assets/Organizador Bordado_1754160554308.jpg",
