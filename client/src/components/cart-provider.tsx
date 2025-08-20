@@ -38,12 +38,12 @@ function calculateTotals(items: CartItem[], discountCode: string | null) {
   const total = items.reduce((sum, item) => {
     const price = parseFloat(String(item.price)) || 0;
     const quantity = item.quantity || 1;
-    return sum + (price * quantity);
+    return sum + price * quantity;
   }, 0);
   const itemCount = items.reduce((count, item) => count + (item.quantity || 1), 0);
   const discountAmount = discountCode ? (total * 15) / 100 : 0;
   const finalTotal = total - discountAmount;
-  
+
   return { total, itemCount, discountAmount, finalTotal };
 }
 
@@ -52,15 +52,15 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "SET_ITEMS":
       const { total, itemCount, discountAmount, finalTotal } = calculateTotals(action.payload, state.discountCode);
       return { ...state, items: action.payload, total, itemCount, discountAmount, finalTotal };
-    
+
     case "SET_LOADING":
       return { ...state, isLoading: action.payload };
-    
+
     case "ADD_ITEM":
       const newItems = [...state.items, action.payload];
       const addTotals = calculateTotals(newItems, state.discountCode);
       return { ...state, items: newItems, ...addTotals };
-    
+
     case "UPDATE_ITEM":
       const updatedItems = state.items.map(item =>
         item.id === action.payload.id
@@ -69,15 +69,15 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       );
       const updateTotals = calculateTotals(updatedItems, state.discountCode);
       return { ...state, items: updatedItems, ...updateTotals };
-    
+
     case "REMOVE_ITEM":
       const filteredItems = state.items.filter(item => item.id !== action.payload);
       const removeTotals = calculateTotals(filteredItems, state.discountCode);
       return { ...state, items: filteredItems, ...removeTotals };
-    
+
     case "CLEAR_CART":
       return { ...initialState };
-    
+
     case "APPLY_DISCOUNT":
       const applyTotals = calculateTotals(state.items, action.payload.code);
       return {
@@ -85,7 +85,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         discountCode: action.payload.code,
         ...applyTotals
       };
-    
+
     case "REMOVE_DISCOUNT":
       const removeTotals2 = calculateTotals(state.items, null);
       return {
@@ -93,7 +93,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         discountCode: null,
         ...removeTotals2
       };
-    
+
     default:
       return state;
   }
@@ -121,14 +121,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     refetchInterval: false,
   });
 
-  // Add item mutation
+  // Add item mutation (espera que el backend retorne el carrito completo)
   const addItemMutation = useMutation({
     mutationFn: async (item: InsertCartItem) => {
       const response = await apiRequest("POST", "/api/cart", item);
-      return response.json();
+      return response.json(); // <-- El backend debe retornar el carrito completo (array de items)
     },
-    onSuccess: (newItem) => {
-      dispatch({ type: "ADD_ITEM", payload: newItem });
+    onSuccess: (updatedCartItems) => {
+      dispatch({ type: "SET_ITEMS", payload: updatedCartItems }); // <-- Actualiza todo el carrito
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Producto agregado",
@@ -150,8 +150,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const response = await apiRequest("PUT", `/api/cart/${id}`, { quantity });
       return response.json();
     },
-    onSuccess: (_, variables) => {
-      dispatch({ type: "UPDATE_ITEM", payload: variables });
+    onSuccess: (updatedCartItems) => {
+      dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
     },
     onError: () => {
@@ -166,11 +166,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Remove item mutation
   const removeItemMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/cart/${id}`);
-      return id;
+      const response = await apiRequest("DELETE", `/api/cart/${id}`);
+      return response.json();
     },
-    onSuccess: (id) => {
-      dispatch({ type: "REMOVE_ITEM", payload: id });
+    onSuccess: (updatedCartItems) => {
+      dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Producto eliminado",
@@ -189,10 +189,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Clear cart mutation
   const clearCartMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("DELETE", "/api/cart");
+      const response = await apiRequest("DELETE", "/api/cart");
+      return response.json();
     },
-    onSuccess: () => {
-      dispatch({ type: "CLEAR_CART" });
+    onSuccess: (updatedCartItems) => {
+      dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
     },
     onError: () => {
