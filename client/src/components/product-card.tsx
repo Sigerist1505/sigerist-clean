@@ -16,12 +16,13 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation(); // Evita que el clic active el Link
 
-    addToCart(
-      {
+    const res = await fetch("/api/cart", {
+      method: "POST",
+      body: JSON.stringify({
         productId: product.id,
         name: product.name,
         price: Number(product.price),
@@ -33,19 +34,24 @@ export function ProductCard({ product }: ProductCardProps) {
         hasBordado: false,
         personalization: "", // o undefined
         keychainPersonalization: "", // o undefined
-      },
-      {
-        onSuccess: () => {
-          setIsAdded(true);
-          setError(null);
-          setTimeout(() => setIsAdded(false), 2000);
-        },
-        onError: (error: any) => {
-          setError("No se pudo agregar al carrito. Intenta de nuevo.");
-          console.error("Add to cart error:", error);
-        },
-      }
-    );
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (res.ok) {
+      const newCartItem = await res.json();
+      setIsAdded(true);
+      setError(null);
+      setTimeout(() => setIsAdded(false), 2000);
+      // Actualiza el estado local
+      // setCart((prev) => [...prev, newCartItem]);
+      // O mejor: vuelve a pedir el carrito y actualiza el estado
+      // const updatedCart = await fetchCart();
+      // setCart(updatedCart);
+    } else {
+      setError("No se pudo agregar al carrito. Intenta de nuevo.");
+      console.error("Add to cart error:", res.statusText);
+    }
   };
 
   // Ajuste de la imagen para compatibilidad
