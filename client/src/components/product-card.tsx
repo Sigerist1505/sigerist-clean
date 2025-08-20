@@ -12,17 +12,20 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, isAddingToCart } = useCart();
+  const { addToCart, isLoading } = useCart(); // <-- Usar addToCart del hook
   const [isAdded, setIsAdded] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    e.stopPropagation(); // Evita que el clic active el Link
+    e.stopPropagation();
 
-    const res = await fetch("/api/cart", {
-      method: "POST",
-      body: JSON.stringify({
+    setIsAdding(true);
+    setError(null);
+
+    try {
+      await addToCart({
         productId: product.id,
         name: product.name,
         price: Number(product.price),
@@ -32,34 +35,25 @@ export function ProductCard({ product }: ProductCardProps) {
         addDecorativeBow: false,
         expressService: false,
         hasBordado: false,
-        personalization: "", // o undefined
-        keychainPersonalization: "", // o undefined
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
+        personalization: "",
+        keychainPersonalization: "",
+      });
 
-    if (res.ok) {
-      const newCartItem = await res.json();
       setIsAdded(true);
-      setError(null);
       setTimeout(() => setIsAdded(false), 2000);
-      // Actualiza el estado local
-      // setCart((prev) => [...prev, newCartItem]);
-      // O mejor: vuelve a pedir el carrito y actualiza el estado
-      // const updatedCart = await fetchCart();
-      // setCart(updatedCart);
-    } else {
+    } catch (err) {
       setError("No se pudo agregar al carrito. Intenta de nuevo.");
-      console.error("Add to cart error:", res.statusText);
+      console.error("Add to cart error:", err);
+    } finally {
+      setIsAdding(false);
     }
   };
 
-  // Ajuste de la imagen para compatibilidad
   const imgSrc = product.imageUrl
     ? product.imageUrl.startsWith("/")
       ? product.imageUrl
       : `/assets/${product.imageUrl}`
-    : "/assets/placeholder.jpg"; // Fallback si no hay imagen
+    : "/assets/placeholder.jpg";
 
   return (
     <Link href={`/product/${product.id}`} className="group">
@@ -93,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
               <Button
                 onClick={handleAddToCart}
-                disabled={isAddingToCart || !product.inStock}
+                disabled={isAdding || isLoading || !product.inStock}
                 className={`px-6 py-2 font-semibold transition-colors ${
                   isAdded
                     ? "bg-green-500 hover:bg-green-600 text-white"
@@ -101,7 +95,13 @@ export function ProductCard({ product }: ProductCardProps) {
                 }`}
                 aria-label={isAdded ? "Producto agregado" : "Agregar al carrito"}
               >
-                {error ? "Error" : isAdded ? "Agregado!" : isAddingToCart ? "Agregando..." : "Agregar"}
+                {error
+                  ? "Error"
+                  : isAdded
+                  ? "Agregado!"
+                  : isAdding || isLoading
+                  ? "Agregando..."
+                  : "Agregar"}
               </Button>
             </div>
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
