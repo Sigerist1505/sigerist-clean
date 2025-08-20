@@ -95,7 +95,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
     specialRequest: ""
   });
 
-  const [totalPrice, setTotalPrice] = useState(product.price);
+  const [totalPrice, setTotalPrice] = useState(Number(product.price));
   const [addonOptions, setAddonOptions] = useState<AddonOptions>({
     addPompon: false,
     addPersonalizedKeychain: false,
@@ -108,22 +108,23 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
 
   useEffect(() => {
     calculatePrice();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customization, addonOptions, product.price]);
 
   const calculatePrice = () => {
-    let price = product.price;
-    
+    let price = Number(product.price);
+
     // Add font size cost
     const fontSize = fontSizes.find(f => f.id === customization.fontSize);
     if (fontSize) price += fontSize.price;
-    
+
     // Add animal theme cost
     const animal = animalThemes.find(a => a.id === customization.animalTheme);
     if (animal) price += animal.price;
-    
+
     // Add addon costs
     price += addonOptions.totalAddonPrice;
-    
+
     setTotalPrice(price);
   };
 
@@ -159,7 +160,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
     addItem({
       productId: product.id,
       name: product.name,
-      price: totalPrice.toString(),
+      price: totalPrice, // <-- Enviar como número
       quantity: 1,
       personalization: personalizationText,
       embroideryColor: customization.fontColor,

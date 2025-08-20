@@ -8,11 +8,12 @@ type CartItemWithProduct = {
   id: number;
   productId: number;
   quantity: number;
+  price: number; // <-- Asegúrate de incluir el campo price aquí
   product: {
     id: number;
     name: string;
     price: number;
-    imageUrl?: string; // <-- Asegúrate de que el backend incluya esto
+    imageUrl?: string;
     // ...otros campos relevantes
   };
   // ...otros campos si los tienes
@@ -153,9 +154,9 @@ export function useCart() {
     },
   });
 
-  // Totals
+  // Totals: usa el precio personalizado del ítem si existe
   const cartTotal = cartItems.reduce(
-    (total, item) => total + (item.product?.price || 0) * item.quantity,
+    (total, item) => total + (item.price ?? item.product?.price ?? 0) * item.quantity,
     0
   );
 
