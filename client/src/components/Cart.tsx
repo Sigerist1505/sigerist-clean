@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Minus, Plus, Trash2, MessageCircle } from 'lucide-react';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/components/cart-provider'; // <-- Usa el provider global
 import { formatPrice, openWhatsApp } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,10 +22,10 @@ interface CartProps {
 
 export function Cart({ isOpen, onClose }: CartProps) {
   const {
-    cartItems,
-    cartTotal,
-    cartCount,
-    updateQuantity,
+    items,
+    total,
+    itemCount,
+    updateItem,
     removeItem,
     clearCart,
     isLoading,
@@ -34,7 +34,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const handleWhatsAppOrder = () => {
-    if (cartItems.length === 0) {
+    if (items.length === 0) {
       toast({
         title: "Carrito vacío",
         description: "Agrega productos antes de realizar el pedido",
@@ -46,17 +46,17 @@ export function Cart({ isOpen, onClose }: CartProps) {
     let message = `🛍️ *Hola! Quiero realizar un pedido de Sigerist*\n\n`;
     message += `📦 *Productos:*\n`;
 
-    cartItems.forEach((item) => {
-      message += `• ${item.product.name}\n`;
+    items.forEach((item) => {
+      message += `• ${item.name}\n`;
       message += `  Cantidad: ${item.quantity}\n`;
-      message += `  Precio: ${formatPrice(item.product.price)}\n\n`;
+      message += `  Precio: ${formatPrice(item.price)}\n\n`;
     });
 
-    message += `💰 *Total: ${formatPrice(cartTotal)}*\n\n`;
+    message += `💰 *Total: ${formatPrice(total)}*\n\n`;
     message += `¡Gracias por elegir Sigerist! 🌟`;
 
     openWhatsApp("573000000000", message);
-    
+
     toast({
       title: "Redirigiendo a WhatsApp",
       description: "Te hemos preparado el mensaje con tu pedido",
@@ -67,7 +67,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
     if (newQuantity < 1) {
       removeItem(itemId);
     } else {
-      updateQuantity({ id: itemId, quantity: newQuantity });
+      updateItem(itemId, newQuantity);
     }
   };
 
@@ -92,14 +92,14 @@ export function Cart({ isOpen, onClose }: CartProps) {
         <SheetHeader className="border-b pb-4">
           <SheetTitle className="flex items-center justify-between">
             <span>Carrito de Compras</span>
-            {cartCount > 0 && (
-              <Badge variant="secondary">{cartCount} productos</Badge>
+            {itemCount > 0 && (
+              <Badge variant="secondary">{itemCount} productos</Badge>
             )}
           </SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 flex flex-col">
-          {cartItems.length === 0 ? (
+          {items.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -120,22 +120,22 @@ export function Cart({ isOpen, onClose }: CartProps) {
             <>
               <ScrollArea className="flex-1 pr-4">
                 <div className="space-y-4 py-4">
-                  {cartItems.map((item) => (
+                  {items.map((item) => (
                     <div key={item.id} className="border rounded-lg p-4">
                       <div className="flex gap-4">
                         <img
-                          src={item.product.image}
-                          alt={item.product.name}
+                          src={item.imageUrl || "/assets/placeholder.jpg"}
+                          alt={item.name}
                           className="w-16 h-16 object-cover rounded-lg"
                         />
                         <div className="flex-1">
                           <h4 className="font-semibold text-sm">
-                            {item.product.name}
+                            {item.name}
                           </h4>
                           <p className="text-sm text-gray-500 mb-2">
-                            {formatPrice(item.product.price)}
+                            {formatPrice(item.price)}
                           </p>
-                          
+
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Button
@@ -162,7 +162,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                                 <Plus className="h-3 w-3" />
                               </Button>
                             </div>
-                            
+
                             <Button
                               variant="ghost"
                               size="icon"
@@ -183,7 +183,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">Total:</span>
                   <span className="font-bold text-xl">
-                    {formatPrice(cartTotal)}
+                    {formatPrice(total)}
                   </span>
                 </div>
 
@@ -196,7 +196,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Pedir por WhatsApp
                   </Button>
-                  
+
                   <Button
                     variant="outline"
                     onClick={() => clearCart()}
