@@ -35,12 +35,8 @@ const initialState: CartState = {
 };
 
 function calculateTotals(items: CartItem[], discountCode: string | null) {
-  const total = items.reduce((sum, item) => {
-    const price = parseFloat(String(item.price)) || 0;
-    const quantity = item.quantity || 1;
-    return sum + price * quantity;
-  }, 0);
-  const itemCount = items.reduce((count, item) => count + (item.quantity || 1), 0);
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const itemCount = items.reduce((count, item) => count + item.quantity, 0);
   const discountAmount = discountCode ? (total * 15) / 100 : 0;
   const finalTotal = total - discountAmount;
 
@@ -63,9 +59,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
     case "UPDATE_ITEM":
       const updatedItems = state.items.map(item =>
-        item.id === action.payload.id
-          ? { ...item, quantity: action.payload.quantity }
-          : item
+        item.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
       );
       const updateTotals = calculateTotals(updatedItems, state.discountCode);
       return { ...state, items: updatedItems, ...updateTotals };
@@ -115,20 +109,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch cart items
   const { data: cartItems } = useQuery<CartItem[]>({
     queryKey: ["/api/cart"],
     refetchInterval: false,
   });
 
-  // Add item mutation (espera que el backend retorne el carrito completo)
   const addItemMutation = useMutation({
     mutationFn: async (item: InsertCartItem) => {
       const response = await apiRequest("POST", "/api/cart", item);
-      return response.json(); // <-- El backend debe retornar el carrito completo (array de items)
+      return response.json();
     },
-    onSuccess: (updatedCartItems) => {
-      dispatch({ type: "SET_ITEMS", payload: updatedCartItems }); // <-- Actualiza todo el carrito
+    onSuccess: (updatedCartItems: CartItem[]) => {
+      dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Producto agregado",
@@ -144,13 +136,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  // Update item mutation
   const updateItemMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: number; quantity: number }) => {
       const response = await apiRequest("PUT", `/api/cart/${id}`, { quantity });
       return response.json();
     },
-    onSuccess: (updatedCartItems) => {
+    onSuccess: (updatedCartItems: CartItem[]) => {
       dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
     },
@@ -163,13 +154,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  // Remove item mutation
   const removeItemMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/cart/${id}`);
       return response.json();
     },
-    onSuccess: (updatedCartItems) => {
+    onSuccess: (updatedCartItems: CartItem[]) => {
       dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
@@ -186,13 +176,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  // Clear cart mutation
   const clearCartMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("DELETE", "/api/cart");
       return response.json();
     },
-    onSuccess: (updatedCartItems) => {
+    onSuccess: (updatedCartItems: CartItem[]) => {
       dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
     },
@@ -205,7 +194,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  // Update state when cart items change
   useEffect(() => {
     if (cartItems) {
       dispatch({ type: "SET_ITEMS", payload: cartItems });

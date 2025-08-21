@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ interface AddonOptionsProps {
     addPersonalizedKeychain: boolean;
     addDecorativeBow: boolean;
     addPersonalization: boolean;
+    addExpressService: boolean; // Añadido para Servicio Express
     keychainPersonalization: string;
     namePersonalization: string;
     totalAddonPrice: number;
@@ -52,6 +53,12 @@ const addonOptions: AddonOption[] = [
     price: 15000,
     requiresPersonalization: true,
   },
+  {
+    id: "expressService",
+    name: "Servicio Express",
+    description: "Entrega en 24 horas (costo adicional)",
+    price: 50000, // $50.000 como ejemplo
+  },
 ];
 
 export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
@@ -60,45 +67,14 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
     addPersonalizedKeychain: false,
     addDecorativeBow: false,
     addPersonalization: false,
+    addExpressService: false, // Añadido para Servicio Express
   });
-  
+
   const [keychainPersonalization, setKeychainPersonalization] = useState("");
   const [namePersonalization, setNamePersonalization] = useState("");
 
-  const handleAddonToggle = (addonId: string, checked: boolean) => {
-    const newSelectedAddons = {
-      ...selectedAddons,
-      [`add${addonId.charAt(0).toUpperCase() + addonId.slice(1)}`]: checked,
-    };
-    
-    // If unchecking keychain, clear personalization
-    if (addonId === "personalizedKeychain" && !checked) {
-      setKeychainPersonalization("");
-    }
-    
-    setSelectedAddons(newSelectedAddons);
-    
-    // Calculate total addon price
-    const totalAddonPrice = addonOptions.reduce((total, addon) => {
-      const key = `add${addon.id.charAt(0).toUpperCase() + addon.id.slice(1)}` as keyof typeof newSelectedAddons;
-      if (newSelectedAddons[key]) {
-        return total + addon.price;
-      }
-      return total;
-    }, 0);
-    
-    onAddonChange({
-      ...newSelectedAddons,
-      keychainPersonalization,
-      namePersonalization,
-      totalAddonPrice,
-    });
-  };
-
-  const handleKeychainPersonalizationChange = (value: string) => {
-    setKeychainPersonalization(value);
-    
-    // Calculate total addon price
+  // Recalcular totalAddonPrice cuando cambien los estados
+  useEffect(() => {
     const totalAddonPrice = addonOptions.reduce((total, addon) => {
       const key = `add${addon.id.charAt(0).toUpperCase() + addon.id.slice(1)}` as keyof typeof selectedAddons;
       if (selectedAddons[key]) {
@@ -106,13 +82,35 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
       }
       return total;
     }, 0);
-    
+
     onAddonChange({
       ...selectedAddons,
-      keychainPersonalization: value,
+      keychainPersonalization,
       namePersonalization,
       totalAddonPrice,
     });
+  }, [selectedAddons, keychainPersonalization, namePersonalization, onAddonChange]);
+
+  const handleAddonToggle = (addonId: string, checked: boolean) => {
+    const newSelectedAddons = {
+      ...selectedAddons,
+      [`add${addonId.charAt(0).toUpperCase() + addonId.slice(1)}`]: checked,
+    };
+
+    // Si desactivas keychain, borra la personalización
+    if (addonId === "keychain" && !checked) {
+      setKeychainPersonalization("");
+    }
+
+    setSelectedAddons(newSelectedAddons);
+  };
+
+  const handleKeychainPersonalizationChange = (value: string) => {
+    setKeychainPersonalization(value);
+  };
+
+  const handleNamePersonalizationChange = (value: string) => {
+    setNamePersonalization(value);
   };
 
   return (
@@ -129,7 +127,7 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
         {addonOptions.map((addon) => {
           const key = `add${addon.id.charAt(0).toUpperCase() + addon.id.slice(1)}` as keyof typeof selectedAddons;
           const isSelected = selectedAddons[key];
-          
+
           return (
             <div
               key={addon.id}
@@ -158,7 +156,7 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
                     </span>
                   </div>
                   <p className="text-[#C0C0C0] text-sm">{addon.description}</p>
-                  
+
                   {/* Personalization input for keychain */}
                   {addon.id === "keychain" && isSelected && (
                     <div className="pt-2">
@@ -178,12 +176,34 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
                       </p>
                     </div>
                   )}
+
+                  {/* Personalization input for name personalization */}
+                  {addon.id === "personalization" && isSelected && (
+                    <div className="pt-2">
+                      <Label htmlFor="name-text" className="text-white text-sm">
+                        Nombre a bordar (máx. 20 caracteres)
+                      </Label>
+                      <Input
+                        id="name-text"
+                        placeholder="Ej: Samuel, Andrea, etc."
+                        value={namePersonalization}
+                        onChange={(e) => handleNamePersonalizationChange(e.target.value)}
+                        maxLength={20}
+                        className="mt-1 bg-gray-900 border-[#C0C0C0]/30 text-white"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        {namePersonalization.length}/20 caracteres
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           );
-        })}
-        
+        })
+
+        }
+
         {/* Total adicionales */}
         {Object.values(selectedAddons).some(Boolean) && (
           <div className="pt-4 border-t border-[#C0C0C0]/30">

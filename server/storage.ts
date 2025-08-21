@@ -139,7 +139,7 @@ export class DatabaseStorage implements IStorage {
           inStock: product.inStock,
           animalType: product.animalType,
           colors: Array.isArray(product.colors)
-            ? product.colors.filter((c): c is string => typeof c === "string")
+            ? product.colors.filter((c): c is string => c !== null && c !== undefined)
             : product.colors
             ? [product.colors]
             : undefined,
@@ -168,7 +168,7 @@ export class DatabaseStorage implements IStorage {
         ...insertProduct,
         price: Number(insertProduct.price),
         colors: Array.isArray(insertProduct.colors)
-          ? insertProduct.colors.filter((c): c is string => typeof c === "string")
+          ? insertProduct.colors.filter((c): c is string => c !== null && c !== undefined)
           : insertProduct.colors
           ? [insertProduct.colors]
           : undefined,
@@ -185,7 +185,7 @@ export class DatabaseStorage implements IStorage {
           ...data,
           price: data.price !== undefined ? Number(data.price) : undefined,
           colors: Array.isArray(data.colors)
-            ? data.colors.filter((c): c is string => typeof c === "string")
+            ? data.colors.filter((c): c is string => c !== null && c !== undefined)
             : data.colors
             ? [data.colors]
             : undefined,

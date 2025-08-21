@@ -17,7 +17,7 @@ import { useCart } from "@/components/cart-provider";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@shared/schema";
 import { formatPrice } from "@/lib/utils";
-import { AddonOptions } from "./addon-options"; // Asume que este componente existe
+import { AddonOptions } from "./addon-options";
 
 interface ProductCustomizerProps {
   product: Product;
@@ -38,7 +38,10 @@ interface AddonOptions {
   addPompon: boolean;
   addPersonalizedKeychain: boolean;
   addDecorativeBow: boolean;
+  addPersonalization: boolean;
+  addExpressService: boolean;
   keychainPersonalization: string;
+  namePersonalization: string;
   totalAddonPrice: number;
 }
 
@@ -100,7 +103,10 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
     addPompon: false,
     addPersonalizedKeychain: false,
     addDecorativeBow: false,
+    addPersonalization: false,
+    addExpressService: false,
     keychainPersonalization: "",
+    namePersonalization: "",
     totalAddonPrice: 0,
   });
   const { addItem } = useCart();
@@ -108,21 +114,17 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
 
   useEffect(() => {
     calculatePrice();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customization, addonOptions, product.price]);
 
   const calculatePrice = () => {
     let price = Number(product.price);
 
-    // Add font size cost
     const fontSize = fontSizes.find(f => f.id === customization.fontSize);
     if (fontSize) price += fontSize.price;
 
-    // Add animal theme cost
     const animal = animalThemes.find(a => a.id === customization.animalTheme);
     if (animal) price += animal.price;
 
-    // Add addon costs
     price += addonOptions.totalAddonPrice;
 
     setTotalPrice(price);
@@ -145,7 +147,6 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
       return;
     }
 
-    // Validate keychain personalization if selected
     if (addonOptions.addPersonalizedKeychain && !addonOptions.keychainPersonalization.trim()) {
       toast({
         title: "Campo requerido",
@@ -155,12 +156,12 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
       return;
     }
 
-    const personalizationText = `Nombre: ${customization.name}, Tema: ${animalThemes.find(a => a.id === customization.animalTheme)?.name}, Color de fuente: ${fontColors.find(c => c.id === customization.fontColor)?.name}, Estilo: ${fontStyles.find(f => f.id === customization.fontStyle)?.name}, Tamaño: ${fontSizes.find(s => s.id === customization.fontSize)?.name}, Color del bolso: ${bagColors.find(b => b.id === customization.bagColor)?.name}${customization.specialRequest ? `, Solicitud especial: ${customization.specialRequest}` : ''}`;
+    const personalizationText = `Nombre: ${customization.name}, Tema: ${animalThemes.find(a => a.id === customization.animalTheme)?.name}, Color de fuente: ${fontColors.find(c => c.id === customization.fontColor)?.name}, Estilo: ${fontStyles.find(f => f.id === customization.fontStyle)?.name}, Tamaño: ${fontSizes.find(s => s.id === customization.fontSize)?.name}, Color del bolso: ${bagColors.find(b => b.id === customization.bagColor)?.name}${customization.specialRequest ? `, Solicitud especial: ${customization.specialRequest}` : ''}${addonOptions.namePersonalization ? `, Personalización adicional: ${addonOptions.namePersonalization}` : ''}`;
 
     addItem({
       productId: product.id,
       name: product.name,
-      price: Number(totalPrice), // <-- así, como número
+      price: Number(totalPrice),
       quantity: 1,
       personalization: personalizationText,
       embroideryColor: customization.fontColor,
@@ -168,7 +169,12 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
       addPompon: addonOptions.addPompon,
       addPersonalizedKeychain: addonOptions.addPersonalizedKeychain,
       addDecorativeBow: addonOptions.addDecorativeBow,
+      addPersonalization: addonOptions.addPersonalization,
+      expressService: addonOptions.addExpressService,
       keychainPersonalization: addonOptions.keychainPersonalization,
+      namePersonalization: addonOptions.namePersonalization,
+      sessionId: crypto.randomUUID(), // Añadido para compatibilidad con cartItems
+      imageUrl: product.imageUrl, // Añadido para compatibilidad con cartItems
     });
 
     toast({
@@ -176,7 +182,6 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
       description: `${product.name} personalizado agregado correctamente`,
     });
 
-    // Close the customizer after a short delay to show the toast
     setTimeout(() => {
       if (onClose) onClose();
     }, 1000);
@@ -197,19 +202,13 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
           </CardHeader>
           <CardContent>
             <div className="relative">
-              {/* Bag Preview */}
               <div 
                 className="w-full h-80 rounded-lg flex items-center justify-center relative overflow-hidden transition-all duration-300"
                 style={{ backgroundColor: selectedBagColor?.hex }}
               >
-                {/* Bag silhouette overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                
-                {/* Animal theme preview */}
                 <div className="text-center z-10 transition-all duration-300 scale-100 hover:scale-105">
                   <div className="text-6xl mb-4">{selectedAnimal?.emoji}</div>
-                  
-                  {/* Name preview */}
                   {customization.name && (
                     <div 
                       className={`text-2xl font-bold mb-2 transition-all duration-300`}
@@ -226,14 +225,11 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                       {customization.name}
                     </div>
                   )}
-                  
                   <div className="text-sm text-white/80">
                     {selectedAnimal?.name}
                   </div>
                 </div>
               </div>
-              
-              {/* Product info overlay */}
               <div className="absolute top-4 left-4 bg-black/80 text-white p-2 rounded transition-all duration-300 hover:scale-105">
                 <div className="text-sm font-medium">{product.name}</div>
                 <div className="text-xs text-accent">{formatPrice(totalPrice)}</div>

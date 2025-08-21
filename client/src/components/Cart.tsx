@@ -1,19 +1,20 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Minus, Plus, Trash2, MessageCircle } from 'lucide-react';
-import { useCart } from '@/components/cart-provider'; // <-- Usa el provider global
-import { formatPrice, openWhatsApp } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Minus, Plus, Trash2, MessageCircle } from "lucide-react";
+import { useCart } from "@/components/cart-provider";
+import { formatPrice, openWhatsApp } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import type { CartItem } from "@shared/schema";
 
 interface CartProps {
   isOpen: boolean;
@@ -49,7 +50,11 @@ export function Cart({ isOpen, onClose }: CartProps) {
     items.forEach((item) => {
       message += `• ${item.name}\n`;
       message += `  Cantidad: ${item.quantity}\n`;
-      message += `  Precio: ${formatPrice(item.price)}\n\n`;
+      message += `  Precio: ${formatPrice(item.price)}\n`;
+      if (item.personalization) message += `  Personalización: ${item.personalization}\n`;
+      if (item.namePersonalization) message += `  Personalización adicional: ${item.namePersonalization}\n`;
+      if (item.keychainPersonalization) message += `  Llavero personalizado: ${item.keychainPersonalization}\n`;
+      message += `\n`;
     });
 
     message += `💰 *Total: ${formatPrice(total)}*\n\n`;
@@ -65,10 +70,14 @@ export function Cart({ isOpen, onClose }: CartProps) {
 
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) {
-      removeItem(itemId);
-    } else {
-      updateItem(itemId, newQuantity);
+      toast({
+        title: "Cantidad inválida",
+        description: "La cantidad no puede ser menor a 1",
+        variant: "destructive",
+      });
+      return;
     }
+    updateItem(itemId, newQuantity);
   };
 
   if (isLoading) {
@@ -120,54 +129,62 @@ export function Cart({ isOpen, onClose }: CartProps) {
             <>
               <ScrollArea className="flex-1 pr-4">
                 <div className="space-y-4 py-4">
-                  {items.map((item) => (
+                  {items.map((item: CartItem) => (
                     <div key={item.id} className="border rounded-lg p-4">
                       <div className="flex gap-4">
                         <img
                           src={item.imageUrl || "/assets/placeholder.jpg"}
                           alt={item.name}
                           className="w-16 h-16 object-cover rounded-lg"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/assets/placeholder.jpg"; // Fallback si la imagen falla
+                          }}
                         />
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm">
-                            {item.name}
-                          </h4>
-                          <p className="text-sm text-gray-500 mb-2">
-                            {formatPrice(item.price)}
-                          </p>
-
+                          <h4 className="font-semibold text-sm">{item.name}</h4>
+                          <p className="text-sm text-gray-500 mb-2">{formatPrice(item.price)}</p>
+                          {item.personalization && (
+                            <p className="text-xs text-gray-600 mb-1">{item.personalization}</p>
+                          )}
+                          {item.namePersonalization && (
+                            <p className="text-xs text-gray-600 mb-1">Adicional: {item.namePersonalization}</p>
+                          )}
+                          {item.keychainPersonalization && (
+                            <p className="text-xs text-gray-600 mb-1">Llavero: {item.keychainPersonalization}</p>
+                          )}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Button
                                 variant="outline"
                                 size="icon"
                                 className="h-8 w-8"
-                                onClick={() =>
-                                  handleQuantityChange(item.id, item.quantity - 1)
-                                }
+                                onClick={() => handleQuantityChange(item.id!, item.quantity - 1)}
+                                disabled={item.quantity <= 1}
                               >
                                 <Minus className="h-3 w-3" />
                               </Button>
-                              <span className="w-8 text-center font-medium">
-                                {item.quantity}
-                              </span>
+                              <span className="w-8 text-center font-medium">{item.quantity}</span>
                               <Button
                                 variant="outline"
                                 size="icon"
                                 className="h-8 w-8"
-                                onClick={() =>
-                                  handleQuantityChange(item.id, item.quantity + 1)
-                                }
+                                onClick={() => handleQuantityChange(item.id!, item.quantity + 1)}
                               >
                                 <Plus className="h-3 w-3" />
                               </Button>
                             </div>
-
                             <Button
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-red-500 hover:text-red-700"
-                              onClick={() => removeItem(item.id)}
+                              onClick={() => {
+                                removeItem(item.id!);
+                                toast({
+                                  title: "Producto eliminado",
+                                  description: `${item.name} ha sido removido del carrito`,
+                                });
+                              }}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -182,9 +199,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
               <div className="border-t pt-4 space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">Total:</span>
-                  <span className="font-bold text-xl">
-                    {formatPrice(total)}
-                  </span>
+                  <span className="font-bold text-xl">{formatPrice(total)}</span>
                 </div>
 
                 <div className="space-y-2">
@@ -196,10 +211,15 @@ export function Cart({ isOpen, onClose }: CartProps) {
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Pedir por WhatsApp
                   </Button>
-
                   <Button
                     variant="outline"
-                    onClick={() => clearCart()}
+                    onClick={() => {
+                      clearCart();
+                      toast({
+                        title: "Carrito vaciado",
+                        description: "Todos los productos han sido eliminados",
+                      });
+                    }}
                     className="w-full"
                   >
                     Vaciar Carrito

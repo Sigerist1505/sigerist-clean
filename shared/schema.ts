@@ -5,7 +5,7 @@ import {
   serial,
   integer,
   boolean,
-  decimal, // Puedes usar numeric si prefieres; decimal es alias
+  decimal,
   timestamp,
   jsonb,
 } from "drizzle-orm/pg-core";
@@ -50,31 +50,26 @@ export const products = pgTable("products", {
 
 export const cartItems = pgTable("cart_items", {
   id: serial("id").primaryKey(),
-
+  sessionId: text("session_id").notNull(),
   productId: integer("product_id")
     .notNull()
-    .references(() => products.id), // Referencia al producto
-
-  name: text("name").notNull(), // Nombre del producto, requerido por el backend
-
-  quantity: integer("quantity").default(1).notNull(), // Cantidad, por defecto 1
-
-  personalization: text("personalization"), // Personalización, opcional (se maneja en el carrito)
-  embroideryColor: text("embroidery_color"), // Color del bordado, opcional
-  embroideryFont: text("embroidery_font"), // Fuente del bordado, opcional
-  customPreview: text("custom_preview"), // Vista previa personalizada, opcional
-
-  addPompon: boolean("add_pompon").default(false).notNull(), // Añadir pompón, por defecto false
-  addPersonalizedKeychain: boolean("add_personalized_keychain").default(false).notNull(), // Llaveros personalizados, por defecto false
-  addDecorativeBow: boolean("add_decorative_bow").default(false).notNull(), // Lazo decorativo, por defecto false
-  addPersonalization: boolean("add_personalization").default(false).notNull(), // Personalización adicional, por defecto false
-  expressService: boolean("express_service").default(false).notNull(), // Servicio exprés, por defecto false
-
-  keychainPersonalization: text("keychain_personalization"), // Personalización del llavero, opcional
-  hasBordado: boolean("has_bordado").default(false).notNull(), // Tiene bordado, por defecto false
-
-  // number en TS para compatibilidad con el frontend
-  price: decimal("price", { precision: 10, scale: 2 }).$type<number>().notNull(), // Precio, requerido
+    .references(() => products.id),
+  name: text("name").notNull(),
+  quantity: integer("quantity").default(1).notNull(),
+  personalization: text("personalization"),
+  embroideryColor: text("embroidery_color"),
+  embroideryFont: text("embroidery_font"),
+  customPreview: text("custom_preview"),
+  addPompon: boolean("add_pompon").default(false).notNull(),
+  addPersonalizedKeychain: boolean("add_personalized_keychain").default(false).notNull(),
+  addDecorativeBow: boolean("add_decorative_bow").default(false).notNull(),
+  addPersonalization: boolean("add_personalization").default(false).notNull(),
+  expressService: boolean("express_service").default(false).notNull(),
+  keychainPersonalization: text("keychain_personalization"),
+  namePersonalization: text("name_personalization"), // Asegúrate de que esta línea esté presente
+  hasBordado: boolean("has_bordado").default(false).notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).$type<number>().notNull(),
+  imageUrl: text("image_url"),
 });
 
 export const orders = pgTable("orders", {
@@ -158,22 +153,24 @@ export const insertProductSchema = createInsertSchema(products, {
 }).omit({ id: true, createdAt: true, variants: true }); // Omitir id y createdAt
 
 export const insertCartItemSchema = createInsertSchema(cartItems, {
-  productId: (s) => s.productId.positive(), // ID positivo
-  name: (s) => s.name.min(1), // Nombre mínimo 1 carácter
-  quantity: (s) => s.quantity.positive().max(100), // Cantidad entre 1 y 100
-  personalization: (s) => s.personalization.optional(), // Opcional
-  embroideryColor: (s) => s.embroideryColor.optional(), // Opcional
-  embroideryFont: (s) => s.embroideryFont.optional(), // Opcional
-  customPreview: (s) => s.customPreview.optional(), // Opcional
-  addPompon: (s) => s.addPompon, // Booleano
-  addPersonalizedKeychain: (s) => s.addPersonalizedKeychain, // Booleano
-  addDecorativeBow: (s) => s.addDecorativeBow, // Booleano
-  addPersonalization: (s) => s.addPersonalization, // Booleano
-  expressService: (s) => s.expressService, // Booleano
-  keychainPersonalization: (s) => s.keychainPersonalization.optional(), // Opcional
-  hasBordado: (s) => s.hasBordado, // Booleano
-  price: () => z.number().positive(), // Precio positivo
-}).omit({ id: true }); // Omitir id
+  productId: (s) => s.productId.positive(),
+  name: (s) => s.name.min(1),
+  quantity: (s) => s.quantity.positive().max(100),
+  personalization: (s) => s.personalization.optional(),
+  embroideryColor: (s) => s.embroideryColor.optional(),
+  embroideryFont: (s) => s.embroideryFont.optional(),
+  customPreview: (s) => s.customPreview.optional(),
+  addPompon: (s) => s.addPompon,
+  addPersonalizedKeychain: (s) => s.addPersonalizedKeychain,
+  addDecorativeBow: (s) => s.addDecorativeBow,
+  addPersonalization: (s) => s.addPersonalization,
+  expressService: (s) => s.expressService,
+  keychainPersonalization: (s) => s.keychainPersonalization.optional(),
+  namePersonalization: (s) => s.namePersonalization.optional(), // Asegúrate de que esta línea esté presente
+  hasBordado: (s) => s.hasBordado,
+  price: () => z.number().positive(),
+  imageUrl: (s) => s.imageUrl.optional(),
+}).omit({ id: true });
 
 export const insertOrderSchema = createInsertSchema(orders, {
   customerName: (s) => s.customerName.min(1), // Nombre mínimo 1 carácter
