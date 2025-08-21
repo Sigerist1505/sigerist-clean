@@ -17,7 +17,7 @@ import { useCart } from "@/components/cart-provider";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@shared/schema";
 import { formatPrice } from "@/lib/utils";
-import { AddonOptions } from "./addon-options";
+import { AddonOptions } from "./addon-options"; // Asume que este componente existe
 
 interface ProductCustomizerProps {
   product: Product;
@@ -160,7 +160,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
     addItem({
       productId: product.id,
       name: product.name,
-      price: totalPrice, // <-- Enviar como número
+      price: Number(totalPrice), // <-- así, como número
       quantity: 1,
       personalization: personalizationText,
       embroideryColor: customization.fontColor,
@@ -199,22 +199,20 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
             <div className="relative">
               {/* Bag Preview */}
               <div 
-                className="w-full h-80 rounded-lg border-2 border-dashed border-accent/50 flex items-center justify-center relative overflow-hidden"
+                className="w-full h-80 rounded-lg flex items-center justify-center relative overflow-hidden transition-all duration-300"
                 style={{ backgroundColor: selectedBagColor?.hex }}
               >
                 {/* Bag silhouette overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                 
                 {/* Animal theme preview */}
-                <div className="text-center z-10">
-                  <div className="text-6xl mb-4">
-                    {selectedAnimal?.emoji}
-                  </div>
+                <div className="text-center z-10 transition-all duration-300 scale-100 hover:scale-105">
+                  <div className="text-6xl mb-4">{selectedAnimal?.emoji}</div>
                   
                   {/* Name preview */}
                   {customization.name && (
                     <div 
-                      className={`text-2xl font-bold mb-2`}
+                      className={`text-2xl font-bold mb-2 transition-all duration-300`}
                       style={{ 
                         color: selectedFontColor?.hex,
                         fontFamily: selectedFontStyle?.preview === 'Script' ? 'cursive' : 
@@ -236,7 +234,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
               </div>
               
               {/* Product info overlay */}
-              <div className="absolute top-4 left-4 bg-black/80 text-white p-2 rounded">
+              <div className="absolute top-4 left-4 bg-black/80 text-white p-2 rounded transition-all duration-300 hover:scale-105">
                 <div className="text-sm font-medium">{product.name}</div>
                 <div className="text-xs text-accent">{formatPrice(totalPrice)}</div>
               </div>
@@ -263,7 +261,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                 <span className="text-gray-400">Color de fuente:</span>
                 <div className="flex items-center gap-2">
                   <div 
-                    className="w-4 h-4 rounded border"
+                    className="w-4 h-4 rounded border transition-all duration-200"
                     style={{ backgroundColor: selectedFontColor?.hex }}
                   ></div>
                   <span className="text-white font-medium">{selectedFontColor?.name}</span>
@@ -273,7 +271,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                 <span className="text-gray-400">Color del bolso:</span>
                 <div className="flex items-center gap-2">
                   <div 
-                    className="w-4 h-4 rounded border"
+                    className="w-4 h-4 rounded border transition-all duration-200"
                     style={{ backgroundColor: selectedBagColor?.hex }}
                   ></div>
                   <span className="text-white font-medium">{selectedBagColor?.name}</span>
@@ -315,7 +313,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                   <button
                     key={animal.id}
                     onClick={() => handleCustomizationChange('animalTheme', animal.id)}
-                    className={`p-3 rounded-lg border text-center transition-all ${
+                    className={`p-3 rounded-lg border text-center transition-all duration-200 ${
                       customization.animalTheme === animal.id
                         ? 'border-accent bg-accent/20 text-accent'
                         : 'border-gray-600 hover:border-accent/50 text-gray-300'
@@ -373,7 +371,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                   <button
                     key={color.id}
                     onClick={() => handleCustomizationChange('fontColor', color.id)}
-                    className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                    className={`w-10 h-10 rounded-lg border-2 transition-all duration-200 ${
                       customization.fontColor === color.id
                         ? 'border-accent scale-110'
                         : 'border-gray-600 hover:border-accent/50'
@@ -393,7 +391,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                   <button
                     key={color.id}
                     onClick={() => handleCustomizationChange('bagColor', color.id)}
-                    className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                    className={`w-10 h-10 rounded-lg border-2 transition-all duration-200 ${
                       customization.bagColor === color.id
                         ? 'border-accent scale-110'
                         : 'border-gray-600 hover:border-accent/50'
@@ -433,7 +431,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-lg font-medium text-white">Precio Total:</span>
-              <span className="text-2xl font-bold text-accent">{formatPrice(totalPrice)}</span>
+              <span className="text-2xl font-bold text-accent transition-all duration-300 ease-in-out">{formatPrice(totalPrice)}</span>
             </div>
             
             <div className="text-sm text-gray-400 mb-4">
