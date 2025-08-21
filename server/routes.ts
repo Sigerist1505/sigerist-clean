@@ -57,32 +57,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/cart", async (req, res) => {
-    try {
-      // Depuración: log de los datos recibidos
-      console.log("Datos recibidos en /api/cart:", req.body);
+app.post("/api/cart", async (req, res) => {
+  try {
+    // Depuración: log de los datos recibidos
+    console.log("Datos recibidos en /api/cart:", req.body);
 
-      // Validar con Zod
-      const validated = insertCartItemSchema.parse(req.body);
+    // Validar y transformar con Zod
+    const validated = insertCartItemSchema.parse({
+      ...req.body,
+      price: z.preprocess((val) => (val ? Number(val) : 0), z.number()),
+    });
 
-      // Asegurar que price sea number (aunque Zod ya lo valida)
-      const cartItemData = {
-        ...validated,
-        price: Number(validated.price), // Forzar conversión explícita
-      };
-
-      // Guardar en storage
-      const item = await storage.addCartItem(cartItemData);
-      res.json(item);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        console.error("Zod validation error in /api/cart:", error.errors);
-        return res.status(400).json({ message: "Invalid data", errors: error.errors });
-      }
-      console.error("Error adding item to cart:", error); // Log detallado
-      res.status(500).json({ message: "Error adding item to cart" });
+    // Guardar en storage
+    const item = await storage.addCartItem(validated);
+    res.status(201).json(item); // Usar 201 para creación exitosa
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error("Zod validation error in /api/cart:", error.errors);
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
     }
-  });
+    // Tipar error como Error o manejarlo como unknown
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("Error adding item to cart:", error);
+    res.status(500).json({ message: "Error adding item to cart", error: errorMessage });
+  }
+});
 
   app.put("/api/cart/:id", async (req, res) => {
     try {

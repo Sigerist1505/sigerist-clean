@@ -158,24 +158,24 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
 
     const personalizationText = `Nombre: ${customization.name}, Tema: ${animalThemes.find(a => a.id === customization.animalTheme)?.name}, Color de fuente: ${fontColors.find(c => c.id === customization.fontColor)?.name}, Estilo: ${fontStyles.find(f => f.id === customization.fontStyle)?.name}, Tamaño: ${fontSizes.find(s => s.id === customization.fontSize)?.name}, Color del bolso: ${bagColors.find(b => b.id === customization.bagColor)?.name}${customization.specialRequest ? `, Solicitud especial: ${customization.specialRequest}` : ''}${addonOptions.namePersonalization ? `, Personalización adicional: ${addonOptions.namePersonalization}` : ''}`;
 
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: Number(totalPrice),
-      quantity: 1,
-      personalization: personalizationText,
-      embroideryColor: customization.fontColor,
-      embroideryFont: customization.fontStyle,
-      addPompon: addonOptions.addPompon,
-      addPersonalizedKeychain: addonOptions.addPersonalizedKeychain,
-      addDecorativeBow: addonOptions.addDecorativeBow,
-      addPersonalization: addonOptions.addPersonalization,
-      expressService: addonOptions.addExpressService,
-      keychainPersonalization: addonOptions.keychainPersonalization,
-      namePersonalization: addonOptions.namePersonalization,
-      sessionId: crypto.randomUUID(), // Añadido para compatibilidad con cartItems
-      imageUrl: product.imageUrl, // Añadido para compatibilidad con cartItems
-    });
+ addItem({
+  productId: product.id,
+  name: product.name,
+  price: Number(totalPrice), // Asegúrate de que esto sea un número
+  quantity: 1,
+  personalization: personalizationText,
+  embroideryColor: customization.fontColor,
+  embroideryFont: customization.fontStyle,
+  addPompon: addonOptions.addPompon,
+  addPersonalizedKeychain: addonOptions.addPersonalizedKeychain,
+  addDecorativeBow: addonOptions.addDecorativeBow,
+  addPersonalization: addonOptions.addPersonalization,
+  expressService: addonOptions.addExpressService,
+  keychainPersonalization: addonOptions.keychainPersonalization,
+  namePersonalization: addonOptions.namePersonalization,
+  sessionId: crypto.randomUUID(),
+  imageUrl: product.imageUrl,
+});
 
     toast({
       title: "¡Agregado al carrito!",
