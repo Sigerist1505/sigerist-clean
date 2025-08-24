@@ -548,7 +548,7 @@ const Home = () => {
                     </div>
                     <div>
                       <p className="font-medium">Ubicación</p>
-                      <p className="text-gray-400">Bogotá, Colombia</p>
+                      <p className="text-gray-400">Medellín, Colombia</p>
                     </div>
                   </div>
                 </div>
