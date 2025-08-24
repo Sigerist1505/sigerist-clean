@@ -31,6 +31,7 @@ interface AddToCartData {
   addNameEmbroidery?: boolean;
   expressService?: boolean;
   keychainPersonalization?: string;
+  namePersonalization?: string;
   hasBordado?: boolean;
   specifications?: {
     bordado?: boolean;

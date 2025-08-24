@@ -72,12 +72,12 @@ export const cartItems = pgTable("cart_items", {
   expressService: boolean("express_service").default(false).notNull(), // Servicio exprés, por defecto false
 
   keychainPersonalization: text("keychain_personalization"), // Personalización del llavero, opcional
-  namePersonalization: text("name_personalization"), // Personalización del nombre, opcional
+  addNameEmbroidery: boolean("add_name_embroidery").default(false).notNull(), // Añadir bordado de nombre, por defecto false
   hasBordado: boolean("has_bordado").default(false).notNull(), // Tiene bordado, por defecto false
 
   // number en TS para compatibilidad con el frontend
   price: decimal("price", { precision: 10, scale: 2 }).$type<number>().notNull(), // Precio, requerido
-  imageUrl: text("image_url"), // URL de la imagen, opcional
+  // imageUrl removed - not in seed database schema
 });
 
 export const orders = pgTable("orders", {
@@ -173,10 +173,9 @@ export const insertCartItemSchema = createInsertSchema(cartItems, {
   addPersonalization: (s) => s.addPersonalization,
   expressService: (s) => s.expressService,
   keychainPersonalization: (s) => s.keychainPersonalization.optional(),
-  namePersonalization: (s) => s.namePersonalization.optional(),
+  addNameEmbroidery: (s) => s.addNameEmbroidery,
   hasBordado: (s) => s.hasBordado,
   price: () => z.number().positive(),
-  imageUrl: (s) => s.imageUrl.optional(),
 }).omit({ id: true });
 
 export const insertOrderSchema = createInsertSchema(orders, {
