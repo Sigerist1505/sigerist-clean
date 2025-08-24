@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Luxury e-commerce platform for personalized bags with AI WhatsApp chatbot",
   "private": true,
+  "type": "module",
   "main": "dist/index.cjs",
   "scripts": {
     "dev": "vite",
@@ -14,6 +15,7 @@
     "fix:add-name-embroidery": "node fix-add-name-embroidery-column.js",
     "fix:cart-schema": "node comprehensive-cart-fix.js",
     "audit:cart-schema": "node audit-cart-schema.js",
+    "verify:database-fix": "node verify-database-fix.js",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
