@@ -35,10 +35,12 @@ export interface IStorage {
 
   // Cart Items
   getCartItems(): Promise<CartItem[]>;
+  getCartItemsBySession(sessionId: string): Promise<CartItem[]>;
   addCartItem(item: InsertCartItem): Promise<CartItem>;
   updateCartItem(id: number, quantity: number): Promise<CartItem | undefined>;
   removeCartItem(id: number): Promise<boolean>;
   clearCart(): Promise<void>;
+  clearCartBySession(sessionId: string): Promise<void>;
 
   // Orders
   createOrder(order: InsertOrder): Promise<Order>;
@@ -115,9 +117,9 @@ export class DatabaseStorage implements IStorage {
       if (dbProducts.length === 0) {
         await this.initializeSampleProducts();
         const freshProducts = await db.select().from(products);
-        return freshProducts.map((p) => ({ ...p, variants: p.variants as ProductVariants }));
+        return freshProducts.map((p) => ({ ...p, price: Number(p.price), variants: p.variants as ProductVariants }));
       }
-      return dbProducts.map((p) => ({ ...p, variants: p.variants as ProductVariants }));
+      return dbProducts.map((p) => ({ ...p, price: Number(p.price), variants: p.variants as ProductVariants }));
     } catch (error) {
       console.error("Database error, using sample products:", error);
       return this.getSampleProducts();
@@ -154,7 +156,7 @@ export class DatabaseStorage implements IStorage {
   async getProduct(id: number): Promise<Product | undefined> {
     try {
       const [product] = await db.select().from(products).where(eq(products.id, id));
-      return product ? { ...product, variants: product.variants as ProductVariants } : undefined;
+      return product ? { ...product, price: Number(product.price), variants: product.variants as ProductVariants } : undefined;
     } catch (error) {
       const sampleProducts = this.getSampleProducts();
       return sampleProducts.find((p) => p.id === id);
@@ -254,6 +256,24 @@ export class DatabaseStorage implements IStorage {
 
   async clearCart(): Promise<void> {
     await db.delete(cartItems);
+  }
+
+  async getCartItemsBySession(sessionId: string): Promise<CartItem[]> {
+    try {
+      return await db.select().from(cartItems).where(eq(cartItems.sessionId, sessionId));
+    } catch (error) {
+      console.error("Error fetching cart items by session:", error);
+      return [];
+    }
+  }
+
+  async clearCartBySession(sessionId: string): Promise<void> {
+    try {
+      await db.delete(cartItems).where(eq(cartItems.sessionId, sessionId));
+    } catch (error) {
+      console.error("Error clearing cart by session:", error);
+      throw error;
+    }
   }
 
   // Orders

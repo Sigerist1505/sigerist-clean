@@ -84,7 +84,7 @@ function ProductPage() {
       {
         productId: product.id,
         name: product.name,           // <-- agrega esto
-        price: product.price,         // <-- y esto
+        price: totalPrice,            // <-- Use calculated total price
         quantity,
         personalization: personalization || undefined,
         addPompon,
