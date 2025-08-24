@@ -195,14 +195,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 🟣 Wompi API endpoints
   
+  // Configuration status endpoint (for debugging)
+  app.get("/api/wompi/config", (req, res) => {
+    const configStatus = WompiService.getConfigurationStatus();
+    res.json({
+      status: configStatus.isFullyConfigured ? "ready" : "incomplete",
+      ...configStatus
+    });
+  });
+  
   // Create card token endpoint
   app.post("/api/wompi/create-token", async (req, res) => {
     try {
-      // Check if Wompi is properly configured
-      if (!process.env.WOMPI_PUBLIC_KEY) {
+      // Check Wompi configuration status
+      const configStatus = WompiService.getConfigurationStatus();
+      
+      if (!configStatus.isFullyConfigured) {
+        console.error("Wompi configuration incomplete:", configStatus);
         return res.status(503).json({ 
           message: "Error de configuración", 
-          error: "El servicio de pagos no está configurado correctamente. Por favor contacta al soporte técnico." 
+          error: "El servicio de pagos no está configurado correctamente. Por favor contacta al soporte técnico.",
+          details: process.env.NODE_ENV === "development" ? configStatus : undefined
         });
       }
 

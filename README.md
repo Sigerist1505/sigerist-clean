@@ -1,5 +1,33 @@
 # 🛍️ Sigerist Luxury Bags
 
+E-commerce completo para bolsos de lujo personalizados con IA WhatsApp, pagos integrados (Stripe + Wompi), y experiencia premium.
+
+## 🚨 CONFIGURACIÓN CRÍTICA PARA PAGOS WOMPI
+
+**IMPORTANTE**: Para que los pagos con Wompi funcionen correctamente, debes configurar TODAS las variables de entorno requeridas:
+
+### Variables Requeridas de Wompi:
+```env
+WOMPI_PUBLIC_KEY=pub_prod_xxxxx        # Clave pública de producción
+WOMPI_PRIVATE_KEY=prv_prod_xxxxx       # Clave privada de producción  
+WOMPI_INTEGRITY_SECRET=xxxxx           # Secreto de integridad
+WOMPI_WEBHOOK_SECRET=xxxxx             # Secreto de eventos/webhook
+```
+
+### ⚠️ Error Común: "El servicio de pagos no está configurado correctamente"
+
+Si recibes este error 503, verifica que:
+1. ✅ Todas las 4 variables de Wompi están configuradas
+2. ✅ El archivo `.env` está en la raíz del proyecto
+3. ✅ Las claves son de producción (`pub_prod_` y `prv_prod_`)
+4. ✅ Los secretos corresponden al mismo ambiente (producción)
+
+### 🔍 Verificar Configuración:
+```bash
+# Endpoint para verificar estado de configuración
+GET /api/wompi/config
+```
+
 Plataforma de e-commerce de lujo para bolsos personalizados con chatbot de WhatsApp con IA.
 
 ## 🚀 Deploy en Railway
