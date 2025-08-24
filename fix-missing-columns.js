@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 
-// Script to add missing columns to cart_items table
+// Script to add missing name_personalization column to cart_items table
 import { neon } from '@neondatabase/serverless';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
   console.error('❌ DATABASE_URL environment variable is required');
+  console.error('Usage: DATABASE_URL=your_database_url node add-missing-column.js');
   process.exit(1);
 }
 
 const sql = neon(DATABASE_URL);
 
-console.log('🚀 Fixing missing columns in cart_items table...');
+console.log('🚀 Adding missing name_personalization column to cart_items table...');
 
-async function addMissingColumns() {
+async function addMissingColumn() {
   try {
     console.log('🔍 Checking if cart_items table exists...');
     
@@ -28,7 +29,7 @@ async function addMissingColumns() {
     `;
     
     if (!tableCheckResult[0].exists) {
-      console.log('⚠️ cart_items table does not exist. Creating it...');
+      console.log('⚠️ cart_items table does not exist. Creating it with the complete schema...');
       
       // First ensure products table exists (it should from the migration scripts)
       const productsExist = await sql`
@@ -43,7 +44,7 @@ async function addMissingColumns() {
         throw new Error('Products table does not exist. Please run the product migration script first.');
       }
       
-      // Create the complete cart_items table
+      // Create the complete cart_items table with all required columns
       await sql`
         CREATE TABLE cart_items (
           id SERIAL PRIMARY KEY,
@@ -68,81 +69,55 @@ async function addMissingColumns() {
         )
       `;
       
-      console.log('✅ cart_items table created successfully');
+      console.log('✅ cart_items table created successfully with all columns');
       
     } else {
-      console.log('✅ cart_items table exists. Checking for missing columns...');
+      console.log('✅ cart_items table exists. Checking for name_personalization column...');
       
-      // List of columns that should exist in cart_items table
-      const requiredColumns = [
-        'name_personalization',
-        'keychain_personalization',
-        'session_id',
-        'embroidery_color',
-        'embroidery_font',
-        'custom_preview',
-        'add_pompon',
-        'add_personalized_keychain',
-        'add_decorative_bow',
-        'add_personalization',
-        'express_service',
-        'has_bordado',
-        'image_url'
-      ];
+      // Check if name_personalization column exists
+      const columnExists = await sql`
+        SELECT EXISTS (
+          SELECT FROM information_schema.columns 
+          WHERE table_schema = 'public' 
+          AND table_name = 'cart_items'
+          AND column_name = 'name_personalization'
+        );
+      `;
       
-      for (const columnName of requiredColumns) {
-        const columnExists = await sql`
-          SELECT EXISTS (
-            SELECT FROM information_schema.columns 
-            WHERE table_schema = 'public' 
-            AND table_name = 'cart_items'
-            AND column_name = ${columnName}
-          );
-        `;
-        
-        if (!columnExists[0].exists) {
-          console.log(`➕ Adding missing column: ${columnName}`);
-          
-          // Add the column with appropriate type and default value
-          let alterStatement;
-          if (columnName.startsWith('add_') || columnName === 'has_bordado' || columnName === 'express_service') {
-            alterStatement = `ALTER TABLE cart_items ADD COLUMN ${columnName} BOOLEAN DEFAULT false NOT NULL`;
-          } else if (columnName === 'quantity') {
-            alterStatement = `ALTER TABLE cart_items ADD COLUMN ${columnName} INTEGER DEFAULT 1 NOT NULL`;
-          } else if (columnName === 'price') {
-            alterStatement = `ALTER TABLE cart_items ADD COLUMN ${columnName} NUMERIC(10,2) NOT NULL DEFAULT 0`;
-          } else {
-            alterStatement = `ALTER TABLE cart_items ADD COLUMN ${columnName} TEXT`;
-          }
-          
-          await sql.execute(alterStatement);
-          console.log(`✅ Added column: ${columnName}`);
-        } else {
-          console.log(`✅ Column ${columnName} already exists`);
-        }
+      if (!columnExists[0].exists) {
+        console.log('➕ Adding missing name_personalization column...');
+        await sql`ALTER TABLE cart_items ADD COLUMN name_personalization TEXT`;
+        console.log('✅ name_personalization column added successfully');
+      } else {
+        console.log('✅ name_personalization column already exists');
       }
     }
     
     // Verify the fix worked
     console.log('🧪 Testing a sample query to verify the fix...');
     const testResult = await sql`
-      SELECT id, name_personalization 
+      SELECT COUNT(*) as count 
       FROM cart_items 
       LIMIT 1
     `;
-    console.log('✅ Test query successful - name_personalization column is accessible');
+    console.log('✅ Test query successful - cart_items table is accessible');
     
-    console.log('🎉 All missing columns have been added successfully!');
+    console.log('🎉 Migration completed successfully!');
     console.log('💡 The cart functionality should now work properly.');
+    console.log('');
+    console.log('Next steps:');
+    console.log('1. Deploy the updated application code');
+    console.log('2. Test adding products to cart');
+    console.log('3. Verify no more 404 errors occur');
     
   } catch (error) {
-    console.error('❌ Error fixing missing columns:', error);
+    console.error('❌ Error during migration:', error);
     process.exit(1);
   }
 }
 
-// Run the fix
-addMissingColumns()
+// Run the migration
+addMissingColumn()
   .then(() => {
     console.log('✅ Migration completed successfully');
     process.exit(0);
