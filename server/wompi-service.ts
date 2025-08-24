@@ -8,6 +8,8 @@ const WOMPI_WEBHOOK_SECRET = process.env.WOMPI_WEBHOOK_SECRET;
 
 if (!WOMPI_PRIVATE_KEY || !WOMPI_PUBLIC_KEY) {
   console.warn("Wompi keys not configured. Payment processing will not work.");
+  console.warn("Please update WOMPI_PUBLIC_KEY and WOMPI_PRIVATE_KEY in your .env file.");
+  console.warn("Get your keys from https://comercios.wompi.co/");
 }
 
 if (!WOMPI_INTEGRITY_SECRET) {
@@ -20,12 +22,18 @@ if (!WOMPI_WEBHOOK_SECRET) {
 
 export class WompiService {
   static getConfigurationStatus() {
+    const hasValidPublicKey = !!WOMPI_PUBLIC_KEY && !WOMPI_PUBLIC_KEY.includes('your-public-key-here');
+    const hasValidPrivateKey = !!WOMPI_PRIVATE_KEY && !WOMPI_PRIVATE_KEY.includes('your-private-key-here');
+    const hasValidIntegritySecret = !!WOMPI_INTEGRITY_SECRET && !WOMPI_INTEGRITY_SECRET.includes('your-integrity-secret-here');
+    const hasValidWebhookSecret = !!WOMPI_WEBHOOK_SECRET && !WOMPI_WEBHOOK_SECRET.includes('your-webhook-secret-here');
+    
     return {
-      hasPublicKey: !!WOMPI_PUBLIC_KEY,
-      hasPrivateKey: !!WOMPI_PRIVATE_KEY,
-      hasIntegritySecret: !!WOMPI_INTEGRITY_SECRET,
-      hasWebhookSecret: !!WOMPI_WEBHOOK_SECRET,
-      isFullyConfigured: !!(WOMPI_PUBLIC_KEY && WOMPI_PRIVATE_KEY && WOMPI_INTEGRITY_SECRET)
+      hasPublicKey: hasValidPublicKey,
+      hasPrivateKey: hasValidPrivateKey,
+      hasIntegritySecret: hasValidIntegritySecret,
+      hasWebhookSecret: hasValidWebhookSecret,
+      isFullyConfigured: hasValidPublicKey && hasValidPrivateKey && hasValidIntegritySecret,
+      needsConfiguration: !hasValidPublicKey || !hasValidPrivateKey
     };
   }
 

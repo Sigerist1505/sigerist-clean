@@ -17,16 +17,28 @@ let allConfigured = true;
 requiredVars.forEach(varName => {
   const value = process.env[varName];
   const isSet = !!value;
-  const prefix = isSet ? '✅' : '❌';
-  const status = isSet ? 'CONFIGURADA' : 'FALTANTE';
+  
+  // Check for placeholder values
+  const isPlaceholder = value && (
+    value.includes('your-public-key-here') || 
+    value.includes('your-private-key-here') || 
+    value.includes('your-integrity-secret-here') || 
+    value.includes('your-webhook-secret-here')
+  );
+  
+  const isValid = isSet && !isPlaceholder;
+  const prefix = isValid ? '✅' : (isSet ? '⚠️' : '❌');
+  const status = isValid ? 'CONFIGURADA' : (isSet ? 'PLACEHOLDER - NECESITA ACTUALIZACIÓN' : 'FALTANTE');
   
   console.log(`${prefix} ${varName}: ${status}`);
   
-  if (isSet && value.length > 10) {
+  if (isSet && value.length > 10 && !isPlaceholder) {
     console.log(`   Valor: ${value.substring(0, 20)}...`);
+  } else if (isPlaceholder) {
+    console.log(`   ⚠️  Valor placeholder detectado - reemplaza con tu clave real de Wompi`);
   }
   
-  if (!isSet) {
+  if (!isValid) {
     allConfigured = false;
   }
 });
@@ -39,7 +51,8 @@ if (allConfigured) {
 } else {
   console.log('❌ CONFIGURACIÓN INCOMPLETA'); 
   console.log('🔧 Configura las variables faltantes en .env');
-  console.log('📖 Ver WOMPI_FIX.md para más detalles');
+  console.log('📖 Ver WOMPI_SETUP.md para instrucciones detalladas');
+  console.log('🌐 Obtén tus claves en: https://comercios.wompi.co/');
 }
 
 console.log('='.repeat(50) + '\n');
