@@ -4,6 +4,10 @@ interface CustomerInfo {
   name: string;
   email: string;
   phone: string;
+  address: string;
+  city: string;
+  department: string;
+  postalCode: string;
 }
 
 interface CustomerInfoContextType {
@@ -19,6 +23,10 @@ export function CustomerInfoProvider({ children }: { children: ReactNode }) {
     name: "",
     email: "",
     phone: "",
+    address: "",
+    city: "",
+    department: "",
+    postalCode: "",
   });
 
   const updateCustomerInfo = (updates: Partial<CustomerInfo>) => {

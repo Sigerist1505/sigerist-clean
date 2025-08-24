@@ -193,9 +193,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return stripeGuard(res);
   });
 
-  // 🟣 Wompi (placeholder simple; ajusta con tu lógica del servicio)
-  const wompiService = new WompiService();
+  // 🟣 Wompi API endpoints
+  
+  // Create card token endpoint
+  app.post("/api/wompi/create-token", async (req, res) => {
+    try {
+      const { cardNumber, expMonth, expYear, cvv, cardHolderName } = req.body;
+      
+      // Validate required fields
+      if (!cardNumber || !expMonth || !expYear || !cvv || !cardHolderName) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          required: ["cardNumber", "expMonth", "expYear", "cvv", "cardHolderName"] 
+        });
+      }
 
+      const cardData = {
+        number: cardNumber,
+        exp_month: expMonth,
+        exp_year: expYear,
+        cvc: cvv,
+        card_holder: cardHolderName
+      };
+
+      const tokenData = await WompiService.createToken(cardData);
+      res.json(tokenData);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      console.error("Error creating Wompi token:", error);
+      res.status(500).json({ message: "Error creating token", error: errorMessage });
+    }
+  });
+
+  // Create transaction endpoint
+  app.post("/api/wompi/create-transaction", async (req, res) => {
+    try {
+      const { 
+        amount_in_cents, 
+        currency, 
+        customer_email, 
+        payment_method, 
+        reference, 
+        customer_data 
+      } = req.body;
+
+      // Validate required fields
+      if (!amount_in_cents || !currency || !customer_email || !payment_method || !reference) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          required: ["amount_in_cents", "currency", "customer_email", "payment_method", "reference"] 
+        });
+      }
+
+      // Get acceptance tokens
+      const acceptanceTokens = await WompiService.getAcceptanceTokens();
+
+      const transactionData = {
+        amount_in_cents,
+        currency,
+        customer_email,
+        reference,
+        acceptance_token: acceptanceTokens.acceptance_token,
+        accept_personal_auth: acceptanceTokens.accept_personal_auth,
+        payment_method,
+        customer_data: customer_data || {}
+      };
+
+      const transactionResult = await WompiService.createTransaction(transactionData);
+      res.json({ success: true, data: transactionResult.data });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      console.error("Error creating Wompi transaction:", error);
+      res.status(500).json({ message: "Error creating transaction", error: errorMessage });
+    }
+  });
+
+  // Legacy endpoint (keeping for backwards compatibility)
   app.post("/api/payment/wompi/create-payment", async (req, res) => {
     try {
       const { amount, currency = "COP", customerEmail, orderReference } = req.body;

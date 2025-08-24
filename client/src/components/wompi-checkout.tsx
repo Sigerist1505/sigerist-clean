@@ -13,6 +13,12 @@ interface WompiCheckoutProps {
   reference: string;
   customerEmail: string;
   customerPhone?: string;
+  customerAddress?: {
+    address: string;
+    city: string;
+    department: string;
+    postalCode: string;
+  };
   onSuccess?: (transactionId: string) => void;
   onError?: (error: string) => void;
 }
@@ -23,6 +29,7 @@ export function WompiCheckout({
   reference,
   customerEmail,
   customerPhone,
+  customerAddress,
   onSuccess,
   onError
 }: WompiCheckoutProps) {
@@ -92,7 +99,13 @@ export function WompiCheckout({
         reference,
         customer_data: {
           phone_number: paymentData.phone,
-          full_name: paymentData.cardHolder
+          full_name: paymentData.cardHolder,
+          ...(customerAddress && {
+            address: customerAddress.address,
+            city: customerAddress.city,
+            region: customerAddress.department,
+            postal_code: customerAddress.postalCode
+          })
         }
       });
 
