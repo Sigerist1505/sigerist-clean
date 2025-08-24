@@ -198,6 +198,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create card token endpoint
   app.post("/api/wompi/create-token", async (req, res) => {
     try {
+      // Check if Wompi is properly configured
+      if (!process.env.WOMPI_PUBLIC_KEY) {
+        return res.status(503).json({ 
+          message: "Error de configuración", 
+          error: "El servicio de pagos no está configurado correctamente. Por favor contacta al soporte técnico." 
+        });
+      }
+
       const { cardNumber, expMonth, expYear, cvv, cardHolderName } = req.body;
       
       // Validate required fields
@@ -221,7 +229,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       console.error("Error creating Wompi token:", error);
-      res.status(500).json({ message: "Error creating token", error: errorMessage });
+      
+      // Return user-friendly error message
+      let statusCode = 500;
+      let userMessage = errorMessage;
+      
+      if (errorMessage.includes("configuración de Wompi no está completa") || 
+          errorMessage.includes("configuración de pagos no está completa")) {
+        statusCode = 503;
+        userMessage = "El servicio de pagos no está disponible temporalmente. Por favor intenta más tarde o contacta al soporte.";
+      }
+      
+      res.status(statusCode).json({ message: "Error creating token", error: userMessage });
     }
   });
 

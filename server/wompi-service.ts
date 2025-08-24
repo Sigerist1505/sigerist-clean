@@ -38,6 +38,11 @@ export class WompiService {
     cvc: string;
     card_holder: string;
   }) {
+    // Check if keys are configured
+    if (!WOMPI_PUBLIC_KEY) {
+      throw new Error("La configuración de Wompi no está completa. Contacta al administrador del sitio.");
+    }
+
     const response = await fetch(`${WOMPI_BASE_URL}/tokens/cards`, {
       method: "POST",
       headers: {
@@ -50,7 +55,14 @@ export class WompiService {
     const data = await response.json();
     
     if (!response.ok) {
-      throw new Error(data.error?.reason || "Error creating token");
+      // Provide more user-friendly error messages
+      let errorMessage = data.error?.reason || "Error creating token";
+      
+      if (errorMessage.includes("undefined") || errorMessage.includes("no corresponde a este ambiente")) {
+        errorMessage = "La configuración de pagos no está completa. Por favor contacta al soporte técnico.";
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return data;
@@ -73,6 +85,11 @@ export class WompiService {
       full_name: string;
     };
   }) {
+    // Check if keys are configured
+    if (!WOMPI_PRIVATE_KEY) {
+      throw new Error("La configuración de Wompi no está completa. Contacta al administrador del sitio.");
+    }
+
     // Generate integrity signature
     const signature = this.generateSignature(
       transactionData.reference,
@@ -102,7 +119,15 @@ export class WompiService {
     if (!response.ok) {
       console.error('Wompi transaction error:', data);
       console.error('Full error details:', JSON.stringify(data, null, 2));
-      throw new Error(data.error?.reason || data.message || "Error creating transaction");
+      
+      // Provide more user-friendly error messages
+      let errorMessage = data.error?.reason || data.message || "Error creating transaction";
+      
+      if (errorMessage.includes("undefined") || errorMessage.includes("no corresponde a este ambiente")) {
+        errorMessage = "La configuración de pagos no está completa. Por favor contacta al soporte técnico.";
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return data;
