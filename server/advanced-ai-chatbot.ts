@@ -749,14 +749,14 @@ KONTAKT: +57 300 123 4567`
         
         // Send photos asynchronously (don't wait for completion to respond)
         embroideryPhotoService.sendEmbroideryPhotos(phoneNumber, message, detectedLanguage)
-          .then(success => {
+          .then((success: any) => {
             if (success) {
               console.log('✅ Embroidery photos sent successfully');
             } else {
               console.log('❌ Failed to send embroidery photos');
             }
           })
-          .catch(error => {
+          .catch((error: any) => {
             console.error('❌ Error in photo sending process:', error);
           });
       }
