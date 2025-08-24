@@ -95,7 +95,28 @@ npm install
 
 # 2. Configurar variables de entorno
 cp .env.example .env
-# Editar .env con tus claves
+# Editar .env con tus claves (OBLIGATORIO para pagos con Wompi)
+
+## 🔑 Variables de Entorno Importantes
+
+### Para Pagos con Wompi (OBLIGATORIO)
+```env
+# Obtén estas claves en https://comercios.wompi.co/
+WOMPI_PUBLIC_KEY=pub_prod_xxxx    # Clave pública de producción
+WOMPI_PRIVATE_KEY=prv_prod_xxxx   # Clave privada de producción
+WOMPI_INTEGRITY_SECRET=xxxx       # Secreto de integridad
+```
+
+### Base de Datos (OBLIGATORIO)
+```env
+DATABASE_URL=postgresql://...     # Se genera automáticamente en Railway
+```
+
+### Para desarrollo local
+```env
+NODE_ENV=development
+PORT=5000  # Puerto del backend
+```
 
 # 3. Ejecutar en desarrollo
 npm run dev          # Frontend en :3000

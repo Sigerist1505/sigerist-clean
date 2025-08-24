@@ -209,29 +209,56 @@ export function WompiCheckout({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-gray-300">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={paymentData.email}
-            onChange={(e) => setPaymentData({...paymentData, email: e.target.value})}
-            className="bg-black/60 border-gray-600 text-white"
-            placeholder="tu@email.com"
-          />
-        </div>
+        {/* Only show customer data if not provided */}
+        {(!customerEmail || !customerPhone) && (
+          <>
+            {!customerEmail && (
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-300">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={paymentData.email}
+                  onChange={(e) => setPaymentData({...paymentData, email: e.target.value})}
+                  className="bg-black/60 border-gray-600 text-white"
+                  placeholder="tu@email.com"
+                />
+              </div>
+            )}
 
-        <div className="space-y-2">
-          <Label htmlFor="phone" className="text-gray-300">Teléfono</Label>
-          <Input
-            id="phone"
-            type="tel"
-            value={paymentData.phone}
-            onChange={(e) => setPaymentData({...paymentData, phone: e.target.value})}
-            className="bg-black/60 border-gray-600 text-white"
-            placeholder="+57 300 123 4567"
-          />
-        </div>
+            {!customerPhone && (
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-gray-300">Teléfono</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={paymentData.phone}
+                  onChange={(e) => setPaymentData({...paymentData, phone: e.target.value})}
+                  className="bg-black/60 border-gray-600 text-white"
+                  placeholder="+57 300 123 4567"
+                />
+              </div>
+            )}
+            
+            <div className="border-t border-gray-600 pt-4">
+              <h3 className="text-gray-300 font-medium mb-3">📋 Datos de la Tarjeta</h3>
+            </div>
+          </>
+        )}
+        
+        {/* Customer data summary if provided */}
+        {customerEmail && customerPhone && (
+          <div className="bg-gray-900/50 border border-gray-600 rounded-lg p-3 mb-4">
+            <h3 className="text-green-300 font-medium mb-2">✅ Información del Cliente</h3>
+            <div className="text-sm text-gray-300 space-y-1">
+              <div>📧 {customerEmail}</div>
+              <div>📱 {customerPhone}</div>
+              {customerAddress && (
+                <div>📍 {customerAddress.city}, {customerAddress.department}</div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="cardHolder" className="text-gray-300">Nombre del titular</Label>

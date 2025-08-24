@@ -195,6 +195,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         title: "Producto eliminado",
         description: "El producto se eliminó del carrito",
       });
+      // If cart is empty after removing item, redirect to home page
+      if (updatedCartItems.length === 0) {
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1000);
+      }
     },
     onError: () => {
       toast({
@@ -221,6 +227,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         title: "Carrito vaciado",
         description: "El carrito ha sido vaciado correctamente",
       });
+      // Redirect to home page after clearing cart
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     },
     onError: () => {
       toast({
