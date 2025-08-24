@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { getSessionId } from "@/lib/utils";
 import type { CartItem, InsertCartItem } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
@@ -35,7 +36,7 @@ const initialState: CartState = {
 };
 
 function calculateTotals(items: CartItem[], discountCode: string | null) {
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
   const itemCount = items.reduce((count, item) => count + item.quantity, 0);
   const discountAmount = discountCode ? (total * 15) / 100 : 0;
   const finalTotal = total - discountAmount;
@@ -44,6 +45,7 @@ function calculateTotals(items: CartItem[], discountCode: string | null) {
 }
 
 function cartReducer(state: CartState, action: CartAction): CartState {
+  let newState = { ...state };
   switch (action.type) {
     case "SET_ITEMS":
       const { total, itemCount, discountAmount, finalTotal } = calculateTotals(action.payload, state.discountCode);
@@ -53,21 +55,21 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, isLoading: action.payload };
 
     case "ADD_ITEM":
-      const newItems = [...state.items, action.payload];
-      const addTotals = calculateTotals(newItems, state.discountCode);
-      return { ...state, items: newItems, ...addTotals };
+      const newItemsAdd = [...state.items, action.payload];
+      const addTotals = calculateTotals(newItemsAdd, state.discountCode);
+      return { ...state, items: newItemsAdd, ...addTotals };
 
     case "UPDATE_ITEM":
-      const updatedItems = state.items.map(item =>
+      const updatedItems = state.items.map((item) =>
         item.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
       );
       const updateTotals = calculateTotals(updatedItems, state.discountCode);
       return { ...state, items: updatedItems, ...updateTotals };
 
     case "REMOVE_ITEM":
-      const filteredItems = state.items.filter(item => item.id !== action.payload);
-      const removeTotals = calculateTotals(filteredItems, state.discountCode);
-      return { ...state, items: filteredItems, ...removeTotals };
+      const filteredItems = state.items.filter((item) => item.id !== action.payload);
+      const totals = calculateTotals(filteredItems, state.discountCode);
+      return { ...state, items: filteredItems, ...totals };
 
     case "CLEAR_CART":
       return { ...initialState };
@@ -77,15 +79,15 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return {
         ...state,
         discountCode: action.payload.code,
-        ...applyTotals
+        ...applyTotals,
       };
 
     case "REMOVE_DISCOUNT":
-      const removeTotals2 = calculateTotals(state.items, null);
+      const removeTotals = calculateTotals(state.items, null);
       return {
         ...state,
         discountCode: null,
-        ...removeTotals2
+        ...removeTotals,
       };
 
     default:
@@ -108,29 +110,48 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const sessionId = getSessionId();
 
-  const { data: cartItems } = useQuery<CartItem[]>({
-    queryKey: ["/api/cart"],
-    refetchInterval: false,
+  const { data: cartItems = [], isLoading } = useQuery<CartItem[]>({
+    queryKey: ["/api/cart", sessionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/cart/${sessionId}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch cart: ${response.status} - ${errorText}`);
+      }
+      const data = await response.json();
+      return data as CartItem[];
+    },
+    retry: 1,
+    staleTime: 0,
   });
 
   const addItemMutation = useMutation({
     mutationFn: async (item: InsertCartItem) => {
-      const response = await apiRequest("POST", "/api/cart", item);
-      return response.json();
+      const response = await apiRequest("POST", "/api/cart", {
+        ...item,
+        price: Number(item.price), // Forzar conversión a número
+        sessionId,
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      return response.json() as Promise<CartItem[]>;
     },
     onSuccess: (updatedCartItems: CartItem[]) => {
       dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
-      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
       toast({
         title: "Producto agregado",
         description: "El producto se agregó correctamente al carrito",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "No se pudo agregar el producto al carrito",
+        description: error.message || "No se pudo agregar el producto al carrito",
         variant: "destructive",
       });
     },
@@ -139,16 +160,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const updateItemMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: number; quantity: number }) => {
       const response = await apiRequest("PUT", `/api/cart/${id}`, { quantity });
-      return response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      return response.json() as Promise<CartItem[]>;
     },
     onSuccess: (updatedCartItems: CartItem[]) => {
       dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
-      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "No se pudo actualizar el producto",
+        description: "No se pudo actualizar la cantidad",
         variant: "destructive",
       });
     },
@@ -157,11 +182,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const removeItemMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/cart/${id}`);
-      return response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      return response.json() as Promise<CartItem[]>;
     },
     onSuccess: (updatedCartItems: CartItem[]) => {
       dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
-      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
       toast({
         title: "Producto eliminado",
         description: "El producto se eliminó del carrito",
@@ -178,12 +207,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCartMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("DELETE", "/api/cart");
-      return response.json();
+      const response = await apiRequest("DELETE", `/api/cart/session/${sessionId}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      return response.json() as Promise<CartItem[]>;
     },
     onSuccess: (updatedCartItems: CartItem[]) => {
       dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
-      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
+      toast({
+        title: "Carrito vaciado",
+        description: "El carrito ha sido vaciado correctamente",
+      });
     },
     onError: () => {
       toast({

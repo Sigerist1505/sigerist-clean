@@ -49,13 +49,13 @@ const fontStyles = [
   { id: "elegant", name: "Elegante", preview: "Script" },
   { id: "modern", name: "Moderno", preview: "Sans-serif" },
   { id: "classic", name: "Clásico", preview: "Serif" },
-  { id: "playful", name: "Divertido", preview: "Comic" }
+  { id: "playful", name: "Divertido", preview: "Comic" },
 ];
 
 const fontSizes = [
   { id: "small", name: "Pequeño", price: 0 },
   { id: "medium", name: "Mediano", price: 5 },
-  { id: "large", name: "Grande", price: 10 }
+  { id: "large", name: "Grande", price: 10 },
 ];
 
 const fontColors = [
@@ -64,7 +64,7 @@ const fontColors = [
   { id: "white", name: "Blanco", hex: "#FFFFFF" },
   { id: "black", name: "Negro", hex: "#000000" },
   { id: "pink", name: "Rosa", hex: "#FF69B4" },
-  { id: "blue", name: "Azul", hex: "#4169E1" }
+  { id: "blue", name: "Azul", hex: "#4169E1" },
 ];
 
 const animalThemes = [
@@ -75,7 +75,7 @@ const animalThemes = [
   { id: "unicorn", name: "Unicornio", price: 20, emoji: "🦄" },
   { id: "princess", name: "Princesa", price: 20, emoji: "👸" },
   { id: "dinosaur", name: "Dinosaurio", price: 15, emoji: "🦕" },
-  { id: "butterfly", name: "Mariposa", price: 15, emoji: "🦋" }
+  { id: "butterfly", name: "Mariposa", price: 15, emoji: "🦋" },
 ];
 
 const bagColors = [
@@ -84,7 +84,7 @@ const bagColors = [
   { id: "navy", name: "Azul Marino", hex: "#000080" },
   { id: "pink", name: "Rosa", hex: "#FFC0CB" },
   { id: "purple", name: "Morado", hex: "#800080" },
-  { id: "red", name: "Rojo", hex: "#DC143C" }
+  { id: "red", name: "Rojo", hex: "#DC143C" },
 ];
 
 export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) {
@@ -95,10 +95,10 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
     fontColor: "gold",
     animalTheme: "lion",
     bagColor: "black",
-    specialRequest: ""
+    specialRequest: "",
   });
 
-  const [totalPrice, setTotalPrice] = useState(Number(product.price));
+  const [totalPrice, setTotalPrice] = useState(Number(product.price) || 0);
   const [addonOptions, setAddonOptions] = useState<AddonOptions>({
     addPompon: false,
     addPersonalizedKeychain: false,
@@ -117,23 +117,23 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
   }, [customization, addonOptions, product.price]);
 
   const calculatePrice = () => {
-    let price = Number(product.price);
+    let price = Number(product.price) || 0;
 
-    const fontSize = fontSizes.find(f => f.id === customization.fontSize);
+    const fontSize = fontSizes.find((f) => f.id === customization.fontSize);
     if (fontSize) price += fontSize.price;
 
-    const animal = animalThemes.find(a => a.id === customization.animalTheme);
+    const animal = animalThemes.find((a) => a.id === customization.animalTheme);
     if (animal) price += animal.price;
 
-    price += addonOptions.totalAddonPrice;
+    price += Number(addonOptions.totalAddonPrice) || 0;
 
     setTotalPrice(price);
   };
 
   const handleCustomizationChange = (field: keyof CustomizationOptions, value: string) => {
-    setCustomization(prev => ({
+    setCustomization((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -142,7 +142,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
       toast({
         title: "Nombre requerido",
         description: "Por favor ingresa el nombre para personalizar",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -151,31 +151,51 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
       toast({
         title: "Campo requerido",
         description: "Por favor ingresa el texto para el llavero personalizado",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
-    const personalizationText = `Nombre: ${customization.name}, Tema: ${animalThemes.find(a => a.id === customization.animalTheme)?.name}, Color de fuente: ${fontColors.find(c => c.id === customization.fontColor)?.name}, Estilo: ${fontStyles.find(f => f.id === customization.fontStyle)?.name}, Tamaño: ${fontSizes.find(s => s.id === customization.fontSize)?.name}, Color del bolso: ${bagColors.find(b => b.id === customization.bagColor)?.name}${customization.specialRequest ? `, Solicitud especial: ${customization.specialRequest}` : ''}${addonOptions.namePersonalization ? `, Personalización adicional: ${addonOptions.namePersonalization}` : ''}`;
+    if (isNaN(totalPrice) || totalPrice <= 0) {
+      toast({
+        title: "Precio inválido",
+        description: "El precio calculado no es válido, por favor revisa las opciones",
+        variant: "destructive",
+      });
+      return;
+    }
 
- addItem({
-  productId: product.id,
-  name: product.name,
-  price: Number(totalPrice), // Asegúrate de que esto sea un número
-  quantity: 1,
-  personalization: personalizationText,
-  embroideryColor: customization.fontColor,
-  embroideryFont: customization.fontStyle,
-  addPompon: addonOptions.addPompon,
-  addPersonalizedKeychain: addonOptions.addPersonalizedKeychain,
-  addDecorativeBow: addonOptions.addDecorativeBow,
-  addPersonalization: addonOptions.addPersonalization,
-  expressService: addonOptions.addExpressService,
-  keychainPersonalization: addonOptions.keychainPersonalization,
-  namePersonalization: addonOptions.namePersonalization,
-  sessionId: crypto.randomUUID(),
-  imageUrl: product.imageUrl,
-});
+    const personalizationText = [
+      `Nombre: ${customization.name}`,
+      `Tema: ${animalThemes.find((a) => a.id === customization.animalTheme)?.name}`,
+      `Color de fuente: ${fontColors.find((c) => c.id === customization.fontColor)?.name}`,
+      `Estilo: ${fontStyles.find((f) => f.id === customization.fontStyle)?.name}`,
+      `Tamaño: ${fontSizes.find((s) => s.id === customization.fontSize)?.name}`,
+      `Color del bolso: ${bagColors.find((b) => b.id === customization.bagColor)?.name}`,
+      customization.specialRequest ? `Solicitud especial: ${customization.specialRequest}` : "",
+      addonOptions.namePersonalization ? `Personalización adicional: ${addonOptions.namePersonalization}` : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: totalPrice, // Número validado
+      quantity: 1,
+      personalization: personalizationText,
+      embroideryColor: customization.fontColor,
+      embroideryFont: customization.fontStyle,
+      addPompon: addonOptions.addPompon,
+      addPersonalizedKeychain: addonOptions.addPersonalizedKeychain,
+      addDecorativeBow: addonOptions.addDecorativeBow,
+      addPersonalization: addonOptions.addPersonalization,
+      expressService: addonOptions.addExpressService,
+      keychainPersonalization: addonOptions.keychainPersonalization,
+      namePersonalization: addonOptions.namePersonalization,
+      sessionId: crypto.randomUUID(),
+      imageUrl: product.imageUrl,
+    });
 
     toast({
       title: "¡Agregado al carrito!",
@@ -187,10 +207,10 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
     }, 1000);
   };
 
-  const selectedAnimal = animalThemes.find(a => a.id === customization.animalTheme);
-  const selectedFontColor = fontColors.find(c => c.id === customization.fontColor);
-  const selectedBagColor = bagColors.find(b => b.id === customization.bagColor);
-  const selectedFontStyle = fontStyles.find(f => f.id === customization.fontStyle);
+  const selectedAnimal = animalThemes.find((a) => a.id === customization.animalTheme);
+  const selectedFontColor = fontColors.find((c) => c.id === customization.fontColor);
+  const selectedBagColor = bagColors.find((b) => b.id === customization.bagColor);
+  const selectedFontStyle = fontStyles.find((f) => f.id === customization.fontStyle);
 
   return (
     <div className="grid lg:grid-cols-2 gap-8">
@@ -202,32 +222,42 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
           </CardHeader>
           <CardContent>
             <div className="relative">
-              <div 
+              <div
                 className="w-full h-80 rounded-lg flex items-center justify-center relative overflow-hidden transition-all duration-300"
-                style={{ backgroundColor: selectedBagColor?.hex }}
+                style={{ backgroundColor: selectedBagColor?.hex || "#000000" }}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                 <div className="text-center z-10 transition-all duration-300 scale-100 hover:scale-105">
                   <div className="text-6xl mb-4">{selectedAnimal?.emoji}</div>
                   {customization.name && (
-                    <div 
+                    <div
                       className={`text-2xl font-bold mb-2 transition-all duration-300`}
-                      style={{ 
-                        color: selectedFontColor?.hex,
-                        fontFamily: selectedFontStyle?.preview === 'Script' ? 'cursive' : 
-                                   selectedFontStyle?.preview === 'Sans-serif' ? 'sans-serif' :
-                                   selectedFontStyle?.preview === 'Serif' ? 'serif' : 'comic sans ms',
-                        fontSize: customization.fontSize === 'small' ? '1.25rem' :
-                                  customization.fontSize === 'large' ? '2rem' : '1.5rem',
-                        textShadow: selectedBagColor?.id === 'black' ? '1px 1px 2px rgba(255,255,255,0.3)' : '1px 1px 2px rgba(0,0,0,0.3)'
+                      style={{
+                        color: selectedFontColor?.hex || "#FFD700",
+                        fontFamily:
+                          selectedFontStyle?.preview === "Script"
+                            ? "cursive"
+                            : selectedFontStyle?.preview === "Sans-serif"
+                            ? "sans-serif"
+                            : selectedFontStyle?.preview === "Serif"
+                            ? "serif"
+                            : "comic sans ms",
+                        fontSize:
+                          customization.fontSize === "small"
+                            ? "1.25rem"
+                            : customization.fontSize === "large"
+                            ? "2rem"
+                            : "1.5rem",
+                        textShadow:
+                          selectedBagColor?.id === "black"
+                            ? "1px 1px 2px rgba(255,255,255,0.3)"
+                            : "1px 1px 2px rgba(0,0,0,0.3)",
                       }}
                     >
                       {customization.name}
                     </div>
                   )}
-                  <div className="text-sm text-white/80">
-                    {selectedAnimal?.name}
-                  </div>
+                  <div className="text-sm text-white/80">{selectedAnimal?.name}</div>
                 </div>
               </div>
               <div className="absolute top-4 left-4 bg-black/80 text-white p-2 rounded transition-all duration-300 hover:scale-105">
@@ -256,9 +286,9 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
               <div>
                 <span className="text-gray-400">Color de fuente:</span>
                 <div className="flex items-center gap-2">
-                  <div 
+                  <div
                     className="w-4 h-4 rounded border transition-all duration-200"
-                    style={{ backgroundColor: selectedFontColor?.hex }}
+                    style={{ backgroundColor: selectedFontColor?.hex || "#FFD700" }}
                   ></div>
                   <span className="text-white font-medium">{selectedFontColor?.name}</span>
                 </div>
@@ -266,9 +296,9 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
               <div>
                 <span className="text-gray-400">Color del bolso:</span>
                 <div className="flex items-center gap-2">
-                  <div 
+                  <div
                     className="w-4 h-4 rounded border transition-all duration-200"
-                    style={{ backgroundColor: selectedBagColor?.hex }}
+                    style={{ backgroundColor: selectedBagColor?.hex || "#000000" }}
                   ></div>
                   <span className="text-white font-medium">{selectedBagColor?.name}</span>
                 </div>
@@ -292,7 +322,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                 id="name"
                 placeholder="Ej: Samuel, Andrea, etc."
                 value={customization.name}
-                onChange={(e) => handleCustomizationChange('name', e.target.value)}
+                onChange={(e) => handleCustomizationChange("name", e.target.value)}
                 maxLength={20}
                 className="bg-gray-900 border-accent/30 text-white"
               />
@@ -308,11 +338,11 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                 {animalThemes.map((animal) => (
                   <button
                     key={animal.id}
-                    onClick={() => handleCustomizationChange('animalTheme', animal.id)}
+                    onClick={() => handleCustomizationChange("animalTheme", animal.id)}
                     className={`p-3 rounded-lg border text-center transition-all duration-200 ${
                       customization.animalTheme === animal.id
-                        ? 'border-accent bg-accent/20 text-accent'
-                        : 'border-gray-600 hover:border-accent/50 text-gray-300'
+                        ? "border-accent bg-accent/20 text-accent"
+                        : "border-gray-600 hover:border-accent/50 text-gray-300"
                     }`}
                   >
                     <div className="text-2xl mb-1">{animal.emoji}</div>
@@ -328,7 +358,10 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
             {/* Font Style */}
             <div className="space-y-2">
               <Label className="text-white">Estilo de Fuente</Label>
-              <Select value={customization.fontStyle} onValueChange={(value) => handleCustomizationChange('fontStyle', value)}>
+              <Select
+                value={customization.fontStyle}
+                onValueChange={(value) => handleCustomizationChange("fontStyle", value)}
+              >
                 <SelectTrigger className="bg-gray-900 border-accent/30 text-white">
                   <SelectValue />
                 </SelectTrigger>
@@ -345,7 +378,10 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
             {/* Font Size */}
             <div className="space-y-2">
               <Label className="text-white">Tamaño de Fuente</Label>
-              <Select value={customization.fontSize} onValueChange={(value) => handleCustomizationChange('fontSize', value)}>
+              <Select
+                value={customization.fontSize}
+                onValueChange={(value) => handleCustomizationChange("fontSize", value)}
+              >
                 <SelectTrigger className="bg-gray-900 border-accent/30 text-white">
                   <SelectValue />
                 </SelectTrigger>
@@ -366,11 +402,11 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                 {fontColors.map((color) => (
                   <button
                     key={color.id}
-                    onClick={() => handleCustomizationChange('fontColor', color.id)}
+                    onClick={() => handleCustomizationChange("fontColor", color.id)}
                     className={`w-10 h-10 rounded-lg border-2 transition-all duration-200 ${
                       customization.fontColor === color.id
-                        ? 'border-accent scale-110'
-                        : 'border-gray-600 hover:border-accent/50'
+                        ? "border-accent scale-110"
+                        : "border-gray-600 hover:border-accent/50"
                     }`}
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
@@ -386,11 +422,11 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                 {bagColors.map((color) => (
                   <button
                     key={color.id}
-                    onClick={() => handleCustomizationChange('bagColor', color.id)}
+                    onClick={() => handleCustomizationChange("bagColor", color.id)}
                     className={`w-10 h-10 rounded-lg border-2 transition-all duration-200 ${
                       customization.bagColor === color.id
-                        ? 'border-accent scale-110'
-                        : 'border-gray-600 hover:border-accent/50'
+                        ? "border-accent scale-110"
+                        : "border-gray-600 hover:border-accent/50"
                     }`}
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
@@ -408,7 +444,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
                 id="special"
                 placeholder="Cualquier solicitud especial para tu diseño..."
                 value={customization.specialRequest}
-                onChange={(e) => handleCustomizationChange('specialRequest', e.target.value)}
+                onChange={(e) => handleCustomizationChange("specialRequest", e.target.value)}
                 maxLength={200}
                 className="bg-gray-900 border-accent/30 text-white"
               />
@@ -418,22 +454,22 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
         </Card>
 
         {/* Addon Options */}
-        <AddonOptions 
-          onAddonChange={(newAddonOptions) => setAddonOptions(newAddonOptions)}
-        />
+        <AddonOptions onAddonChange={(newAddonOptions) => setAddonOptions(newAddonOptions)} />
 
         {/* Price and Add to Cart */}
         <Card className="bg-black border border-accent/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-lg font-medium text-white">Precio Total:</span>
-              <span className="text-2xl font-bold text-accent transition-all duration-300 ease-in-out">{formatPrice(totalPrice)}</span>
+              <span className="text-2xl font-bold text-accent transition-all duration-300 ease-in-out">
+                {formatPrice(totalPrice)}
+              </span>
             </div>
-            
+
             <div className="text-sm text-gray-400 mb-4">
               <div>Producto base: {formatPrice(product.price)}</div>
-              {fontSizes.find(f => f.id === customization.fontSize)?.price! > 0 && (
-                <div>Tamaño de fuente: +${fontSizes.find(f => f.id === customization.fontSize)?.price}</div>
+              {fontSizes.find((f) => f.id === customization.fontSize)?.price! > 0 && (
+                <div>Tamaño de fuente: +${fontSizes.find((f) => f.id === customization.fontSize)?.price}</div>
               )}
               <div>Tema animal: +${selectedAnimal?.price}</div>
               {addonOptions.totalAddonPrice > 0 && (
@@ -441,14 +477,14 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
               )}
             </div>
 
-            <Button 
+            <Button
               onClick={handleAddToCart}
               disabled={!customization.name.trim()}
               className="w-full bg-accent hover:bg-accent/90 text-black font-semibold"
             >
               Agregar al Carrito - {formatPrice(totalPrice)}
             </Button>
-            
+
             <p className="text-xs text-gray-400 mt-2 text-center">
               Tiempo de bordado: 48 horas • Entrega: 24 horas
             </p>
