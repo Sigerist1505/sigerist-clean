@@ -84,15 +84,54 @@ shared/
 
 ## 🛠️ Desarrollo Local
 
+### Configuración de Puertos
+- **Frontend (Vite)**: puerto 3000
+- **Backend (Express)**: puerto 5000 (desarrollo) / 3000 (producción)
+
+### Comandos de Desarrollo
 ```bash
-# Desarrollo
-npm run dev          # Frontend en :3000, Backend en :5000
+# 1. Instalar dependencias
+npm install
 
-# Build
-npm run build        # Compila todo
+# 2. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus claves
 
-# Producción
-npm start            # Ejecuta build
+# 3. Ejecutar en desarrollo
+npm run dev          # Frontend en :3000
+
+# En otra terminal:
+npm run build        # Compilar backend
+node dist/index.cjs  # Backend en :5000
+
+# Build para producción
+npm run build        # Compila frontend y backend
+
+# Ejecutar en producción
+npm start            # Todo junto en :3000
+```
+
+### Solución de Problemas de Routing
+
+Si recibes errores 404 en las rutas de API (`/api/wompi/create-token`):
+
+1. **En desarrollo**: Verifica que el backend esté corriendo en puerto 5000
+2. **Proxy de Vite**: El frontend en :3000 redirige automáticamente `/api/*` al puerto 5000
+3. **En producción**: Todo corre en el mismo puerto (3000 por defecto)
+
+### Variables de Entorno Importantes
+```env
+# Wompi (Requerido para pagos)
+WOMPI_PRIVATE_KEY=prv_test_...
+WOMPI_PUBLIC_KEY=pub_test_...
+WOMPI_INTEGRITY_SECRET=test_...
+
+# Base de datos (Requerida)
+DATABASE_URL=postgresql://...
+
+# Opcional para desarrollo
+NODE_ENV=development
+PORT=5000  # Backend port
 ```
 
 ## ✅ Funcionalidades

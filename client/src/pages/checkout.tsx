@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/components/cart-provider";
+import { useCustomerInfo } from "@/components/customer-info-provider";
 import { WompiCheckout } from "@/components/wompi-checkout";
 import { formatPrice } from "@/lib/utils";
 import { useLocation } from "wouter";
@@ -10,6 +11,7 @@ import { ArrowLeft, ShoppingBag, CreditCard } from "lucide-react";
 
 export default function CheckoutPage() {
   const { items, total, itemCount, finalTotal, discountCode, discountAmount, clearCart } = useCart();
+  const { customerInfo } = useCustomerInfo();
   const [, setLocation] = useLocation();
 
   if (items.length === 0) {
@@ -99,8 +101,14 @@ export default function CheckoutPage() {
         <WompiCheckout 
           amount={finalTotal}
           reference={`SIGERIST-${Date.now()}`}
-          customerEmail="daniel.sigerist101@gmail.com"
-          customerPhone="3160183418"
+          customerEmail={customerInfo.email || "daniel.sigerist101@gmail.com"}
+          customerPhone={customerInfo.phone || "3160183418"}
+          customerAddress={{
+            address: customerInfo.address,
+            city: customerInfo.city,
+            department: customerInfo.department,
+            postalCode: customerInfo.postalCode
+          }}
           onSuccess={(transactionId) => {
             console.log('Payment successful:', transactionId);
             // Limpiar carrito y redirigir a página de éxito
