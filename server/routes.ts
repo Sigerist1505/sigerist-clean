@@ -212,10 +212,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!configStatus.isFullyConfigured) {
         console.error("Wompi configuration incomplete:", configStatus);
+        
+        let errorMessage = "El servicio de pagos no está configurado correctamente. Por favor contacta al soporte técnico.";
+        
+        if (configStatus.needsConfiguration) {
+          errorMessage = "El servicio de pagos necesita configuración. Por favor actualiza las claves de Wompi en el archivo .env";
+        }
+        
         return res.status(503).json({ 
           message: "Error de configuración", 
-          error: "El servicio de pagos no está configurado correctamente. Por favor contacta al soporte técnico.",
-          details: process.env.NODE_ENV === "development" ? configStatus : undefined
+          error: errorMessage,
+          details: process.env.NODE_ENV === "development" ? configStatus : undefined,
+          help: process.env.NODE_ENV === "development" ? "Ver WOMPI_SETUP.md para instrucciones detalladas" : undefined
         });
       }
 
