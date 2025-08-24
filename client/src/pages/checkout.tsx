@@ -85,7 +85,7 @@ export default function CheckoutPage() {
               <div className="w-8 h-8 rounded-full bg-[#ebc005] text-black flex items-center justify-center font-bold text-sm">
                 2
               </div>
-              <span className="text-[#ebc005] font-semibold">Pago</span>
+              <span className="text-[#ebc005] font-semibold">Datos & Pago</span>
             </div>
             <div className="w-12 h-0.5 bg-[#C0C0C0]/30"></div>
             <div className="flex items-center space-x-2">
@@ -94,6 +94,13 @@ export default function CheckoutPage() {
               </div>
               <span className="text-[#C0C0C0]">Confirmación</span>
             </div>
+          </div>
+          
+          {/* Current step description */}
+          <div className="text-center mt-4">
+            <p className="text-[#C0C0C0] text-sm">
+              📋 Paso 2: Ingresa los datos de tu tarjeta para completar la compra
+            </p>
           </div>
         </div>
 
