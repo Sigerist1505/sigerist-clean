@@ -60,15 +60,14 @@ export function Cart({ isOpen, onClose }: CartProps) {
     message += `💰 *Total: ${formatPrice(total)}*\n\n`;
     message += `¡Gracias por elegir Sigerist! 🌟`;
 
-    openWhatsApp("573000000000", message);
-
+    openWhatsApp("573000000000", message); // Reemplaza con tu número real
     toast({
       title: "Redirigiendo a WhatsApp",
       description: "Te hemos preparado el mensaje con tu pedido",
     });
   };
 
-  const handleQuantityChange = (itemId: number, newQuantity: number) => {
+  const handleQuantityChange = (itemId: number | undefined, newQuantity: number) => {
     if (newQuantity < 1) {
       toast({
         title: "Cantidad inválida",
@@ -77,7 +76,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
       });
       return;
     }
-    updateItem(itemId, newQuantity);
+    if (itemId) updateItem(itemId, newQuantity);
   };
 
   if (isLoading) {
@@ -86,7 +85,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
         <SheetContent side="right" className="w-[400px] sm:w-[540px]">
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="animate-spin w-8 h-8 border-4 border-sigerist-gold border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full mx-auto mb-4"></div> {/* Ajuste temporal si border-sigerist-gold no está definido */}
               <p>Cargando carrito...</p>
             </div>
           </div>
@@ -101,9 +100,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
         <SheetHeader className="border-b pb-4">
           <SheetTitle className="flex items-center justify-between">
             <span>Carrito de Compras</span>
-            {itemCount > 0 && (
-              <Badge variant="secondary">{itemCount} productos</Badge>
-            )}
+            {itemCount > 0 && <Badge variant="secondary">{itemCount} productos</Badge>}
           </SheetTitle>
         </SheetHeader>
 
@@ -138,7 +135,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                           className="w-16 h-16 object-cover rounded-lg"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = "/assets/placeholder.jpg"; // Fallback si la imagen falla
+                            target.src = "/assets/placeholder.jpg";
                           }}
                         />
                         <div className="flex-1">
@@ -159,7 +156,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                                 variant="outline"
                                 size="icon"
                                 className="h-8 w-8"
-                                onClick={() => handleQuantityChange(item.id!, item.quantity - 1)}
+                                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                                 disabled={item.quantity <= 1}
                               >
                                 <Minus className="h-3 w-3" />
@@ -169,7 +166,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                                 variant="outline"
                                 size="icon"
                                 className="h-8 w-8"
-                                onClick={() => handleQuantityChange(item.id!, item.quantity + 1)}
+                                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                               >
                                 <Plus className="h-3 w-3" />
                               </Button>
@@ -179,11 +176,13 @@ export function Cart({ isOpen, onClose }: CartProps) {
                               size="icon"
                               className="h-8 w-8 text-red-500 hover:text-red-700"
                               onClick={() => {
-                                removeItem(item.id!);
-                                toast({
-                                  title: "Producto eliminado",
-                                  description: `${item.name} ha sido removido del carrito`,
-                                });
+                                if (item.id) {
+                                  removeItem(item.id);
+                                  toast({
+                                    title: "Producto eliminado",
+                                    description: `${item.name} ha sido removido del carrito`,
+                                  });
+                                }
                               }}
                             >
                               <Trash2 className="h-3 w-3" />
