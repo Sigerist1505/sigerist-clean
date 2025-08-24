@@ -52,7 +52,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
       message += `  Cantidad: ${item.quantity}\n`;
       message += `  Precio: ${formatPrice(item.price)}\n`;
       if (item.personalization) message += `  Personalización: ${item.personalization}\n`;
-      if (item.namePersonalization) message += `  Personalización adicional: ${item.namePersonalization}\n`;
+      if (item.addNameEmbroidery) message += `  Bordado de nombre incluido\n`;
       if (item.keychainPersonalization) message += `  Llavero personalizado: ${item.keychainPersonalization}\n`;
       message += `\n`;
     });
@@ -144,8 +144,8 @@ export function Cart({ isOpen, onClose }: CartProps) {
                           {item.personalization && (
                             <p className="text-xs text-gray-600 mb-1">{item.personalization}</p>
                           )}
-                          {item.namePersonalization && (
-                            <p className="text-xs text-gray-600 mb-1">Adicional: {item.namePersonalization}</p>
+                          {item.addNameEmbroidery && (
+                            <p className="text-xs text-gray-600 mb-1">✨ Bordado de nombre incluido</p>
                           )}
                           {item.keychainPersonalization && (
                             <p className="text-xs text-gray-600 mb-1">Llavero: {item.keychainPersonalization}</p>
