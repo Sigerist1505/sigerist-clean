@@ -50,6 +50,12 @@ export function WompiCheckout({
 
     setIsLoading(true);
     
+    // Mostrar mensaje de inicio de proceso
+    toast({
+      title: "Procesando pago...",
+      description: "Validando datos de tarjeta con Wompi",
+    });
+    
     try {
       // Crear token de tarjeta con Wompi
       const tokenResponse = await apiRequest("POST", "/api/wompi/create-token", {
@@ -63,8 +69,14 @@ export function WompiCheckout({
       const tokenData = await tokenResponse.json();
       
       if (!tokenData.data?.id) {
-        throw new Error("Error al procesar la tarjeta");
+        throw new Error("Error al procesar la tarjeta. Verifica los datos ingresados.");
       }
+
+      // Mostrar progreso de la transacción
+      toast({
+        title: "Tarjeta validada ✓",
+        description: "Procesando transacción con Wompi...",
+      });
 
       // Crear transacción
       console.log('Creating transaction with token:', tokenData.data.id);
@@ -91,25 +103,48 @@ export function WompiCheckout({
       // Wompi puede devolver PENDING, APPROVED o DECLINED
       if (transactionData.success && transactionData.data?.id) {
         const status = transactionData.data.status;
+        const transactionId = transactionData.data.id;
         
-        if (status === "APPROVED" || status === "PENDING") {
+        if (status === "APPROVED") {
           toast({
-            title: "¡Pago procesado!",
-            description: status === "APPROVED" ? "Tu compra ha sido aprobada" : "Tu pago está siendo procesado",
+            title: "¡Pago exitoso! ✅",
+            description: `Tu compra por ${formatPrice(amount)} COP ha sido aprobada. ID: ${transactionId}`,
           });
-          onSuccess?.(transactionData.data.id);
+          onSuccess?.(transactionId);
+        } else if (status === "PENDING") {
+          toast({
+            title: "Pago en proceso ⏳",
+            description: `Tu pago por ${formatPrice(amount)} COP está siendo verificado. Te notificaremos el resultado.`,
+          });
+          onSuccess?.(transactionId);
+        } else if (status === "DECLINED") {
+          throw new Error(`Pago rechazado: ${transactionData.data?.status_message || "Tu banco no autorizó la transacción"}`);
         } else {
           throw new Error(transactionData.data?.status_message || `Estado del pago: ${status}`);
         }
       } else {
-        throw new Error(transactionData.message || "Error al crear la transacción");
+        const errorReason = transactionData.error?.reason || transactionData.message || "Error desconocido al procesar el pago";
+        throw new Error(`Error de Wompi: ${errorReason}`);
       }
 
     } catch (error: any) {
       const errorMessage = error.message || "Error al procesar el pago";
+      
+      // Mensajes de error más específicos
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes("DECLINED") || errorMessage.includes("rechazado")) {
+        userFriendlyMessage = "El pago fue rechazado por tu banco. Verifica tus datos o intenta con otra tarjeta.";
+      } else if (errorMessage.includes("insufficient_funds")) {
+        userFriendlyMessage = "Fondos insuficientes en tu tarjeta. Verifica tu saldo.";
+      } else if (errorMessage.includes("invalid_card")) {
+        userFriendlyMessage = "Los datos de la tarjeta son inválidos. Verifica el número, fecha y CVV.";
+      } else if (errorMessage.includes("expired_card")) {
+        userFriendlyMessage = "Tu tarjeta ha expirado. Usa una tarjeta vigente.";
+      }
+      
       toast({
-        title: "Error en el pago",
-        description: errorMessage,
+        title: "Error en el pago ❌",
+        description: `${userFriendlyMessage} | Monto: ${formatPrice(amount)} COP`,
         variant: "destructive"
       });
       onError?.(errorMessage);
@@ -143,8 +178,14 @@ export function WompiCheckout({
           <div className="text-2xl font-bold text-gray-300">
             {formatPrice(amount || 0)}
           </div>
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-yellow-400 font-medium">
+            💰 Precios en Pesos Colombianos (COP)
+          </div>
+          <div className="text-xs text-gray-400 mt-1">
             Referencia: {reference}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
+            🔒 Procesado por Wompi - Pago 100% Seguro
           </div>
         </div>
       </CardHeader>
@@ -238,7 +279,14 @@ export function WompiCheckout({
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-3"
           >
-            {isLoading ? "Procesando..." : `Pagar con Tarjeta ${formatPrice(amount)}`}
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Procesando con Wompi...
+              </div>
+            ) : (
+              `💳 Pagar ${formatPrice(amount)} COP con Tarjeta`
+            )}
           </Button>
 
           <div className="text-center text-gray-400 text-sm">o</div>
@@ -247,8 +295,9 @@ export function WompiCheckout({
             onClick={() => window.open('https://checkout.wompi.co/l/VPOS_wRNRo4', '_blank')}
             variant="outline"
             className="w-full border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-black font-semibold py-3"
+            disabled={isLoading}
           >
-            Pagar con Checkout Wompi (Recomendado)
+            🌟 Pagar con Checkout Wompi (Recomendado)
           </Button>
         </div>
 
