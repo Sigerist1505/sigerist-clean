@@ -214,7 +214,33 @@ export class DatabaseStorage implements IStorage {
   // Cart Items
   async getCartItems(): Promise<CartItem[]> {
     try {
-      return await db.select().from(cartItems);
+      // Select specific columns and handle missing namePersonalization column gracefully
+      const result = await db.select({
+        id: cartItems.id,
+        sessionId: cartItems.sessionId,
+        productId: cartItems.productId,
+        name: cartItems.name,
+        quantity: cartItems.quantity,
+        personalization: cartItems.personalization,
+        embroideryColor: cartItems.embroideryColor,
+        embroideryFont: cartItems.embroideryFont,
+        customPreview: cartItems.customPreview,
+        addPompon: cartItems.addPompon,
+        addPersonalizedKeychain: cartItems.addPersonalizedKeychain,
+        addDecorativeBow: cartItems.addDecorativeBow,
+        addPersonalization: cartItems.addPersonalization,
+        expressService: cartItems.expressService,
+        keychainPersonalization: cartItems.keychainPersonalization,
+        hasBordado: cartItems.hasBordado,
+        price: cartItems.price,
+        imageUrl: cartItems.imageUrl,
+      }).from(cartItems);
+      
+      // Add namePersonalization as null for type compatibility since the column doesn't exist in DB
+      return result.map(item => ({
+        ...item,
+        namePersonalization: null as string | null
+      }));
     } catch (error) {
       console.error("Error fetching cart items:", error);
       return [];
@@ -224,11 +250,20 @@ export class DatabaseStorage implements IStorage {
   async addCartItem(insertItem: InsertCartItem): Promise<CartItem> {
     try {
       console.log("Insertando en cartItems:", insertItem);
+      
+      // Extract namePersonalization since it doesn't exist in the DB schema yet
+      const { namePersonalization, ...itemWithoutNamePersonalization } = insertItem;
+      
       const [item] = await db
         .insert(cartItems)
-        .values({ ...insertItem, price: Number(insertItem.price) })
+        .values({ ...itemWithoutNamePersonalization, price: Number(insertItem.price) })
         .returning();
-      return item;
+      
+      // Add namePersonalization back to the returned item for type compatibility
+      return {
+        ...item,
+        namePersonalization: namePersonalization || null
+      };
     } catch (error) {
       console.error("Error adding cart item:", error);
       throw error;
@@ -241,7 +276,12 @@ export class DatabaseStorage implements IStorage {
       .set({ quantity })
       .where(eq(cartItems.id, id))
       .returning();
-    return item;
+    
+    // Add namePersonalization for type compatibility since the column doesn't exist in DB
+    return item ? {
+      ...item,
+      namePersonalization: null as string | null
+    } : undefined;
   }
 
   async removeCartItem(id: number): Promise<boolean> {
@@ -260,7 +300,33 @@ export class DatabaseStorage implements IStorage {
 
   async getCartItemsBySession(sessionId: string): Promise<CartItem[]> {
     try {
-      return await db.select().from(cartItems).where(eq(cartItems.sessionId, sessionId));
+      // Select specific columns and handle missing namePersonalization column gracefully
+      const result = await db.select({
+        id: cartItems.id,
+        sessionId: cartItems.sessionId,
+        productId: cartItems.productId,
+        name: cartItems.name,
+        quantity: cartItems.quantity,
+        personalization: cartItems.personalization,
+        embroideryColor: cartItems.embroideryColor,
+        embroideryFont: cartItems.embroideryFont,
+        customPreview: cartItems.customPreview,
+        addPompon: cartItems.addPompon,
+        addPersonalizedKeychain: cartItems.addPersonalizedKeychain,
+        addDecorativeBow: cartItems.addDecorativeBow,
+        addPersonalization: cartItems.addPersonalization,
+        expressService: cartItems.expressService,
+        keychainPersonalization: cartItems.keychainPersonalization,
+        hasBordado: cartItems.hasBordado,
+        price: cartItems.price,
+        imageUrl: cartItems.imageUrl,
+      }).from(cartItems).where(eq(cartItems.sessionId, sessionId));
+      
+      // Add namePersonalization as null for type compatibility since the column doesn't exist in DB
+      return result.map(item => ({
+        ...item,
+        namePersonalization: null as string | null
+      }));
     } catch (error) {
       console.error("Error fetching cart items by session:", error);
       return [];
