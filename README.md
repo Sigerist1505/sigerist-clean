@@ -21,12 +21,19 @@ Si recibes este error 503, verifica que:
 2. ✅ El archivo `.env` está en la raíz del proyecto
 3. ✅ Las claves son de producción (`pub_prod_` y `prv_prod_`)
 4. ✅ Los secretos corresponden al mismo ambiente (producción)
+5. ✅ No estás usando valores placeholder (que contengan "your-*-key-here")
 
 ### 🔍 Verificar Configuración:
 ```bash
+# Script de verificación
+npm run verify:wompi
+
 # Endpoint para verificar estado de configuración
-GET /api/wompi/config
+curl http://localhost:5000/api/wompi/config
 ```
+
+### 📖 Guía Detallada
+Ver `WOMPI_SETUP.md` para instrucciones paso a paso sobre cómo configurar Wompi correctamente.
 
 Plataforma de e-commerce de lujo para bolsos personalizados con chatbot de WhatsApp con IA.
 
