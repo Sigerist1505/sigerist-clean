@@ -12,6 +12,8 @@ import ProductPage from "@/pages/product";
 import CartPage from "@/pages/cart";
 import CheckoutPage from "@/pages/checkout";
 import PaymentSuccessPage from "@/pages/payment-success";
+import PaymentErrorPage from "@/pages/payment-error";
+import WompiDemoPage from "@/pages/wompi-demo";
 import ChatbotTestPage from "@/pages/chatbot-test";
 import CustomizePage from "@/pages/customize";
 import RegisterPage from "@/pages/register";
@@ -31,6 +33,8 @@ function Router() {
       <Route path="/cart" component={CartPage} />
       <Route path="/checkout" component={CheckoutPage} />
       <Route path="/payment-success" component={PaymentSuccessPage} />
+      <Route path="/payment-error" component={PaymentErrorPage} />
+      <Route path="/wompi-demo" component={WompiDemoPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/chatbot-test" component={ChatbotTestPage} />

@@ -121,11 +121,19 @@ export default function PaymentSuccessPage() {
           <CardContent>
             <CheckCircle className="h-24 w-24 text-green-500 mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-[#ebc005] mb-4">
-              ¡Pago Exitoso!
+              ¡Pago Exitoso! 🎉
             </h1>
             <p className="text-[#C0C0C0] mb-4 max-w-md mx-auto">
-              Tu compra ha sido procesada correctamente. Recibirás un email de confirmación en breve.
+              Tu compra ha sido procesada correctamente por Wompi. Recibirás un email de confirmación en breve.
             </p>
+            <div className="bg-green-900/30 border border-green-500/30 rounded-lg p-4 mb-6 max-w-md mx-auto">
+              <p className="text-green-400 text-sm">
+                ✅ Pago procesado en Pesos Colombianos (COP)
+              </p>
+              <p className="text-green-400 text-sm">
+                🏦 Transacción verificada por Wompi
+              </p>
+            </div>
             
             {transactionId && (
               <div className="bg-black/60 border border-[#C0C0C0]/20 rounded-lg p-4 mb-8 max-w-md mx-auto">

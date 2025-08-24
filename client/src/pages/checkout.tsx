@@ -109,7 +109,8 @@ export default function CheckoutPage() {
           }}
           onError={(error) => {
             console.error('Payment error:', error);
-            // Mostrar mensaje de error al usuario
+            // Redirigir a página de error con detalles
+            setLocation(`/payment-error?error=${encodeURIComponent(error)}`);
           }}
         />
 
