@@ -38,10 +38,9 @@ async function migrateCartItems() {
         add_personalization BOOLEAN DEFAULT false NOT NULL,
         express_service BOOLEAN DEFAULT false NOT NULL,
         keychain_personalization TEXT,
-        name_personalization TEXT,
+        add_name_embroidery BOOLEAN DEFAULT false NOT NULL,
         has_bordado BOOLEAN DEFAULT false NOT NULL,
-        price NUMERIC(10,2) NOT NULL,
-        image_url TEXT
+        price NUMERIC(10,2) NOT NULL
       )
     `;
 
@@ -49,10 +48,9 @@ async function migrateCartItems() {
     console.log('🔧 Verificando y agregando columnas faltantes...');
     
     const columnsToAdd = [
-      { name: 'name_personalization', type: 'TEXT' },
       { name: 'keychain_personalization', type: 'TEXT' },
-      { name: 'has_bordado', type: 'BOOLEAN DEFAULT false NOT NULL' },
-      { name: 'image_url', type: 'TEXT' }
+      { name: 'add_name_embroidery', type: 'BOOLEAN DEFAULT false NOT NULL' },
+      { name: 'has_bordado', type: 'BOOLEAN DEFAULT false NOT NULL' }
     ];
 
     for (const column of columnsToAdd) {
