@@ -88,6 +88,8 @@ export function WompiCheckout({
       // Crear transacción
       console.log('Creating transaction with token:', tokenData.data.id);
       const transactionResponse = await apiRequest("POST", "/api/wompi/create-transaction", {
+        // Nota: Wompi requiere los montos en centavos, por eso multiplicamos por 100
+        // Ejemplo: 1000 pesos = 100,000 centavos
         amount_in_cents: Math.round(amount * 100),
         currency,
         customer_email: paymentData.email,
@@ -145,7 +147,11 @@ export function WompiCheckout({
       
       // Mensajes de error más específicos
       let userFriendlyMessage = errorMessage;
-      if (errorMessage.includes("DECLINED") || errorMessage.includes("rechazado")) {
+      if (errorMessage.includes("404")) {
+        userFriendlyMessage = "Error de conexión con el servidor de pagos. Verifica tu conexión a internet e intenta nuevamente.";
+      } else if (errorMessage.includes("Cannot POST")) {
+        userFriendlyMessage = "Error de configuración del servidor. Contacta al soporte técnico.";
+      } else if (errorMessage.includes("DECLINED") || errorMessage.includes("rechazado")) {
         userFriendlyMessage = "El pago fue rechazado por tu banco. Verifica tus datos o intenta con otra tarjeta.";
       } else if (errorMessage.includes("insufficient_funds")) {
         userFriendlyMessage = "Fondos insuficientes en tu tarjeta. Verifica tu saldo.";

@@ -63,6 +63,17 @@ export default function PaymentErrorPage() {
           "Contacta a tu banco para renovar la tarjeta"
         ]
       };
+    } else if (error.includes("404") || error.includes("Cannot POST")) {
+      return {
+        title: "Error de Conexión",
+        description: "No se pudo conectar con el servidor de pagos. Esto puede deberse a un problema de configuración o conectividad.",
+        recommendations: [
+          "Verifica tu conexión a internet",
+          "Intenta nuevamente en unos minutos",
+          "Usa el checkout recomendado de Wompi",
+          "Contacta al soporte técnico si el problema persiste"
+        ]
+      };
     } else {
       return {
         title: "Error en el Pago",

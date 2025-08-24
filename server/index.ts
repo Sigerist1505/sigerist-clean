@@ -72,7 +72,8 @@ app.get("/api/health", (_req, res) => {
   }
 
   // Usa el PORT dinámico inyectado por Railway (no lo fijes en variables) y bind a 0.0.0.0 para accesibilidad total
-  const PORT = Number(process.env.PORT) || 3000;
+  // En desarrollo, usar puerto 5000 para que coincida con proxy de Vite
+  const PORT = Number(process.env.PORT) || (process.env.NODE_ENV === "production" ? 3000 : 5000);
   const HOST = "0.0.0.0";
 
   app.listen(PORT, HOST, () => {

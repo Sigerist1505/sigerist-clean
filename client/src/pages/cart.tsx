@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { useCustomerInfo } from "@/components/customer-info-provider";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { formatPrice } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, 
   Minus, 
@@ -25,6 +26,7 @@ export default function CartPage() {
   const { items, total, finalTotal, itemCount, discountCode, discountAmount, updateItem, removeItem, clearCart, applyDiscount, removeDiscount } = useCart();
   const { customerInfo, updateCustomerInfo } = useCustomerInfo();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [discountInput, setDiscountInput] = useState("");
   const [validatingDiscount, setValidatingDiscount] = useState(false);
 
@@ -86,6 +88,72 @@ export default function CartPage() {
       title: "Descuento Removido",
       description: "El código de descuento ha sido removido",
     });
+  };
+
+  const validateCustomerInfo = () => {
+    const { name, email, phone, address, city, department } = customerInfo;
+    
+    if (!name.trim()) {
+      toast({
+        title: "Información incompleta",
+        description: "Por favor ingresa tu nombre completo",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!email.trim()) {
+      toast({
+        title: "Información incompleta", 
+        description: "Por favor ingresa tu email",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!phone.trim()) {
+      toast({
+        title: "Información incompleta",
+        description: "Por favor ingresa tu teléfono",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!address.trim()) {
+      toast({
+        title: "Dirección requerida",
+        description: "Por favor ingresa tu dirección completa para el envío",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!city.trim()) {
+      toast({
+        title: "Información incompleta",
+        description: "Por favor ingresa tu ciudad",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!department.trim()) {
+      toast({
+        title: "Información incompleta",
+        description: "Por favor ingresa tu departamento",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleProceedToCheckout = () => {
+    if (validateCustomerInfo()) {
+      setLocation("/checkout");
+    }
   };
 
   // Los totales ya están calculados en el cart provider
@@ -468,15 +536,14 @@ export default function CartPage() {
                   />
                 </div>
 
-                <Link href="/checkout">
-                  <Button
-                    className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 text-lg shadow-lg hover:shadow-xl border border-[#C0C0C0]/20"
-                    size="lg"
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Proceder al Pago - {formatPrice(total)}
-                  </Button>
-                </Link>
+                <Button
+                  onClick={handleProceedToCheckout}
+                  className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 text-lg shadow-lg hover:shadow-xl border border-[#C0C0C0]/20"
+                  size="lg"
+                >
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Proceder al Pago - {formatPrice(total)}
+                </Button>
 
                 <p className="text-xs text-gray-400 text-center">
                   Al finalizar tu pedido, serás redirigido a WhatsApp para confirmar los detalles
