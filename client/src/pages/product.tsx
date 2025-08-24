@@ -93,7 +93,6 @@ function ProductPage() {
         addNameEmbroidery,
         expressService: addExpressService,
         keychainPersonalization: keychainText,
-        namePersonalization: personalization || undefined, // Add this field
         hasBordado: product.variants?.bordado === true && showEmbroidery,
         specifications: {
           bordado: product.variants?.bordado === true && showEmbroidery,

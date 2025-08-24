@@ -12,6 +12,7 @@
     "migrate": "node migrate-clean.js",
     "migrate:cart": "node migrate-cart-items.js",
     "fix:add-name-embroidery": "node fix-add-name-embroidery-column.js",
+    "fix:cart-schema": "node comprehensive-cart-fix.js",
     "audit:cart-schema": "node audit-cart-schema.js",
     "check": "tsc",
     "db:push": "drizzle-kit push"

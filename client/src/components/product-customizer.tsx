@@ -41,7 +41,6 @@ interface AddonOptions {
   addPersonalization: boolean;
   addExpressService: boolean;
   keychainPersonalization: string;
-  namePersonalization: string;
   totalAddonPrice: number;
 }
 
@@ -106,7 +105,6 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
     addPersonalization: false,
     addExpressService: false,
     keychainPersonalization: "",
-    namePersonalization: "",
     totalAddonPrice: 0,
   });
   const { addItem } = useCart();
@@ -173,7 +171,6 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
       `Tamaño: ${fontSizes.find((s) => s.id === customization.fontSize)?.name}`,
       `Color del bolso: ${bagColors.find((b) => b.id === customization.bagColor)?.name}`,
       customization.specialRequest ? `Solicitud especial: ${customization.specialRequest}` : "",
-      addonOptions.namePersonalization ? `Personalización adicional: ${addonOptions.namePersonalization}` : "",
     ]
       .filter(Boolean)
       .join(", ");
@@ -192,9 +189,7 @@ export function ProductCustomizer({ product, onClose }: ProductCustomizerProps) 
       addPersonalization: addonOptions.addPersonalization,
       expressService: addonOptions.addExpressService,
       keychainPersonalization: addonOptions.keychainPersonalization,
-      namePersonalization: addonOptions.namePersonalization,
       sessionId: crypto.randomUUID(),
-      imageUrl: product.imageUrl,
     });
 
     toast({

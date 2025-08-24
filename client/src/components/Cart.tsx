@@ -130,13 +130,9 @@ export function Cart({ isOpen, onClose }: CartProps) {
                     <div key={item.id} className="border rounded-lg p-4">
                       <div className="flex gap-4">
                         <img
-                          src={item.imageUrl || "/assets/placeholder.jpg"}
+                          src="/assets/placeholder.jpg"
                           alt={item.name}
                           className="w-16 h-16 object-cover rounded-lg"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "/assets/placeholder.jpg";
-                          }}
                         />
                         <div className="flex-1">
                           <h4 className="font-semibold text-sm">{item.name}</h4>
