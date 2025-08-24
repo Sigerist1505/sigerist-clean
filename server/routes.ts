@@ -62,10 +62,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/cart", async (req, res) => {
     try {
       console.log("Datos recibidos en /api/cart:", req.body);
-      const validated = insertCartItemSchema.parse({
+      // Preprocess the price to ensure it's a number
+      const processedBody = {
         ...req.body,
-        price: z.preprocess((val) => (val ? Number(val) : 0), z.number()),
-      });
+        price: convertToNumber(req.body.price)
+      };
+      
+      function convertToNumber(value: any): number {
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') return Number(value);
+        if (typeof value === 'object' && value !== null) {
+          // Handle decimal objects that might have toString, valueOf, or direct numeric properties
+          if (typeof value.valueOf === 'function') return Number(value.valueOf());
+          if (typeof value.toString === 'function') return Number(value.toString());
+          if (typeof value.value === 'number') return value.value;
+        }
+        return Number(value);
+      }
+      const validated = insertCartItemSchema.parse(processedBody);
       const item = await storage.addCartItem(validated);
       res.status(201).json(item);
     } catch (error) {
@@ -113,6 +127,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       console.error("Error clearing cart:", error);
+      res.status(500).json({ message: "Error clearing cart", error: errorMessage });
+    }
+  });
+
+  // Session-based cart routes
+  app.get("/api/cart/:sessionId", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const items = await storage.getCartItemsBySession(sessionId);
+      res.json(items);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      console.error("Error fetching cart items by session:", error);
+      res.status(500).json({ message: "Error fetching cart items", error: errorMessage });
+    }
+  });
+
+  app.delete("/api/cart/session/:sessionId", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      await storage.clearCartBySession(sessionId);
+      res.json({ message: "Cart cleared" });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      console.error("Error clearing cart by session:", error);
       res.status(500).json({ message: "Error clearing cart", error: errorMessage });
     }
   });
