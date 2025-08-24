@@ -93,6 +93,7 @@ function ProductPage() {
         addNameEmbroidery,
         expressService: addExpressService,
         keychainPersonalization: keychainText,
+        namePersonalization: personalization || undefined, // Add this field
         hasBordado: product.variants?.bordado === true && showEmbroidery,
         specifications: {
           bordado: product.variants?.bordado === true && showEmbroidery,
@@ -201,16 +202,18 @@ function ProductPage() {
                       e.stopPropagation();
                       setShowEmbroidery(true);
                     }}
-                    className={`w-12 h-12 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg ${
+                    className={`w-14 h-14 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
                       showEmbroidery
-                        ? "bg-gradient-to-br from-yellow-400 to-yellow-500 border-yellow-300 scale-110"
+                        ? "bg-gradient-to-br from-yellow-400/90 to-yellow-500/90 border-yellow-300 scale-110 shadow-yellow-400/50"
                         : "bg-black/80 border-gray-600 hover:border-gray-400 hover:scale-105"
                     }`}
                     title="Con bordado"
                   >
                     <div
-                      className={`w-6 h-6 rounded-full ${
-                        showEmbroidery ? "bg-white" : "bg-gradient-to-br from-amber-400 to-yellow-500"
+                      className={`w-7 h-7 rounded-full transition-all duration-300 ${
+                        showEmbroidery 
+                          ? "bg-white shadow-inner" 
+                          : "bg-gradient-to-br from-amber-400 to-yellow-500 opacity-70"
                       }`}
                     />
                   </button>
@@ -220,16 +223,18 @@ function ProductPage() {
                       e.stopPropagation();
                       setShowEmbroidery(false);
                     }}
-                    className={`w-12 h-12 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg ${
+                    className={`w-14 h-14 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
                       !showEmbroidery
-                        ? "bg-gradient-to-br from-gray-600 to-gray-700 border-gray-500 scale-110"
+                        ? "bg-gradient-to-br from-gray-600/90 to-gray-700/90 border-gray-500 scale-110 shadow-gray-500/50"
                         : "bg-black/80 border-gray-600 hover:border-gray-500 hover:scale-105"
                     }`}
                     title="Sin bordado"
                   >
                     <div
-                      className={`w-6 h-6 rounded-full border-2 ${
-                        !showEmbroidery ? "border-white" : "border-slate-400"
+                      className={`w-7 h-7 rounded-full border-3 transition-all duration-300 ${
+                        !showEmbroidery 
+                          ? "border-white bg-transparent" 
+                          : "border-slate-400 bg-transparent opacity-70"
                       }`}
                     />
                   </button>
@@ -241,6 +246,58 @@ function ProductPage() {
                 </div>
               )}
             </div>
+            
+            {hasBordado && (
+              <div className="bg-gradient-to-br from-black/80 to-gray-900/80 rounded-xl p-4 border border-gray-600/50">
+                <h3 className="text-lg font-semibold mb-3 text-gray-300 text-center">
+                  Opciones de Imagen
+                </h3>
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={() => setShowEmbroidery(true)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all duration-300 ${
+                      showEmbroidery
+                        ? "border-yellow-400 bg-yellow-400/10 text-yellow-300"
+                        : "border-gray-600 bg-black/40 text-gray-400 hover:border-gray-500"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        showEmbroidery 
+                          ? "border-yellow-400 bg-yellow-400" 
+                          : "border-gray-500"
+                      }`}
+                    >
+                      {showEmbroidery && (
+                        <div className="w-2 h-2 rounded-full bg-white"></div>
+                      )}
+                    </div>
+                    <span className="font-medium">Con bordado</span>
+                  </button>
+                  <button
+                    onClick={() => setShowEmbroidery(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all duration-300 ${
+                      !showEmbroidery
+                        ? "border-gray-400 bg-gray-400/10 text-gray-300"
+                        : "border-gray-600 bg-black/40 text-gray-400 hover:border-gray-500"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        !showEmbroidery 
+                          ? "border-gray-400 bg-gray-400" 
+                          : "border-gray-500"
+                      }`}
+                    >
+                      {!showEmbroidery && (
+                        <div className="w-2 h-2 rounded-full bg-white"></div>
+                      )}
+                    </div>
+                    <span className="font-medium">Sin bordado</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-8">
