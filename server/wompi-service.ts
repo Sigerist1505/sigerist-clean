@@ -4,6 +4,7 @@ const WOMPI_BASE_URL = "https://production.wompi.co/v1";
 const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY;
 const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY;
 const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET;
+const WOMPI_WEBHOOK_SECRET = process.env.WOMPI_WEBHOOK_SECRET;
 
 if (!WOMPI_PRIVATE_KEY || !WOMPI_PUBLIC_KEY) {
   console.warn("Wompi keys not configured. Payment processing will not work.");
@@ -13,7 +14,21 @@ if (!WOMPI_INTEGRITY_SECRET) {
   console.warn("Wompi integrity secret not configured. Signature generation will not work.");
 }
 
+if (!WOMPI_WEBHOOK_SECRET) {
+  console.warn("Wompi webhook secret not configured. Webhook verification will not work.");
+}
+
 export class WompiService {
+  static getConfigurationStatus() {
+    return {
+      hasPublicKey: !!WOMPI_PUBLIC_KEY,
+      hasPrivateKey: !!WOMPI_PRIVATE_KEY,
+      hasIntegritySecret: !!WOMPI_INTEGRITY_SECRET,
+      hasWebhookSecret: !!WOMPI_WEBHOOK_SECRET,
+      isFullyConfigured: !!(WOMPI_PUBLIC_KEY && WOMPI_PRIVATE_KEY && WOMPI_INTEGRITY_SECRET)
+    };
+  }
+
   static generateSignature(reference: string, amount_in_cents: number, currency: string): string {
     if (!WOMPI_INTEGRITY_SECRET) {
       throw new Error('WOMPI_INTEGRITY_SECRET is required for signature generation');
@@ -180,9 +195,14 @@ export class WompiService {
 
   static verifyWebhookSignature(payload: any, signature: string, timestamp: string): boolean {
     try {
+      if (!WOMPI_WEBHOOK_SECRET) {
+        console.error("WOMPI_WEBHOOK_SECRET is not configured. Cannot verify webhook signature.");
+        return false;
+      }
+      
       const concatenatedString = `${JSON.stringify(payload)}${timestamp}`;
       const computedSignature = crypto
-        .createHmac("sha256", process.env.WOMPI_WEBHOOK_SECRET || "")
+        .createHmac("sha256", WOMPI_WEBHOOK_SECRET)
         .update(concatenatedString)
         .digest("hex");
 

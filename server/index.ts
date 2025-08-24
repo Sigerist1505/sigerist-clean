@@ -1,4 +1,5 @@
 // server/index.ts
+import 'dotenv/config';
 import express, { type Request, type Response, type NextFunction } from "express";
 import session from "express-session";
 import path from "path";

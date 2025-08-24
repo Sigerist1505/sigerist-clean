@@ -50,11 +50,19 @@ Usuario ingresa datos → Tokenización → Validación → Transacción → Res
 
 ### 🔑 Variables de Entorno Requeridas
 
+**TODAS las siguientes variables son OBLIGATORIAS:**
+
 ```env
-WOMPI_PUBLIC_KEY=pub_prod_xxxx
-WOMPI_PRIVATE_KEY=prv_prod_xxxx
-WOMPI_INTEGRITY_SECRET=xxxx
+WOMPI_PUBLIC_KEY=pub_prod_xxxx          # Clave pública de producción
+WOMPI_PRIVATE_KEY=prv_prod_xxxx         # Clave privada de producción
+WOMPI_INTEGRITY_SECRET=xxxx             # Secreto de integridad para firmas
+WOMPI_WEBHOOK_SECRET=xxxx               # Secreto para eventos/webhooks
 ```
+
+### ⚠️ Configuración Crítica
+- **Sin estas 4 variables**: Recibirás error 503 "El servicio de pagos no está configurado correctamente"
+- **Verificación**: Usa `GET /api/wompi/config` para verificar el estado
+- **Ambiente**: Todas las claves deben ser del mismo ambiente (prod o test)
 
 ## 📊 Mensajes de Estado
 

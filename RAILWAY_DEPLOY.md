@@ -26,9 +26,11 @@ META_WHATSAPP_ACCESS_TOKEN=EAAxxxxx
 META_WHATSAPP_PHONE_NUMBER_ID=793444840509227
 META_WEBHOOK_VERIFY_TOKEN=sigerist_webhook_verify_2024
 
-# Pagos (opcional al inicio)
-STRIPE_SECRET_KEY=sk_test_xxxxx
-WOMPI_PRIVATE_KEY=test_xxxxx
+# Pagos (OBLIGATORIO para pagos con Wompi)
+WOMPI_PUBLIC_KEY=pub_prod_xxxxx
+WOMPI_PRIVATE_KEY=prv_prod_xxxxx
+WOMPI_INTEGRITY_SECRET=prod_integrity_xxxxx
+WOMPI_WEBHOOK_SECRET=prod_events_xxxxx
 ```
 
 ### ✅ 3. Conectar Base de Datos Neon
