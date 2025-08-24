@@ -22,104 +22,130 @@ export type ProductVariants = {
 // === TABLAS ===
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
+
+  name: text("name").notNull(), // Nombre del producto, requerido
+  description: text("description").notNull(), // Descripción, requerida
+
+  // IMPORTANTE: que sea number en TS para compatibilidad con el frontend
   price: decimal("price", { precision: 10, scale: 2 }).$type<number>().notNull(),
-  category: text("category").notNull(),
-  imageUrl: text("image_url").notNull(),
-  blankImageUrl: text("blank_image_url"),
-  referenceImageUrl: text("reference_image_url"),
-  animalType: text("animal_type"),
-  colors: text("colors").array(),
-  inStock: boolean("in_stock").default(true).notNull(),
-  variants: jsonb("variants").$type<ProductVariants>(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+
+  category: text("category").notNull(), // Categoría, requerida
+
+  imageUrl: text("image_url").notNull(), // URL de la imagen principal (con bordado)
+  blankImageUrl: text("blank_image_url"), // URL de imagen sin bordado, opcional
+  referenceImageUrl: text("reference_image_url"), // Foto de referencia, opcional
+
+  animalType: text("animal_type"), // Tipo de animal, opcional
+
+  // Opcional para evitar errores cuando el seed no lo envía
+  colors: text("colors").array(), // Array de colores, opcional
+
+  inStock: boolean("in_stock").default(true).notNull(), // Disponibilidad, por defecto true
+
+  variants: jsonb("variants").$type<ProductVariants>(), // Variantes en formato JSON
+
+  createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
 });
 
 export const cartItems = pgTable("cart_items", {
   id: serial("id").primaryKey(),
-  sessionId: text("session_id").notNull(),
+
+  sessionId: text("session_id").notNull(), // Añadido: ID de sesión para carrito privado
+
   productId: integer("product_id")
     .notNull()
-    .references(() => products.id),
-  name: text("name").notNull(),
-  quantity: integer("quantity").default(1).notNull(),
-  personalization: text("personalization"),
-  embroideryColor: text("embroidery_color"),
-  embroideryFont: text("embroidery_font"),
-  customPreview: text("custom_preview"),
-  addPompon: boolean("add_pompon").default(false).notNull(),
-  addPersonalizedKeychain: boolean("add_personalized_keychain").default(false).notNull(),
-  addDecorativeBow: boolean("add_decorative_bow").default(false).notNull(),
-  addPersonalization: boolean("add_personalization").default(false).notNull(),
-  expressService: boolean("express_service").default(false).notNull(),
-  keychainPersonalization: text("keychain_personalization"),
-  namePersonalization: text("name_personalization"),
-  hasBordado: boolean("has_bordado").default(false).notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).$type<number>().notNull(),
-  imageUrl: text("image_url"),
+    .references(() => products.id), // Referencia al producto
+
+  name: text("name").notNull(), // Nombre del producto, requerido por el backend
+
+  quantity: integer("quantity").default(1).notNull(), // Cantidad, por defecto 1
+
+  personalization: text("personalization"), // Personalización, opcional
+  embroideryColor: text("embroidery_color"), // Color del bordado, opcional
+  embroideryFont: text("embroidery_font"), // Fuente del bordado, opcional
+  customPreview: text("custom_preview"), // Vista previa personalizada, opcional
+
+  addPompon: boolean("add_pompon").default(false).notNull(), // Añadir pompón, por defecto false
+  addPersonalizedKeychain: boolean("add_personalized_keychain").default(false).notNull(), // Llaveros personalizados, por defecto false
+  addDecorativeBow: boolean("add_decorative_bow").default(false).notNull(), // Lazo decorativo, por defecto false
+  addPersonalization: boolean("add_personalization").default(false).notNull(), // Personalización adicional, por defecto false
+  expressService: boolean("express_service").default(false).notNull(), // Servicio exprés, por defecto false
+
+  keychainPersonalization: text("keychain_personalization"), // Personalización del llavero, opcional
+  namePersonalization: text("name_personalization"), // Personalización del nombre, opcional
+  hasBordado: boolean("has_bordado").default(false).notNull(), // Tiene bordado, por defecto false
+
+  // number en TS para compatibilidad con el frontend
+  price: decimal("price", { precision: 10, scale: 2 }).$type<number>().notNull(), // Precio, requerido
+  imageUrl: text("image_url"), // URL de la imagen, opcional
 });
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  customerName: text("customer_name").notNull(),
-  customerEmail: text("customer_email").notNull(),
-  customerPhone: text("customer_phone").notNull(),
-  items: text("items").notNull(),
-  total: decimal("total", { precision: 10, scale: 2 }).$type<number>().notNull(),
-  status: text("status").default("pending").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+
+  customerName: text("customer_name").notNull(), // Nombre del cliente, requerido
+  customerEmail: text("customer_email").notNull(), // Email del cliente, requerido
+  customerPhone: text("customer_phone").notNull(), // Teléfono del cliente, requerido
+
+  // Mantengo TEXT para no romper tu backend actual (guarda JSON serializado)
+  items: text("items").notNull(), // Ítems como JSON serializado
+
+  total: decimal("total", { precision: 10, scale: 2 }).$type<number>().notNull(), // Total, requerido
+
+  status: text("status").default("pending").notNull(), // Estado, por defecto "pending"
+
+  createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .$onUpdateFn(() => new Date()),
+    .$onUpdateFn(() => new Date()), // Fecha de actualización, automática
 });
 
 export const contactMessages = pgTable("contact_messages", {
   id: serial("id").primaryKey(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone"),
-  message: text("message").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  firstName: text("first_name").notNull(), // Nombre, requerido
+  lastName: text("last_name").notNull(), // Apellido, requerido
+  email: text("email").notNull(), // Email, requerido
+  phone: text("phone"), // Teléfono, opcional
+  message: text("message").notNull(), // Mensaje, requerido
+  createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
 });
 
 export const whatsappSessions = pgTable("whatsapp_sessions", {
   id: serial("id").primaryKey(),
-  phoneNumber: text("phone_number").notNull().unique(),
-  sessionData: text("session_data").notNull(),
-  lastActivity: timestamp("last_activity"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  phoneNumber: text("phone_number").notNull().unique(), // Número de teléfono, único
+  sessionData: text("session_data").notNull(), // Datos de sesión como JSON serializado
+  lastActivity: timestamp("last_activity"), // Última actividad, opcional
+  createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
 });
 
 export const emailCampaigns = pgTable("email_campaigns", {
   id: serial("id").primaryKey(),
-  campaignName: text("campaign_name").notNull(),
-  subject: text("subject").notNull(),
-  content: text("content").notNull(),
-  email: text("email").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  discountCode: text("discount_code").notNull(),
-  registrationDate: text("registration_date").notNull(),
-  acceptsMarketing: boolean("accepts_marketing").default(false).notNull(),
-  status: text("status").default("draft").notNull(),
-  sentCount: integer("sent_count").default(0).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  sentAt: timestamp("sent_at"),
+  campaignName: text("campaign_name").notNull(), // Nombre de la campaña, requerido
+  subject: text("subject").notNull(), // Asunto, requerido
+  content: text("content").notNull(), // Contenido, requerido
+  email: text("email").notNull(), // Email, requerido
+  firstName: text("first_name").notNull(), // Nombre, requerido
+  lastName: text("last_name").notNull(), // Apellido, requerido
+  discountCode: text("discount_code").notNull(), // Código de descuento, requerido
+  registrationDate: text("registration_date").notNull(), // Fecha de registro, requerido
+  acceptsMarketing: boolean("accepts_marketing").default(false).notNull(), // Acepta marketing, por defecto false
+  status: text("status").default("draft").notNull(), // Estado, por defecto "draft"
+  sentCount: integer("sent_count").default(0).notNull(), // Contador de envíos, por defecto 0
+  createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
+  sentAt: timestamp("sent_at"), // Fecha de envío, opcional
 });
 
 export const registeredUsers = pgTable("registered_users", {
   id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  name: text("name").notNull(),
-  phone: text("phone"),
-  shippingAddress: text("shipping_address"),
-  discountCode: text("discount_code"),
-  discountUsed: boolean("discount_used").default(false).notNull(),
-  discountExpiresAt: timestamp("discount_expires_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  email: text("email").notNull().unique(), // Email, único
+  passwordHash: text("password_hash").notNull(), // Hash de contraseña, requerido
+  name: text("name").notNull(), // Nombre, requerido
+  phone: text("phone"), // Teléfono, opcional
+  shippingAddress: text("shipping_address"), // Dirección de envío, opcional
+  discountCode: text("discount_code"), // Código de descuento, opcional
+  discountUsed: boolean("discount_used").default(false).notNull(), // Descuento usado, por defecto false
+  discountExpiresAt: timestamp("discount_expires_at"), // Fecha de expiración del descuento, opcional
+  createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
 });
 
 // === SCHEMAS ZOD ===
@@ -129,7 +155,7 @@ export const insertProductSchema = createInsertSchema(products, {
   price: () => z.number().positive(),
   category: (s) => s.category.min(1),
   imageUrl: (s) => s.imageUrl.url(),
-  colors: (s) => z.array(z.string()).optional(),
+  colors: (/* s */) => z.array(z.string()).optional(),
   inStock: (s) => s.inStock,
 }).omit({ id: true, createdAt: true, variants: true });
 
