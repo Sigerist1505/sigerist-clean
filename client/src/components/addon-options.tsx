@@ -21,7 +21,6 @@ interface AddonOptionsProps {
     addPersonalization: boolean;
     addExpressService: boolean; // Añadido para Servicio Express
     keychainPersonalization: string;
-    namePersonalization: string;
     totalAddonPrice: number;
   }) => void;
 }
@@ -71,7 +70,6 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
   });
 
   const [keychainPersonalization, setKeychainPersonalization] = useState("");
-  const [namePersonalization, setNamePersonalization] = useState("");
 
   // Recalcular totalAddonPrice cuando cambien los estados
   useEffect(() => {
@@ -86,10 +84,9 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
     onAddonChange({
       ...selectedAddons,
       keychainPersonalization,
-      namePersonalization,
       totalAddonPrice,
     });
-  }, [selectedAddons, keychainPersonalization, namePersonalization, onAddonChange]);
+  }, [selectedAddons, keychainPersonalization, onAddonChange]);
 
   const handleAddonToggle = (addonId: string, checked: boolean) => {
     const newSelectedAddons = {
@@ -107,10 +104,6 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
 
   const handleKeychainPersonalizationChange = (value: string) => {
     setKeychainPersonalization(value);
-  };
-
-  const handleNamePersonalizationChange = (value: string) => {
-    setNamePersonalization(value);
   };
 
   return (
@@ -186,13 +179,12 @@ export function AddonOptions({ onAddonChange }: AddonOptionsProps) {
                       <Input
                         id="name-text"
                         placeholder="Ej: Samuel, Andrea, etc."
-                        value={namePersonalization}
-                        onChange={(e) => handleNamePersonalizationChange(e.target.value)}
                         maxLength={20}
                         className="mt-1 bg-gray-900 border-[#C0C0C0]/30 text-white"
+                        disabled
                       />
                       <p className="text-xs text-gray-400 mt-1">
-                        {namePersonalization.length}/20 caracteres
+                        Esta función se maneja en la sección principal de personalización
                       </p>
                     </div>
                   )}
