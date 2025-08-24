@@ -131,4 +131,6 @@ npm start            # Ejecuta build
 
 ---
 
+**✨ Website ready for sigeristluxurybags.com ✨**
+
 **Deploy garantizado en Railway** 🎉
