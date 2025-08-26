@@ -61,7 +61,10 @@ export class WompiService {
       consumption?: number;
     };
   }) {
-    if (!WOMPI_PUBLIC_KEY || !WOMPI_INTEGRITY_SECRET) {
+    // Check configuration status using the same logic as the routes
+    const configStatus = this.getConfigurationStatus();
+    
+    if (!configStatus.isFullyConfigured) {
       throw new Error('Wompi configuration incomplete. Public key and integrity secret are required.');
     }
 
