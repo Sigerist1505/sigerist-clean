@@ -54,7 +54,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
             <img 
-              src="/attached_assets/logo.png" 
+              src="/assets/logo.png" 
               alt="Sigerist Luxury Bags Logo - Bolsos personalizados Colombia Medellín" 
               className="h-12 w-auto object-contain"
             />
