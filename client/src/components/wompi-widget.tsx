@@ -61,18 +61,31 @@ export function WompiWidget({
   useEffect(() => {
     if (widgetLoaded.current) return;
 
+    // Check if script already exists
+    const existingScript = document.querySelector('script[src="https://checkout.wompi.co/widget.js"]');
+    if (existingScript) {
+      widgetLoaded.current = true;
+      return;
+    }
+
     const script = document.createElement('script');
     script.src = 'https://checkout.wompi.co/widget.js';
     script.type = 'text/javascript';
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    
     script.onload = () => {
       widgetLoaded.current = true;
-      console.log('Wompi Widget script loaded');
+      console.log('Wompi Widget script loaded successfully');
     };
-    script.onerror = () => {
-      console.error('Failed to load Wompi Widget script');
+    
+    script.onerror = (error) => {
+      console.error('Failed to load Wompi Widget script:', error);
+      // Fallback: still allow Web Checkout to work
+      widgetLoaded.current = false;
       toast({
-        title: "Error de carga",
-        description: "No se pudo cargar el widget de pagos. Verifica tu conexión.",
+        title: "Script no disponible",
+        description: "El Widget no se pudo cargar, pero puedes usar el Checkout Web.",
         variant: "destructive"
       });
     };
@@ -80,10 +93,7 @@ export function WompiWidget({
     document.head.appendChild(script);
 
     return () => {
-      // Cleanup on unmount
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
+      // Cleanup on unmount - but keep script for other components
     };
   }, [toast]);
 
@@ -132,62 +142,85 @@ export function WompiWidget({
       }
     };
 
-    if (amount && reference && customerData.email) {
+    // Only fetch config once when we have the required data
+    if (amount && reference && customerData.email && customerData.fullName && !widgetConfig) {
       getWidgetConfig();
     }
-  }, [amount, currency, reference, customerData, customerAddress, redirectUrl, toast]);
+  }, [amount, currency, reference, customerData.email, customerData.fullName, customerData.phone, customerAddress, redirectUrl, widgetConfig, toast]);
 
   const handleOpenWidget = () => {
-    if (!widgetConfig || !window.WidgetCheckout) {
+    if (!widgetConfig) {
       toast({
-        title: "Widget no disponible",
-        description: "El widget de pagos aún no está listo. Intenta nuevamente.",
+        title: "Configuración no lista",
+        description: "La configuración del widget aún no está lista. Intenta nuevamente.",
         variant: "destructive"
       });
       return;
     }
 
+    if (!window.WidgetCheckout) {
+      // Fallback to Web Checkout if Widget is not available
+      toast({
+        title: "Widget no disponible",
+        description: "Redirigiendo al Checkout Web de Wompi...",
+      });
+      handleWebCheckout();
+      return;
+    }
+
     setIsLoading(true);
 
-    const checkout = new window.WidgetCheckout({
-      currency: widgetConfig.currency,
-      amountInCents: widgetConfig.amountInCents,
-      reference: widgetConfig.reference,
-      publicKey: widgetConfig.publicKey,
-      signature: { integrity: widgetConfig.signature },
-      redirectUrl: widgetConfig.redirectUrl,
-      customerData: widgetConfig.customerData,
-      shippingAddress: widgetConfig.shippingAddress
-    });
+    try {
+      const checkout = new window.WidgetCheckout({
+        currency: widgetConfig.currency,
+        amountInCents: widgetConfig.amountInCents,
+        reference: widgetConfig.reference,
+        publicKey: widgetConfig.publicKey,
+        signature: { integrity: widgetConfig.signature },
+        redirectUrl: widgetConfig.redirectUrl,
+        customerData: widgetConfig.customerData,
+        shippingAddress: widgetConfig.shippingAddress
+      });
 
-    checkout.open((result: any) => {
-      setIsLoading(false);
-      
-      if (result.transaction) {
-        const transaction = result.transaction;
-        console.log("Transaction result:", transaction);
+      checkout.open((result: any) => {
+        setIsLoading(false);
         
-        toast({
-          title: "¡Pago procesado!",
-          description: `Transacción ${transaction.id} - Estado: ${transaction.status}`,
-        });
+        if (result.transaction) {
+          const transaction = result.transaction;
+          console.log("Transaction result:", transaction);
+          
+          toast({
+            title: "¡Pago procesado!",
+            description: `Transacción ${transaction.id} - Estado: ${transaction.status}`,
+          });
 
-        if (onSuccess) {
-          onSuccess(transaction.id);
-        }
-      } else if (result.error) {
-        console.error("Widget error:", result.error);
-        toast({
-          title: "Error en el pago",
-          description: result.error.message || "Ocurrió un error durante el pago",
-          variant: "destructive"
-        });
+          if (onSuccess) {
+            onSuccess(transaction.id);
+          }
+        } else if (result.error) {
+          console.error("Widget error:", result.error);
+          toast({
+            title: "Error en el pago",
+            description: result.error.message || "Ocurrió un error durante el pago",
+            variant: "destructive"
+          });
 
-        if (onError) {
-          onError(result.error.message || "Payment failed");
+          if (onError) {
+            onError(result.error.message || "Payment failed");
+          }
         }
-      }
-    });
+      });
+    } catch (error: any) {
+      setIsLoading(false);
+      console.error("Error opening widget:", error);
+      toast({
+        title: "Error del Widget",
+        description: "No se pudo abrir el widget. Usa el Checkout Web.",
+        variant: "destructive"
+      });
+      // Fallback to Web Checkout
+      handleWebCheckout();
+    }
   };
 
   const handleWebCheckout = () => {

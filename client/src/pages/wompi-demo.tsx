@@ -6,9 +6,11 @@ import { formatPrice } from "@/lib/utils";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import { Link } from "wouter";
 import { WompiWidget } from "@/components/wompi-widget";
+import { WompiOfficial } from "@/components/wompi-official";
 
 export default function WompiDemoPage() {
   const { toast } = useToast();
+  const [selectedComponent, setSelectedComponent] = useState<'advanced' | 'official'>('official');
   const amount = 150000; // Ejemplo de monto
   const reference = `SIGERIST-DEMO-${Date.now()}`;
 
@@ -49,6 +51,26 @@ export default function WompiDemoPage() {
           </Link>
         </div>
 
+        {/* Component Selector */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-4">
+            <Button
+              onClick={() => setSelectedComponent('official')}
+              variant={selectedComponent === 'official' ? 'default' : 'outline'}
+              className={selectedComponent === 'official' ? 'bg-yellow-600 text-black' : 'border-gray-600 text-gray-300'}
+            >
+              🛡️ Widget Oficial
+            </Button>
+            <Button
+              onClick={() => setSelectedComponent('advanced')}
+              variant={selectedComponent === 'advanced' ? 'default' : 'outline'}
+              className={selectedComponent === 'advanced' ? 'bg-yellow-600 text-black' : 'border-gray-600 text-gray-300'}
+            >
+              ⚙️ Widget Avanzado
+            </Button>
+          </div>
+        </div>
+
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
@@ -75,40 +97,73 @@ export default function WompiDemoPage() {
           </div>
         </div>
 
-        {/* Wompi Widget Demo */}
+        {/* Wompi Component Demo */}
         <div className="flex justify-center">
-          <WompiWidget
-            amount={amount}
-            reference={reference}
-            customerEmail="demo@sigerist.com"
-            customerPhone="3160183418"
-            customerName="Demo Usuario"
-            customerAddress={{
-              address: "Carrera 123 # 45-67",
-              city: "Bogotá",
-              department: "Cundinamarca",
-              postalCode: "110111"
-            }}
-            onSuccess={handlePaymentSuccess}
-            onError={handlePaymentError}
-          />
+          {selectedComponent === 'official' ? (
+            <WompiOfficial
+              amount={amount}
+              reference={reference}
+              customerEmail="demo@sigerist.com"
+              customerPhone="3160183418"
+              customerName="Demo Usuario"
+              customerAddress={{
+                address: "Carrera 123 # 45-67",
+                city: "Bogotá",
+                department: "Cundinamarca",
+                postalCode: "110111"
+              }}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+            />
+          ) : (
+            <WompiWidget
+              amount={amount}
+              reference={reference}
+              customerEmail="demo@sigerist.com"
+              customerPhone="3160183418"
+              customerName="Demo Usuario"
+              customerAddress={{
+                address: "Carrera 123 # 45-67",
+                city: "Bogotá",
+                department: "Cundinamarca",
+                postalCode: "110111"
+              }}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+            />
+          )}
         </div>
 
         {/* Information Card */}
         <div className="mt-8 max-w-2xl mx-auto">
           <Card className="bg-gray-900 border-gray-600">
             <CardHeader>
-              <CardTitle className="text-yellow-400">📖 Integración Oficial Wompi</CardTitle>
+              <CardTitle className="text-yellow-400">
+                📖 {selectedComponent === 'official' ? 'Widget Oficial' : 'Widget Avanzado'}
+              </CardTitle>
             </CardHeader>
             <CardContent className="text-gray-300 space-y-3">
-              <p><strong>Widget:</strong> Pago directo en esta página sin redirección</p>
-              <p><strong>Checkout Web:</strong> Redirección al checkout oficial de Wompi</p>
+              {selectedComponent === 'official' ? (
+                <>
+                  <p><strong>Widget Oficial:</strong> Renderiza el botón oficial de Wompi usando script tags</p>
+                  <p><strong>Método:</strong> data-render="button" con atributos data-*</p>
+                  <p><strong>Ventajas:</strong> Implementación directa según documentación</p>
+                  <p><strong>Fallback:</strong> Web Checkout si el widget no carga</p>
+                </>
+              ) : (
+                <>
+                  <p><strong>Widget Avanzado:</strong> Control programático con JavaScript</p>
+                  <p><strong>Método:</strong> new WidgetCheckout() con configuración completa</p>
+                  <p><strong>Ventajas:</strong> Mayor control y manejo de eventos</p>
+                  <p><strong>Opciones:</strong> Widget y Web Checkout intercambiables</p>
+                </>
+              )}
               <p><strong>Firma de integridad:</strong> SHA256 generada automáticamente</p>
               <p><strong>Configuración:</strong> Usando credenciales de producción</p>
               <div className="pt-3 border-t border-gray-600">
                 <p className="text-sm text-gray-400">
-                  Esta integración sigue la documentación oficial de Wompi y utiliza
-                  tanto el Widget como el Web Checkout según las mejores prácticas.
+                  Ambas integraciones siguen la documentación oficial de Wompi y utilizan
+                  los métodos recomendados según las mejores prácticas.
                 </p>
               </div>
             </CardContent>
@@ -146,7 +201,9 @@ export default function WompiDemoPage() {
         {/* Return policy */}
         <div className="mt-8 text-center text-xs text-[#C0C0C0]">
           <p>Demo de integración con Wompi siguiendo la documentación oficial.</p>
-          <p className="mt-1">Widget integrado y Web Checkout implementados según las mejores prácticas.</p>
+          <p className="mt-1">
+            {selectedComponent === 'official' ? 'Widget oficial' : 'Widget avanzado'} implementado según las mejores prácticas.
+          </p>
         </div>
       </div>
     </div>
