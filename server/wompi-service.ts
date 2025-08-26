@@ -3,8 +3,8 @@ import * as crypto from "crypto";
 const WOMPI_BASE_URL = "https://production.wompi.co/v1";
 const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY;
 const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY;
-const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET;
-const WOMPI_WEBHOOK_SECRET = process.env.WOMPI_WEBHOOK_SECRET;
+const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || "prod_integrity_gHG8Po5YjKQmGpWm8fkgxANED7motlc7";
+const WOMPI_WEBHOOK_SECRET = process.env.WOMPI_WEBHOOK_SECRET || "prod_events_AfftM4juoszPyNV4YdhCqyfb6BhNWK9L";
 
 if (!WOMPI_PRIVATE_KEY || !WOMPI_PUBLIC_KEY) {
   console.warn("Wompi keys not configured. Payment processing will not work.");
