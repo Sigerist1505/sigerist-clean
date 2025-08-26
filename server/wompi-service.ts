@@ -37,6 +37,51 @@ export class WompiService {
     };
   }
 
+  static getWidgetConfig(amount_in_cents: number, currency: string, reference: string, customerData?: {
+    email?: string;
+    full_name?: string;
+    phone_number?: string;
+    phone_number_prefix?: string;
+    legal_id?: string;
+    legal_id_type?: string;
+  }, shippingAddress?: {
+    address_line_1?: string;
+    address_line_2?: string;
+    country?: string;
+    city?: string;
+    phone_number?: string;
+    region?: string;
+    name?: string;
+    postal_code?: string;
+  }, options?: {
+    redirect_url?: string;
+    expiration_time?: string;
+    tax_in_cents?: {
+      vat?: number;
+      consumption?: number;
+    };
+  }) {
+    if (!WOMPI_PUBLIC_KEY || !WOMPI_INTEGRITY_SECRET) {
+      throw new Error('Wompi configuration incomplete. Public key and integrity secret are required.');
+    }
+
+    // Generate signature according to Wompi documentation
+    const signature = this.generateSignature(reference, amount_in_cents, currency);
+
+    return {
+      publicKey: WOMPI_PUBLIC_KEY,
+      currency,
+      amountInCents: amount_in_cents,
+      reference,
+      signature: signature,
+      redirectUrl: options?.redirect_url,
+      expirationTime: options?.expiration_time,
+      taxInCents: options?.tax_in_cents,
+      customerData,
+      shippingAddress
+    };
+  }
+
   static generateSignature(reference: string, amount_in_cents: number, currency: string): string {
     if (!WOMPI_INTEGRITY_SECRET) {
       throw new Error('WOMPI_INTEGRITY_SECRET is required for signature generation');

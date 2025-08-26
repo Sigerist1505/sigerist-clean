@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/components/cart-provider";
 import { useCustomerInfo } from "@/components/customer-info-provider";
-import { WompiCheckout } from "@/components/wompi-checkout";
+import { WompiWidget } from "@/components/wompi-widget";
 import { formatPrice } from "@/lib/utils";
 import { useLocation } from "wouter";
 import { ArrowLeft, ShoppingBag, CreditCard } from "lucide-react";
@@ -104,18 +104,20 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Wompi Checkout Component with Cart Data */}
-        <WompiCheckout 
+        {/* Wompi Widget Component with Cart Data */}
+        <WompiWidget 
           amount={finalTotal}
           reference={`SIGERIST-${Date.now()}`}
           customerEmail={customerInfo.email || "daniel.sigerist101@gmail.com"}
           customerPhone={customerInfo.phone || "3160183418"}
-          customerAddress={{
+          customerName={customerInfo.fullName || ""}
+          customerAddress={customerInfo.address ? {
             address: customerInfo.address,
             city: customerInfo.city,
             department: customerInfo.department,
             postalCode: customerInfo.postalCode
-          }}
+          } : undefined}
+          redirectUrl={`${window.location.origin}/payment-success`}
           onSuccess={(transactionId) => {
             console.log('Payment successful:', transactionId);
             // Limpiar carrito y redirigir a página de éxito
