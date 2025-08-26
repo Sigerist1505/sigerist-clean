@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useCart } from "@/hooks/use-cart";
+import { useCart } from "@/components/cart-provider";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/utils";
 import { ImageGallery } from "@/components/image-gallery";
@@ -35,7 +35,7 @@ interface ProductVariants {
 
 function ProductPage() {
   const [, params] = useRoute("/product/:id");
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
   const { toast } = useToast();
   const productId = params?.id ? parseInt(params.id) : 0;
 
@@ -86,43 +86,21 @@ function ProductPage() {
 
     const totalPrice = calculateFinalPrice();
 
-    addToCart(
-      {
-        productId: product.id,
-        name: product.name,           // <-- agrega esto
-        price: totalPrice,            // <-- Use calculated total price
-        quantity,
-        personalization: personalization || undefined,
-        addPompon,
-        addPersonalizedKeychain: addKeychain,
-        addDecorativeBow: addBow,
-        addNameEmbroidery,
-        expressService: addExpressService,
-        keychainPersonalization: keychainText,
-        hasBordado: product.variants?.bordado === true && showEmbroidery,
-        specifications: {
-          bordado: product.variants?.bordado === true && showEmbroidery,
-          llavero: addKeychain,
-          mono: addBow,
-          pompon: addPompon,
-          nombreBordado: addNameEmbroidery,
-          servicioExpress: addExpressService,
-          personalizacion: personalization,
-        },
-      },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Producto agregado",
-            description: `${product.name} ha sido agregado al carrito`,
-            duration: 3000,
-          });
-        },
-        onError: (error) => {
-          console.error("Error adding to cart:", error);
-        },
-      }
-    );
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: totalPrice,
+      quantity,
+      personalization: personalization || undefined,
+      addPompon,
+      addPersonalizedKeychain: addKeychain,
+      addDecorativeBow: addBow,
+      addPersonalization: !!personalization,
+      addNameEmbroidery,
+      expressService: addExpressService,
+      keychainPersonalization: keychainText || undefined,
+      hasBordado: product.variants?.bordado === true && showEmbroidery,
+    });
   };
 
   if (isLoading) {
