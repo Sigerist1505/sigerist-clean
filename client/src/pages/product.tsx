@@ -63,7 +63,13 @@ function ProductPage() {
   const calculateFinalPrice = () => {
     if (!product) return 0;
 
-    const basePrice = product.price;
+    let basePrice = product.price;
+    
+    // Apply 15,000 COP discount for products without embroidery (if product supports embroidery)
+    if (hasBordado && !showEmbroidery) {
+      basePrice = Math.max(0, basePrice - 15000); // Ensure price doesn't go negative
+    }
+    
     let totalPrice = basePrice;
 
     if (addPompon) totalPrice += 45000;
@@ -327,7 +333,21 @@ function ProductPage() {
                     (incluye bordado personalizado)
                   </span>
                 )}
+                {hasBordado && !showEmbroidery && (
+                  <span className="text-sm font-normal text-gray-400 ml-2">
+                    (ahorro de $15.000 sin bordado)
+                  </span>
+                )}
               </div>
+              
+              {hasBordado && (
+                <div className="mb-4">
+                  <div className="text-sm text-gray-400 space-y-1">
+                    <div>• Con bordado: {formatPrice(product.price)}</div>
+                    <div>• Sin bordado: {formatPrice(Math.max(0, product.price - 15000))}</div>
+                  </div>
+                </div>
+              )}
 
               <p className="text-gray-300 text-lg leading-relaxed">{product.description}</p>
             </div>
