@@ -207,6 +207,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Widget configuration endpoint
   app.post("/api/wompi/widget-config", async (req, res) => {
     try {
+      // Check Wompi configuration status first
+      const configStatus = WompiService.getConfigurationStatus();
+      
+      if (!configStatus.isFullyConfigured) {
+        console.error("Wompi configuration incomplete:", configStatus);
+        
+        let errorMessage = "El servicio de pagos no está configurado correctamente. Por favor contacta al soporte técnico.";
+        
+        if (configStatus.needsConfiguration) {
+          errorMessage = "El servicio de pagos necesita configuración. Por favor actualiza las claves de Wompi en el archivo .env";
+        }
+        
+        return res.status(503).json({ 
+          success: false,
+          error: errorMessage,
+          message: "Error de configuración",
+          details: process.env.NODE_ENV === "development" ? configStatus : undefined,
+          help: process.env.NODE_ENV === "development" ? "Ver WOMPI_SETUP.md para instrucciones detalladas" : undefined
+        });
+      }
+
       const { 
         amount_in_cents, 
         currency = "COP", 
@@ -245,9 +266,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error: any) {
       console.error("Error generating widget config:", error);
-      res.status(500).json({
+      
+      // Return user-friendly error message
+      let statusCode = 500;
+      let userMessage = error.message || "Internal server error";
+      
+      if (error.message?.includes("Wompi configuration incomplete") || 
+          error.message?.includes("configuración de Wompi no está completa")) {
+        statusCode = 503;
+        userMessage = "El servicio de pagos no está disponible temporalmente. Por favor intenta más tarde o contacta al soporte.";
+      }
+      
+      res.status(statusCode).json({
         success: false,
-        error: error.message || "Internal server error"
+        error: userMessage
       });
     }
   });
