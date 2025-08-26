@@ -203,6 +203,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ...configStatus
     });
   });
+
+  // Widget configuration endpoint
+  app.post("/api/wompi/widget-config", async (req, res) => {
+    try {
+      const { 
+        amount_in_cents, 
+        currency = "COP", 
+        reference, 
+        customer_data,
+        shipping_address,
+        redirect_url,
+        expiration_time,
+        tax_in_cents
+      } = req.body;
+
+      if (!amount_in_cents || !reference) {
+        return res.status(400).json({
+          success: false,
+          error: "amount_in_cents and reference are required"
+        });
+      }
+
+      const widgetConfig = WompiService.getWidgetConfig(
+        amount_in_cents,
+        currency,
+        reference,
+        customer_data,
+        shipping_address,
+        {
+          redirect_url,
+          expiration_time,
+          tax_in_cents
+        }
+      );
+
+      res.json({
+        success: true,
+        data: widgetConfig
+      });
+
+    } catch (error: any) {
+      console.error("Error generating widget config:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message || "Internal server error"
+      });
+    }
+  });
   
   // Create card token endpoint
   app.post("/api/wompi/create-token", async (req, res) => {
