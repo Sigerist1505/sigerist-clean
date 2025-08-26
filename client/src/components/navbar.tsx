@@ -27,7 +27,14 @@ export function Navbar() {
     if (href.startsWith('/#')) {
       e.preventDefault();
       const sectionId = href.substring(2); // Remove /#
-      scrollToSection(sectionId);
+      
+      // If we're not on the home page, navigate to home first with the hash
+      if (location !== '/') {
+        window.location.href = href;
+      } else {
+        // If we're on home page, scroll directly to section
+        scrollToSection(sectionId);
+      }
       setIsMobileMenuOpen(false);
     }
   };
@@ -47,7 +54,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
             <img 
-              src="/attached_assets/image_1754115150280.png" 
+              src="/attached_assets/logo.png" 
               alt="Sigerist Luxury Bags Logo - Bolsos personalizados Colombia Medellín" 
               className="h-12 w-auto object-contain"
             />

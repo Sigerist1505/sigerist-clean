@@ -20,7 +20,6 @@ import {
   Truck
 } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 export default function CartPage() {
   const { items, total, finalTotal, itemCount, discountCode, discountAmount, updateItem, removeItem, clearCart, applyDiscount, removeDiscount } = useCart();
