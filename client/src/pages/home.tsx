@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/product-card";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { InstagramButton } from "@/components/instagram-button";
+import { InlineInstagramButton } from "@/components/inline-instagram-button";
 import { useCart } from "@/components/cart-provider";
 import { formatPrice } from "@/lib/utils";
 import {
@@ -563,7 +564,7 @@ const Home = () => {
                     phone="573160183418"
                     message="¡Hola! Me interesa conocer más sobre sus productos de lujo."
                   />
-                  <InstagramButton />
+                  <InlineInstagramButton />
                 </div>
               </div>
 
