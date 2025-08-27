@@ -134,7 +134,8 @@ export function WompiWidget({
           city: memoizedCustomerAddress.city,
           region: memoizedCustomerAddress.department,
           country: "CO",
-          postal_code: memoizedCustomerAddress.postalCode || ""
+          postal_code: memoizedCustomerAddress.postalCode || "",
+          phone_number: effectivePhone || ""
         } : undefined,
         redirect_url: memoizedRedirectUrl,
         tax_in_cents: {
@@ -455,6 +456,9 @@ export function WompiWidget({
             )}
             {widgetConfig.shippingAddress?.country && (
               <input type="hidden" name="shipping-address:country" value={widgetConfig.shippingAddress.country} />
+            )}
+            {widgetConfig.shippingAddress?.phone_number && (
+              <input type="hidden" name="shipping-address:phone-number" value={widgetConfig.shippingAddress.phone_number} />
             )}
           </form>
         )}
