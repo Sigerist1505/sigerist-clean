@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/components/cart-provider";
 import { useCustomerInfo } from "@/components/customer-info-provider";
 import { WompiWidget } from "@/components/wompi-widget";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getSessionId } from "@/lib/utils";
 import { useLocation } from "wouter";
 import { ArrowLeft, ShoppingBag, CreditCard } from "lucide-react";
 
@@ -13,6 +13,25 @@ export default function CheckoutPage() {
   const { items, total, itemCount, finalTotal, discountCode, discountAmount, clearCart } = useCart();
   const { customerInfo } = useCustomerInfo();
   const [, setLocation] = useLocation();
+
+  // Generate a stable reference number that persists across re-renders
+  // Uses session ID to ensure uniqueness per user session and a consistent timestamp
+  const stableReference = useMemo(() => {
+    const sessionId = getSessionId();
+    const checkoutSession = localStorage.getItem(`checkout_ref_${sessionId}`);
+    
+    if (checkoutSession) {
+      // Use existing reference if we're in the same checkout session
+      return checkoutSession;
+    }
+    
+    // Generate new reference for this checkout session
+    const timestamp = Date.now();
+    const newReference = `SIGERIST-${sessionId}-${timestamp}`;
+    localStorage.setItem(`checkout_ref_${sessionId}`, newReference);
+    
+    return newReference;
+  }, [items.length, finalTotal]); // Only regenerate if cart changes significantly
 
   if (items.length === 0) {
     return (
@@ -107,7 +126,7 @@ export default function CheckoutPage() {
         {/* Wompi Widget Component with Cart Data */}
         <WompiWidget 
           amount={finalTotal}
-          reference={`SIGERIST-${Date.now()}`}
+          reference={stableReference}
           customerEmail={customerInfo.email || "daniel.sigerist101@gmail.com"}
           customerPhone={customerInfo.phone || "3160183418"}
           customerName={customerInfo.name || ""}
@@ -120,6 +139,9 @@ export default function CheckoutPage() {
           redirectUrl={`${window.location.origin}/payment-success`}
           onSuccess={(transactionId) => {
             console.log('Payment successful:', transactionId);
+            // Clear checkout reference from localStorage on successful payment
+            const sessionId = getSessionId();
+            localStorage.removeItem(`checkout_ref_${sessionId}`);
             // Limpiar carrito y redirigir a página de éxito
             clearCart();
             setLocation(`/payment-success?transaction=${transactionId}`);

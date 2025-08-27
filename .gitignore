@@ -112,3 +112,4 @@ drizzle/
 !client/public/**
 !client/public/assets/
 !client/public/assets/**
+.env.test
