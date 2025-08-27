@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/product-card";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { InstagramButton } from "@/components/instagram-button";
-import { useCart } from "@/hooks/use-cart";
+import { useCart } from "@/components/cart-provider";
 import { formatPrice } from "@/lib/utils";
 import {
   Clock,
@@ -34,7 +34,7 @@ const Home = () => {
     retry: 1,
   });
 
-  const { cartCount } = useCart();
+  const { itemCount } = useCart();
   const [contactForm, setContactForm] = useState({
     firstName: "",
     lastName: "",

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { getSessionId } from "@/lib/utils";
@@ -107,7 +107,6 @@ interface CartContextType extends CartState {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const sessionId = getSessionId();
@@ -124,8 +123,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return data as CartItem[];
     },
     retry: 1,
-    staleTime: 0,
+    staleTime: 5000, // Cache for 5 seconds to prevent excessive refetching
   });
+
+  // Calculate totals from the query data directly
+  const totals = calculateTotals(cartItems, null); // We'll handle discount separately for now
+  const [discountState, setDiscountState] = useState<{code: string | null, amount: number}>({
+    code: null,
+    amount: 0
+  });
+
+  const finalTotals = discountState.code 
+    ? {
+        ...totals,
+        discountAmount: (totals.total * 15) / 100,
+        finalTotal: totals.total - (totals.total * 15) / 100
+      }
+    : {...totals, discountAmount: 0, finalTotal: totals.total};
 
   const addItemMutation = useMutation({
     mutationFn: async (item: InsertCartItem) => {
@@ -140,8 +154,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return response.json() as Promise<CartItem[]>;
     },
-    onSuccess: (updatedCartItems: CartItem[]) => {
-      dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
       toast({
         title: "Producto agregado",
@@ -166,8 +179,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return response.json() as Promise<CartItem[]>;
     },
-    onSuccess: (updatedCartItems: CartItem[]) => {
-      dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
     },
     onError: () => {
@@ -188,15 +200,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return response.json() as Promise<CartItem[]>;
     },
-    onSuccess: (updatedCartItems: CartItem[]) => {
-      dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
       toast({
         title: "Producto eliminado",
         description: "El producto se eliminó del carrito",
       });
       // If cart is empty after removing item, redirect to home page
-      if (updatedCartItems.length === 0) {
+      if (cartItems.length <= 1) {
         setTimeout(() => {
           window.location.href = "/";
         }, 1000);
@@ -220,8 +231,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return response.json() as Promise<CartItem[]>;
     },
-    onSuccess: (updatedCartItems: CartItem[]) => {
-      dispatch({ type: "SET_ITEMS", payload: updatedCartItems });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cart", sessionId] });
       toast({
         title: "Carrito vaciado",
@@ -241,12 +251,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  useEffect(() => {
-    if (cartItems) {
-      dispatch({ type: "SET_ITEMS", payload: cartItems });
-    }
-  }, [cartItems]);
-
   const addItem = (item: InsertCartItem) => {
     addItemMutation.mutate(item);
   };
@@ -264,15 +268,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const applyDiscount = (code: string, percentage: number) => {
-    dispatch({ type: "APPLY_DISCOUNT", payload: { code, percentage } });
+    setDiscountState({ code, amount: percentage });
   };
 
   const removeDiscount = () => {
-    dispatch({ type: "REMOVE_DISCOUNT" });
+    setDiscountState({ code: null, amount: 0 });
   };
 
   const value: CartContextType = {
-    ...state,
+    items: cartItems,
+    isLoading,
+    total: finalTotals.total,
+    itemCount: finalTotals.itemCount,
+    discountCode: discountState.code,
+    discountAmount: finalTotals.discountAmount,
+    finalTotal: finalTotals.finalTotal,
     addItem,
     updateItem,
     removeItem,

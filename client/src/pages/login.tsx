@@ -130,7 +130,7 @@ export default function LoginPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-accent font-medium">
+                <Label htmlFor="email" className="block text-sm font-medium text-gray-300">
                   <Mail className="h-4 w-4 inline mr-2" />
                   Correo Electrónico
                 </Label>
@@ -139,7 +139,7 @@ export default function LoginPage() {
                   type="email"
                   {...form.register("email")}
                   placeholder="tu@email.com"
-                  className="bg-background border-accent/30 focus:border-accent text-foreground"
+                  className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                 />
                 {form.formState.errors.email && (
                   <p className="text-gray-400 text-sm">{form.formState.errors.email.message}</p>
@@ -148,7 +148,7 @@ export default function LoginPage() {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-accent font-medium">
+                <Label htmlFor="password" className="block text-sm font-medium text-gray-300">
                   <Lock className="h-4 w-4 inline mr-2" />
                   Contraseña
                 </Label>
@@ -158,7 +158,7 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     {...form.register("password")}
                     placeholder="Tu contraseña"
-                    className="bg-background border-accent/30 focus:border-accent text-foreground pr-10"
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent pr-10"
                   />
                   <Button
                     type="button"

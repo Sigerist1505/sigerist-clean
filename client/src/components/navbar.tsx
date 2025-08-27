@@ -191,8 +191,8 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-400/40 bg-black">
+          <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-black border-t border-gray-400/40 shadow-lg">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
