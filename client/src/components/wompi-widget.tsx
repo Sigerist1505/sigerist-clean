@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -101,57 +101,71 @@ export function WompiWidget({
   const effectiveEmail = useMemo(() => customerData.email || customerEmail, [customerData.email, customerEmail]);
   const effectiveName = useMemo(() => customerData.fullName || customerName, [customerData.fullName, customerName]);
   const effectivePhone = useMemo(() => customerData.phone || customerPhone, [customerData.phone, customerPhone]);
+  
+  // Memoize customerAddress to prevent infinite loops
+  const memoizedCustomerAddress = useMemo(() => customerAddress, [
+    customerAddress?.address,
+    customerAddress?.city,
+    customerAddress?.department,
+    customerAddress?.postalCode
+  ]);
+
+  // Memoize redirect URL
+  const memoizedRedirectUrl = useMemo(() => 
+    redirectUrl || `${window.location.origin}/payment-success`, 
+    [redirectUrl]
+  );
 
   // Get widget configuration from server
-  useEffect(() => {
-    const getWidgetConfig = async () => {
-      try {
-        const response = await apiRequest("POST", "/api/wompi/widget-config", {
-          amount_in_cents: Math.round(amount * 100),
-          currency,
-          reference,
-          customer_data: {
-            email: effectiveEmail || "",
-            full_name: effectiveName || "",
-            phone_number: effectivePhone || "",
-            phone_number_prefix: "+57"
-          },
-          shipping_address: customerAddress ? {
-            address_line_1: customerAddress.address,
-            city: customerAddress.city,
-            region: customerAddress.department,
-            country: "CO",
-            postal_code: customerAddress.postalCode || ""
-          } : undefined,
-          redirect_url: redirectUrl || `${window.location.origin}/payment-success`,
-          tax_in_cents: {
-            vat: 0,
-            consumption: 0
-          }
-        });
-
-        const result = await response.json();
-        
-        if (result.success) {
-          setWidgetConfig(result.data);
-        } else {
-          throw new Error(result.error || 'Failed to get widget configuration');
+  const getWidgetConfig = useCallback(async () => {
+    try {
+      const response = await apiRequest("POST", "/api/wompi/widget-config", {
+        amount_in_cents: Math.round(amount * 100),
+        currency,
+        reference,
+        customer_data: {
+          email: effectiveEmail || "",
+          full_name: effectiveName || "",
+          phone_number: effectivePhone || "",
+          phone_number_prefix: "+57"
+        },
+        shipping_address: memoizedCustomerAddress ? {
+          address_line_1: memoizedCustomerAddress.address,
+          city: memoizedCustomerAddress.city,
+          region: memoizedCustomerAddress.department,
+          country: "CO",
+          postal_code: memoizedCustomerAddress.postalCode || ""
+        } : undefined,
+        redirect_url: memoizedRedirectUrl,
+        tax_in_cents: {
+          vat: 0,
+          consumption: 0
         }
-      } catch (error: any) {
-        console.error('Error getting widget config:', error);
-        toast({
-          title: "Error de configuración",
-          description: "No se pudo configurar el widget de pagos.",
-          variant: "destructive"
-        });
-      }
-    };
+      });
 
+      const result = await response.json();
+      
+      if (result.success) {
+        setWidgetConfig(result.data);
+      } else {
+        throw new Error(result.error || 'Failed to get widget configuration');
+      }
+    } catch (error: any) {
+      console.error('Error getting widget config:', error);
+      toast({
+        title: "Error de configuración",
+        description: "No se pudo configurar el widget de pagos.",
+        variant: "destructive"
+      });
+    }
+  }, [amount, currency, reference, effectiveEmail, effectiveName, effectivePhone, memoizedCustomerAddress, memoizedRedirectUrl, toast]);
+
+  useEffect(() => {
     // Only fetch config once when we have the required data
     if (amount && reference && effectiveEmail && effectiveName && !widgetConfig) {
       getWidgetConfig();
     }
-  }, [amount, currency, reference, effectiveEmail, effectiveName, effectivePhone, customerAddress, redirectUrl, widgetConfig, toast]);
+  }, [amount, reference, effectiveEmail, effectiveName, widgetConfig, getWidgetConfig]);
 
   const handleOpenWidget = () => {
     if (!widgetConfig) {
