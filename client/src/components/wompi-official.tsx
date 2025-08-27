@@ -58,7 +58,7 @@ export function WompiOfficial({
           customer_data: {
             email: customerData.email,
             full_name: customerData.fullName,
-            phone_number: customerData.phone,
+            phone_number: customerPhone || customerData.phone,
             phone_number_prefix: "+57"
           },
           shipping_address: customerAddress ? {
@@ -67,7 +67,7 @@ export function WompiOfficial({
             region: customerAddress.department,
             country: "CO",
             postal_code: customerAddress.postalCode || "",
-            phone_number: customerData.phone
+            phone_number: customerPhone || customerData.phone
           } : undefined,
           redirect_url: redirectUrl || `${window.location.origin}/payment-success`,
           tax_in_cents: {
