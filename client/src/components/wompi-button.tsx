@@ -57,7 +57,7 @@ export function WompiButton({
           customer_data: {
             email: customerData.email,
             full_name: customerData.fullName,
-            phone_number: customerData.phone,
+            phone_number: customerPhone || customerData.phone,
             phone_number_prefix: "+57"
           },
           shipping_address: customerAddress ? {
@@ -65,7 +65,8 @@ export function WompiButton({
             city: customerAddress.city,
             region: customerAddress.department,
             country: "CO",
-            postal_code: customerAddress.postalCode || ""
+            postal_code: customerAddress.postalCode || "",
+            phone_number: customerPhone || customerData.phone
           } : undefined,
           redirect_url: redirectUrl || `${window.location.origin}/payment-success`,
           tax_in_cents: {
@@ -131,6 +132,7 @@ export function WompiButton({
         'shipping-address:city': widgetConfig.shippingAddress.city || '',
         'shipping-address:region': widgetConfig.shippingAddress.region || '',
         'shipping-address:country': widgetConfig.shippingAddress.country || 'CO',
+        'shipping-address:phone-number': widgetConfig.shippingAddress.phone_number || '',
       });
     }
 
@@ -243,6 +245,7 @@ export function WompiButton({
                   'data-shipping-address:city': widgetConfig.shippingAddress.city,
                   'data-shipping-address:region': widgetConfig.shippingAddress.region,
                   'data-shipping-address:country': widgetConfig.shippingAddress.country,
+                  'data-shipping-address:phone-number': widgetConfig.shippingAddress.phone_number,
                 })}
               ></script>
             </form>
