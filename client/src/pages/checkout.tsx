@@ -110,7 +110,7 @@ export default function CheckoutPage() {
           reference={`SIGERIST-${Date.now()}`}
           customerEmail={customerInfo.email || "daniel.sigerist101@gmail.com"}
           customerPhone={customerInfo.phone || "3160183418"}
-          customerName={customerInfo.fullName || ""}
+          customerName={customerInfo.name || ""}
           customerAddress={customerInfo.address ? {
             address: customerInfo.address,
             city: customerInfo.city,

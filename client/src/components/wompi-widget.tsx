@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -97,6 +97,11 @@ export function WompiWidget({
     };
   }, [toast]);
 
+  // Use memo to prevent infinite loops
+  const effectiveEmail = useMemo(() => customerData.email || customerEmail, [customerData.email, customerEmail]);
+  const effectiveName = useMemo(() => customerData.fullName || customerName, [customerData.fullName, customerName]);
+  const effectivePhone = useMemo(() => customerData.phone || customerPhone, [customerData.phone, customerPhone]);
+
   // Get widget configuration from server
   useEffect(() => {
     const getWidgetConfig = async () => {
@@ -106,9 +111,9 @@ export function WompiWidget({
           currency,
           reference,
           customer_data: {
-            email: customerData.email,
-            full_name: customerData.fullName,
-            phone_number: customerData.phone,
+            email: effectiveEmail || "",
+            full_name: effectiveName || "",
+            phone_number: effectivePhone || "",
             phone_number_prefix: "+57"
           },
           shipping_address: customerAddress ? {
@@ -143,10 +148,10 @@ export function WompiWidget({
     };
 
     // Only fetch config once when we have the required data
-    if (amount && reference && customerData.email && customerData.fullName && !widgetConfig) {
+    if (amount && reference && effectiveEmail && effectiveName && !widgetConfig) {
       getWidgetConfig();
     }
-  }, [amount, currency, reference, customerData.email, customerData.fullName, customerData.phone, customerAddress, redirectUrl, widgetConfig, toast]);
+  }, [amount, currency, reference, effectiveEmail, effectiveName, effectivePhone, customerAddress, redirectUrl, widgetConfig, toast]);
 
   const handleOpenWidget = () => {
     if (!widgetConfig) {
@@ -261,46 +266,90 @@ export function WompiWidget({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Customer data form */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-300">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={customerData.email}
-              onChange={(e) => setCustomerData({...customerData, email: e.target.value})}
-              className="bg-black/60 border-gray-600 text-white"
-              placeholder="tu@email.com"
-              required
-            />
-          </div>
+        {/* Customer data form - only show if not provided */}
+        {(!customerEmail || !customerName || !customerPhone) ? (
+          <div className="space-y-4">
+            {!customerEmail && (
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-300">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={customerData.email}
+                  onChange={(e) => setCustomerData({...customerData, email: e.target.value})}
+                  className="bg-black/60 border-gray-600 text-white"
+                  placeholder="tu@email.com"
+                  required
+                />
+              </div>
+            )}
 
-          <div className="space-y-2">
-            <Label htmlFor="fullName" className="text-gray-300">Nombre completo *</Label>
-            <Input
-              id="fullName"
-              value={customerData.fullName}
-              onChange={(e) => setCustomerData({...customerData, fullName: e.target.value})}
-              className="bg-black/60 border-gray-600 text-white"
-              placeholder="Tu nombre completo"
-              required
-            />
-          </div>
+            {!customerName && (
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className="text-gray-300">Nombre completo *</Label>
+                <Input
+                  id="fullName"
+                  value={customerData.fullName}
+                  onChange={(e) => setCustomerData({...customerData, fullName: e.target.value})}
+                  className="bg-black/60 border-gray-600 text-white"
+                  placeholder="Tu nombre completo"
+                  required
+                />
+              </div>
+            )}
 
-          <div className="space-y-2">
-            <Label htmlFor="phone" className="text-gray-300">Teléfono *</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={customerData.phone}
-              onChange={(e) => setCustomerData({...customerData, phone: e.target.value})}
-              className="bg-black/60 border-gray-600 text-white"
-              placeholder="300 123 4567"
-              required
-            />
+            {!customerPhone && (
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-gray-300">Teléfono *</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={customerData.phone}
+                  onChange={(e) => setCustomerData({...customerData, phone: e.target.value})}
+                  className="bg-black/60 border-gray-600 text-white"
+                  placeholder="300 123 4567"
+                  required
+                />
+              </div>
+            )}
+            
+            <div className="border-t border-gray-600 pt-4">
+              <h3 className="text-gray-300 font-medium mb-3">💳 Continúa con el pago</h3>
+            </div>
           </div>
-        </div>
+        ) : (
+          /* Customer data summary when provided */
+          <div className="space-y-4">
+            <div className="bg-gray-900/50 border border-gray-600 rounded-lg p-4">
+              <h3 className="text-green-300 font-medium mb-3">✅ Información del Cliente</h3>
+              <div className="space-y-2 text-sm text-gray-300">
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400">📧</span>
+                  <span>{customerEmail}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400">👤</span>
+                  <span>{customerName}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400">📱</span>
+                  <span>{customerPhone}</span>
+                </div>
+                {customerAddress && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-400">📍</span>
+                    <span>{customerAddress.city}, {customerAddress.department}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-600 pt-4">
+              <h3 className="text-gray-300 font-medium mb-3">💳 Procesar Pago</h3>
+              <p className="text-sm text-gray-400 mb-3">Solo necesitas elegir tu método de pago preferido</p>
+            </div>
+          </div>
+        )}
 
         {/* Payment method toggle */}
         <div className="space-y-3">
@@ -333,7 +382,7 @@ export function WompiWidget({
           {useWidget ? (
             <Button
               onClick={handleOpenWidget}
-              disabled={isLoading || !widgetConfig || !customerData.email || !customerData.fullName}
+              disabled={isLoading || !widgetConfig || !effectiveEmail || !effectiveName}
               className="w-full bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3"
             >
               {isLoading ? (
@@ -348,7 +397,7 @@ export function WompiWidget({
           ) : (
             <Button
               onClick={handleWebCheckout}
-              disabled={!widgetConfig || !customerData.email || !customerData.fullName}
+              disabled={!widgetConfig || !effectiveEmail || !effectiveName}
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3"
             >
               🌐 Ir a Checkout Wompi
@@ -372,14 +421,14 @@ export function WompiWidget({
             {widgetConfig.redirectUrl && (
               <input type="hidden" name="redirect-url" value={widgetConfig.redirectUrl} />
             )}
-            {widgetConfig.customerData?.email && (
-              <input type="hidden" name="customer-data:email" value={widgetConfig.customerData.email} />
+            {(widgetConfig.customerData?.email || effectiveEmail) && (
+              <input type="hidden" name="customer-data:email" value={widgetConfig.customerData?.email || effectiveEmail} />
             )}
-            {widgetConfig.customerData?.full_name && (
-              <input type="hidden" name="customer-data:full-name" value={widgetConfig.customerData.full_name} />
+            {(widgetConfig.customerData?.full_name || effectiveName) && (
+              <input type="hidden" name="customer-data:full-name" value={widgetConfig.customerData?.full_name || effectiveName} />
             )}
-            {widgetConfig.customerData?.phone_number && (
-              <input type="hidden" name="customer-data:phone-number" value={widgetConfig.customerData.phone_number} />
+            {(widgetConfig.customerData?.phone_number || effectivePhone) && (
+              <input type="hidden" name="customer-data:phone-number" value={widgetConfig.customerData?.phone_number || effectivePhone} />
             )}
             {widgetConfig.shippingAddress?.address_line_1 && (
               <input type="hidden" name="shipping-address:address-line-1" value={widgetConfig.shippingAddress.address_line_1} />

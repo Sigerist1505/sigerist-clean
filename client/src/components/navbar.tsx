@@ -192,14 +192,14 @@ export function Navbar() {
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-primary-foreground/20">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-400/40 bg-black">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "block px-3 py-2 text-base font-medium text-white hover:text-accent transition-colors",
-                    location === item.href && "text-accent"
+                    "block px-3 py-2 text-base font-medium text-white hover:text-accent transition-colors rounded-md hover:bg-gray-800",
+                    location === item.href && "text-accent bg-gray-800"
                   )}
                   onClick={(e) => handleNavClick(item.href, e)}
                 >
