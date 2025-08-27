@@ -192,7 +192,7 @@ export default function RegisterPage() {
               {/* Name Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-accent font-medium">
+                  <Label htmlFor="firstName" className="block text-sm font-medium text-gray-300">
                     <User className="h-4 w-4 inline mr-2" />
                     Nombre *
                   </Label>
@@ -200,7 +200,7 @@ export default function RegisterPage() {
                     id="firstName"
                     {...form.register("firstName")}
                     placeholder="Tu nombre"
-                    className="bg-background border-accent/30 focus:border-accent text-foreground"
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                   />
                   {form.formState.errors.firstName && (
                     <p className="text-gray-400 text-sm">
@@ -210,7 +210,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-accent font-medium">
+                  <Label htmlFor="lastName" className="block text-sm font-medium text-gray-300">
                     <User className="h-4 w-4 inline mr-2" />
                     Apellido *
                   </Label>
@@ -218,7 +218,7 @@ export default function RegisterPage() {
                     id="lastName"
                     {...form.register("lastName")}
                     placeholder="Tu apellido"
-                    className="bg-background border-accent/30 focus:border-accent text-foreground"
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                   />
                   {form.formState.errors.lastName && (
                     <p className="text-gray-400 text-sm">
@@ -230,7 +230,7 @@ export default function RegisterPage() {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-accent font-medium">
+                <Label htmlFor="email" className="block text-sm font-medium text-gray-300">
                   <Mail className="h-4 w-4 inline mr-2" />
                   Correo Electrónico *
                 </Label>
@@ -239,7 +239,7 @@ export default function RegisterPage() {
                   type="email"
                   {...form.register("email")}
                   placeholder="tu@email.com"
-                  className="bg-background border-accent/30 focus:border-accent text-foreground"
+                  className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                 />
                 {form.formState.errors.email && (
                   <p className="text-gray-400 text-sm">{form.formState.errors.email.message}</p>
@@ -248,7 +248,7 @@ export default function RegisterPage() {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-accent font-medium">
+                <Label htmlFor="password" className="block text-sm font-medium text-gray-300">
                   <Lock className="h-4 w-4 inline mr-2" />
                   Contraseña *
                 </Label>
@@ -258,7 +258,7 @@ export default function RegisterPage() {
                     type={showPassword ? "text" : "password"}
                     {...form.register("password")}
                     placeholder="Mín. 8 caracteres, incluye mayúscula, número y símbolo"
-                    className="bg-background border-accent/30 focus:border-accent text-foreground pr-10"
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent pr-10"
                   />
                   <Button
                     type="button"
@@ -283,7 +283,7 @@ export default function RegisterPage() {
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-accent font-medium">
+                <Label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
                   <Lock className="h-4 w-4 inline mr-2" />
                   Confirmar Contraseña *
                 </Label>
@@ -293,7 +293,7 @@ export default function RegisterPage() {
                     type={showConfirmPassword ? "text" : "password"}
                     {...form.register("confirmPassword")}
                     placeholder="Repite tu contraseña"
-                    className="bg-background border-accent/30 focus:border-accent text-foreground pr-10"
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent pr-10"
                   />
                   <Button
                     type="button"
@@ -318,7 +318,7 @@ export default function RegisterPage() {
 
               {/* Phone */}
               <div className="space-y-2">
-                <Label htmlFor="phoneNumber" className="text-accent font-medium">
+                <Label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-300">
                   <Phone className="h-4 w-4 inline mr-2" />
                   Número de Celular
                 </Label>
@@ -327,7 +327,7 @@ export default function RegisterPage() {
                   type="tel"
                   {...form.register("phoneNumber")}
                   placeholder="+57 300 123 4567"
-                  className="bg-background border-accent/30 focus:border-accent text-foreground"
+                  className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                 />
                 {form.formState.errors.phoneNumber && (
                   <p className="text-gray-400 text-sm">
@@ -338,7 +338,7 @@ export default function RegisterPage() {
 
               {/* Address */}
               <div className="space-y-2">
-                <Label htmlFor="address" className="text-accent font-medium">
+                <Label htmlFor="address" className="block text-sm font-medium text-gray-300">
                   <MapPin className="h-4 w-4 inline mr-2" />
                   Dirección Completa
                 </Label>
@@ -347,7 +347,7 @@ export default function RegisterPage() {
                   {...form.register("address")}
                   placeholder="Calle, número, barrio, ciudad, departamento"
                   rows={3}
-                  className="bg-background border-accent/30 focus:border-accent text-foreground resize-none"
+                  className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent resize-none"
                 />
                 {form.formState.errors.address && (
                   <p className="text-gray-400 text-sm">{form.formState.errors.address.message}</p>

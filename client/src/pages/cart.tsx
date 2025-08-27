@@ -360,7 +360,7 @@ export default function CartPage() {
                         placeholder="Ingresa tu código de descuento"
                         value={discountInput}
                         onChange={(e) => setDiscountInput(e.target.value)}
-                        className="text-sm bg-black/60 border-gray-600 text-white"
+                        className="text-sm bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                       />
                       <Button
                         variant="outline"
@@ -450,19 +450,20 @@ export default function CartPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-[#C0C0C0]">
+                  <label className="block text-sm font-medium mb-2 text-gray-300">
                     Nombre completo *
                   </label>
                   <Input
                     placeholder="Tu nombre completo"
                     value={customerInfo.name}
                     onChange={(e) => updateCustomerInfo({ name: e.target.value })}
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-[#C0C0C0]">
+                  <label className="block text-sm font-medium mb-2 text-gray-300">
                     Email *
                   </label>
                   <Input
@@ -470,12 +471,13 @@ export default function CartPage() {
                     placeholder="tu@email.com"
                     value={customerInfo.email}
                     onChange={(e) => updateCustomerInfo({ email: e.target.value })}
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-[#C0C0C0]">
+                  <label className="block text-sm font-medium mb-2 text-gray-300">
                     Teléfono *
                   </label>
                   <Input
@@ -483,55 +485,60 @@ export default function CartPage() {
                     placeholder="+57 300 123 4567"
                     value={customerInfo.phone}
                     onChange={(e) => updateCustomerInfo({ phone: e.target.value })}
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-[#C0C0C0]">
+                  <label className="block text-sm font-medium mb-2 text-gray-300">
                     Dirección *
                   </label>
                   <Input
                     placeholder="Calle 123 # 45-67, Apartamento 123"
                     value={customerInfo.address}
                     onChange={(e) => updateCustomerInfo({ address: e.target.value })}
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-[#C0C0C0]">
+                    <label className="block text-sm font-medium mb-2 text-gray-300">
                       Ciudad *
                     </label>
                     <Input
                       placeholder="Bogotá"
                       value={customerInfo.city}
                       onChange={(e) => updateCustomerInfo({ city: e.target.value })}
+                      className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-[#C0C0C0]">
+                    <label className="block text-sm font-medium mb-2 text-gray-300">
                       Departamento *
                     </label>
                     <Input
                       placeholder="Cundinamarca"
                       value={customerInfo.department}
                       onChange={(e) => updateCustomerInfo({ department: e.target.value })}
+                      className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-[#C0C0C0]">
+                  <label className="block text-sm font-medium mb-2 text-gray-300">
                     Código Postal
                   </label>
                   <Input
                     placeholder="110111"
                     value={customerInfo.postalCode}
                     onChange={(e) => updateCustomerInfo({ postalCode: e.target.value })}
+                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                   />
                 </div>
 
