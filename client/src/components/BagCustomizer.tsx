@@ -86,36 +86,53 @@ const BagCustomizer: React.FC<BagCustomizerProps> = ({ product, onCustomizationC
     canvas.width = 400;
     canvas.height = 400;
 
-    // Clear canvas
+    // Clear canvas with elegant background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw background
-    ctx.fillStyle = '#f8f9fa';
+    // Draw elegant gradient background
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#f8fafc');
+    gradient.addColorStop(1, '#e2e8f0');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw product placeholder
-    ctx.fillStyle = '#e9ecef';
-    ctx.fillRect(50, 50, 300, 250);
-    
-    // Add border
-    ctx.strokeStyle = '#dee2e6';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(50, 50, 300, 250);
+    // Add subtle border
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
 
-    // Draw bag image if available
+    // Draw bag image if available - improved to show full product
     if (bagImage) {
+      // Calculate dimensions to fit the full image properly
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
       const aspectRatio = bagImage.width / bagImage.height;
-      let drawWidth = 300;
-      let drawHeight = 300 / aspectRatio;
-
-      if (drawHeight > 250) {
-        drawHeight = 250;
-        drawWidth = 250 * aspectRatio;
+      
+      let drawWidth, drawHeight;
+      
+      // Fill more of the canvas while maintaining aspect ratio
+      if (aspectRatio > 1) {
+        // Wider image
+        drawWidth = canvasWidth * 0.9;
+        drawHeight = drawWidth / aspectRatio;
+        if (drawHeight > canvasHeight * 0.8) {
+          drawHeight = canvasHeight * 0.8;
+          drawWidth = drawHeight * aspectRatio;
+        }
+      } else {
+        // Taller image
+        drawHeight = canvasHeight * 0.9;
+        drawWidth = drawHeight * aspectRatio;
+        if (drawWidth > canvasWidth * 0.8) {
+          drawWidth = canvasWidth * 0.8;
+          drawHeight = drawWidth / aspectRatio;
+        }
       }
 
-      const x = 50 + (300 - drawWidth) / 2;
-      const y = 50 + (250 - drawHeight) / 2;
+      const x = (canvasWidth - drawWidth) / 2;
+      const y = (canvasHeight - drawHeight) / 2;
 
+      // Draw with improved scaling to show complete product
       ctx.drawImage(bagImage, x, y, drawWidth, drawHeight);
 
       // Draw embroidered text directly on the bag
@@ -123,22 +140,23 @@ const BagCustomizer: React.FC<BagCustomizerProps> = ({ product, onCustomizationC
         drawEmbroideredTextOnBag(ctx, personalization, drawWidth, drawHeight, x, y);
       }
     } else {
-      // Product name placeholder
-      ctx.fillStyle = '#6c757d';
-      ctx.font = 'bold 16px Arial';
+      // Product name placeholder with elegant styling
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(product.name, 200, 160);
+      ctx.fillText(product.name, canvas.width/2, canvas.height/2 - 30);
       
       // Instructions
-      ctx.font = '14px Arial';
-      ctx.fillText('Cargando imagen...', 200, 190);
+      ctx.font = '16px Arial';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText('Cargando producto...', canvas.width/2, canvas.height/2);
       
       // Show preview text even without image
       if (personalization.trim()) {
-        const fontSize = 20;
+        const fontSize = 24;
         ctx.font = `bold ${fontSize}px ${selectedFont}`;
         ctx.fillStyle = embroideryColor;
-        ctx.fillText(personalization, 200, 220);
+        ctx.fillText(personalization, canvas.width/2, canvas.height/2 + 40);
       }
     }
 
@@ -240,23 +258,23 @@ const BagCustomizer: React.FC<BagCustomizerProps> = ({ product, onCustomizationC
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Preview Canvas */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="w-5 h-5" />
-            Vista Previa
+      <Card className="border-2 border-blue-500 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100">
+        <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-t-xl border-b-2 border-blue-500">
+          <CardTitle className="flex items-center gap-2 text-blue-100">
+            <Palette className="w-5 h-5 text-blue-400" />
+            Vista Elegante del Producto
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 bg-gradient-to-br from-slate-50 to-slate-100">
           <div className="flex justify-center relative">
             {!isImageLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl">
+                <div className="animate-spin w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full"></div>
               </div>
             )}
             <canvas
               ref={canvasRef}
-              className="border border-gray-200 rounded-lg shadow-sm max-w-full h-auto"
+              className="border-2 border-blue-400 rounded-xl shadow-lg max-w-full h-auto"
               style={{ maxHeight: '400px', opacity: isImageLoaded ? 1 : 0.3 }}
             />
           </div>
@@ -284,11 +302,11 @@ const BagCustomizer: React.FC<BagCustomizerProps> = ({ product, onCustomizationC
       </Card>
 
       {/* Customization Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personalización</CardTitle>
+      <Card className="border-2 border-blue-500 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100">
+        <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-t-xl border-b-2 border-blue-500">
+          <CardTitle className="text-blue-100">Opciones de Bordado</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-6">
           {/* Name Input */}
           <div>
             <Label htmlFor="personalization">Nombre a Bordar</Label>

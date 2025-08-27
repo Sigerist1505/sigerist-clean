@@ -317,17 +317,27 @@
   100% { background-position: 0% 50%; }
 }
 
-/* Emergency override for any yellow backgrounds in mobile/deployment */
-body::before {
+/* Emergency override for any yellow backgrounds and video flashes */
+html::before, body::before {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #000000;
-  z-index: -1;
+  background: #000000 !important;
+  z-index: -1000;
   pointer-events: none;
+}
+
+/* Prevent any video background flashes */
+video, iframe, embed, object {
+  background: #000000 !important;
+}
+
+/* Override any potential yellow/bright backgrounds */
+* {
+  transition: background-color 0.1s ease !important;
 }
 
 /* Viewport background fix for mobile */

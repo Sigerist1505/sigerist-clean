@@ -307,22 +307,22 @@ const RealisticBagCustomizer: React.FC<RealisticBagCustomizerProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Preview Display */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="w-5 h-5" />
-            Vista Previa Realista
-            <Badge variant="default" className="text-xs">
+      <Card className="border-2 border-blue-500 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100">
+        <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-t-xl border-b-2 border-blue-500">
+          <CardTitle className="flex items-center gap-2 text-blue-100">
+            <Palette className="w-5 h-5 text-blue-400" />
+            Vista Elegante del Bordado
+            <Badge variant="default" className="text-xs bg-blue-600 text-white border-blue-400">
               <Sparkles className="w-3 h-3 mr-1" />
-              En Tiempo Real
+              Premium
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 bg-gradient-to-br from-slate-50 to-slate-100">
           <div className="relative">
             <canvas
               ref={canvasRef}
-              className="w-full h-auto max-h-96 border border-gray-200 rounded-lg shadow-sm"
+              className="w-full h-auto max-h-96 border-2 border-blue-400 rounded-xl shadow-lg"
               style={{ display: 'none' }}
             />
             
@@ -330,22 +330,22 @@ const RealisticBagCustomizer: React.FC<RealisticBagCustomizerProps> = ({
               <img
                 src={previewUrl}
                 alt={`Vista previa: ${personalization}`}
-                className="w-full h-auto max-h-96 object-contain border border-gray-200 rounded-lg shadow-sm"
+                className="w-full h-auto max-h-96 object-cover border-2 border-blue-500 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
               />
             ) : (
-              <div className="w-full h-96 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
-                <div className="text-center text-gray-500">
+              <div className="w-full h-96 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-2 border-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="text-center text-blue-100">
                   {isGenerating ? (
                     <>
-                      <div className="animate-spin w-8 h-8 border-4 border-gold border-t-transparent rounded-full mx-auto mb-2" />
-                      <p className="text-sm">Generando preview premium...</p>
+                      <div className="animate-spin w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full mx-auto mb-2" />
+                      <p className="text-sm text-blue-200">Generando vista elegante...</p>
                     </>
                   ) : (
                     <>
-                      <Palette className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">
+                      <Palette className="w-12 h-12 mx-auto mb-2 text-blue-400" />
+                      <p className="text-sm text-blue-200">
                         {personalization.trim() 
-                          ? 'Generando bordado realista...' 
+                          ? 'Creando bordado elegante...' 
                           : 'Escribe un nombre para ver el bordado'
                         }
                       </p>
@@ -372,11 +372,11 @@ const RealisticBagCustomizer: React.FC<RealisticBagCustomizerProps> = ({
       </Card>
 
       {/* Customization Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personalización del Bordado</CardTitle>
+      <Card className="border-2 border-blue-500 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100">
+        <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-t-xl border-b-2 border-blue-500">
+          <CardTitle className="text-blue-100">Opciones de Bordado</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-6">
           {/* Name Input */}
           <div>
             <Label htmlFor="personalization">Nombre a Bordar</Label>
