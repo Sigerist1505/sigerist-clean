@@ -124,25 +124,25 @@ const ProfessionalBagCustomizer: React.FC<ProfessionalBagCustomizerProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Professional Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="w-5 h-5" />
-            Vista Previa Profesional
+      <Card className="border-2 border-blue-500 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100">
+        <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-t-xl border-b-2 border-blue-500">
+          <CardTitle className="flex items-center gap-2 text-blue-100">
+            <Palette className="w-5 h-5 text-blue-400" />
+            Vista Profesional del Bordado
             {isUsingBannerbear && (
-              <Badge variant="secondary" className="text-xs">
-                Bannerbear Pro
+              <Badge variant="secondary" className="text-xs bg-blue-600 text-white">
+                Pro
               </Badge>
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 bg-gradient-to-br from-slate-50 to-slate-100">
           <div className="relative">
             {isGenerating && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-lg z-10">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Generando vista previa...</span>
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 rounded-xl z-10">
+                <div className="flex items-center gap-2 text-blue-200">
+                  <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
+                  <span>Generando vista elegante...</span>
                 </div>
               </div>
             )}
@@ -151,15 +151,15 @@ const ProfessionalBagCustomizer: React.FC<ProfessionalBagCustomizerProps> = ({
               <img
                 src={previewUrl}
                 alt={`Vista previa: ${personalization}`}
-                className="w-full h-auto max-h-96 object-contain border border-gray-200 rounded-lg shadow-sm"
+                className="w-full h-auto max-h-96 object-cover border-2 border-blue-500 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
               />
             ) : (
-              <div className="w-full h-96 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <Palette className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">
+              <div className="w-full h-96 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-2 border-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="text-center text-blue-100">
+                  <Palette className="w-12 h-12 mx-auto mb-2 text-blue-400" />
+                  <p className="text-sm text-blue-200">
                     {personalization.trim() 
-                      ? 'Generando vista previa...' 
+                      ? 'Creando vista elegante...' 
                       : 'Escribe un nombre para ver la vista previa'
                     }
                   </p>
@@ -199,11 +199,11 @@ const ProfessionalBagCustomizer: React.FC<ProfessionalBagCustomizerProps> = ({
       </Card>
 
       {/* Customization Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personalización</CardTitle>
+      <Card className="border-2 border-blue-500 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100">
+        <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-t-xl border-b-2 border-blue-500">
+          <CardTitle className="text-blue-100">Opciones de Bordado</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-6">
           {/* Name Input */}
           <div>
             <Label htmlFor="personalization">Nombre a Bordar</Label>
