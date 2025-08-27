@@ -66,7 +66,8 @@ export function WompiOfficial({
             city: customerAddress.city,
             region: customerAddress.department,
             country: "CO",
-            postal_code: customerAddress.postalCode || ""
+            postal_code: customerAddress.postalCode || "",
+            phone_number: customerData.phone
           } : undefined,
           redirect_url: redirectUrl || `${window.location.origin}/payment-success`,
           tax_in_cents: {
@@ -151,6 +152,9 @@ export function WompiOfficial({
       if (widgetConfig.shippingAddress.country) {
         script.setAttribute('data-shipping-address:country', widgetConfig.shippingAddress.country);
       }
+      if (widgetConfig.shippingAddress.phone_number) {
+        script.setAttribute('data-shipping-address:phone-number', widgetConfig.shippingAddress.phone_number);
+      }
     }
 
     form.appendChild(script);
@@ -195,6 +199,7 @@ export function WompiOfficial({
         'shipping-address:city': widgetConfig.shippingAddress.city || '',
         'shipping-address:region': widgetConfig.shippingAddress.region || '',
         'shipping-address:country': widgetConfig.shippingAddress.country || 'CO',
+        'shipping-address:phone-number': widgetConfig.shippingAddress.phone_number || '',
       });
     }
 
