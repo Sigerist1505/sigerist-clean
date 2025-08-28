@@ -23,25 +23,25 @@ import { useState } from "react";
 
 // Helper function to get product image based on product name
 function getProductImage(productName: string, hasBordado?: boolean): string {
-  const defaultImage = "/attached_assets/IMG-20250531-WA0015.jpg"; // Fallback image
+  const defaultImage = "/assets/logo.png"; // Fallback image that exists
   
-  // Map product names to their corresponding images
+  // Map product names to their corresponding images (using actual filenames that exist)
   const productImageMap: Record<string, string> = {
     "Maleta Milan Bordada": "/assets/maleta-milan-bordada.jpg",
-    "Maleta Milan Sin Bordar": "/assets/maleta-milan-sin-bordar.jpg",
-    "Bolso Mariposa Bordado": "/assets/bolso-mariposa-bordado.jpg", 
-    "Bolso Mariposa Sin Bordar": "/assets/bolso-mariposa-sin-bordar.jpg",
-    "Bolsito Gato Bordado": "/assets/bolsito-gato-bordado.jpg",
-    "Bolsito Gato Sin Bordar": "/assets/bolsito-gato-sin-bordar.jpg",
-    "Lonchera Baúl Bordada": "/assets/lonchera-baul-bordada.jpg",
-    "Lonchera Baúl Sin Bordar": "/assets/lonchera-baul.jpg",
+    "Maleta Milan Sin Bordar": "/assets/MaletaMilan_ConBordado.jpg",
+    "Bolso Mariposa Bordado": "/assets/Bolsito Mariposa.jpg", 
+    "Bolso Mariposa Sin Bordar": "/assets/Bolso Mariposa sin Bordar.jpg",
+    "Bolsito Gato Bordado": "/assets/Bolsito Gato.jpg",
+    "Bolsito Gato Sin Bordar": "/assets/Bolsito Gato.jpg",
+    "Lonchera Baúl Bordada": "/assets/Lonchera baul.jpg",
+    "Lonchera Baúl Sin Bordar": "/assets/Lonchera baul sin bordar.jpg",
     // Mochilas
-    "Mochila Universitaria Bordada": "/assets/mochila-universitaria-bordada.jpg",
-    "Mochila Universitaria Sin Bordar": "/assets/mochila-universitaria-sin-bordar.jpg",
-    "Mochila Milán Bordada": "/assets/mochila-milan-bordada.jpg",
-    "Mochila Milán Sin Bordar": "/assets/mochila-milan-sin-bordar.jpg",
+    "Mochila Universitaria Bordada": "/assets/Mochila clasica.jpg",
+    "Mochila Universitaria Sin Bordar": "/assets/Mochila clasica.jpg",
+    "Mochila Milán Bordada": "/assets/maleta-milan-bordada.jpg",
+    "Mochila Milán Sin Bordar": "/assets/MaletaMilan_ConBordado.jpg",
     // Kit and other products
-    "Kit Luxury de 7 Piezas": "/attached_assets/IMG-20250531-WA0015.jpg",
+    "Kit Luxury de 7 Piezas": "/assets/Bolsito Mariposa.jpg",
   };
   
   // Try exact match first
@@ -52,17 +52,17 @@ function getProductImage(productName: string, hasBordado?: boolean): string {
     const nameLower = productName.toLowerCase();
     
     if (nameLower.includes("maleta") && nameLower.includes("milan")) {
-      imageUrl = hasBordado ? "/assets/maleta-milan-bordada.jpg" : "/assets/maleta-milan-sin-bordar.jpg";
+      imageUrl = hasBordado ? "/assets/maleta-milan-bordada.jpg" : "/assets/MaletaMilan_ConBordado.jpg";
     } else if (nameLower.includes("bolso") && nameLower.includes("mariposa")) {
-      imageUrl = hasBordado ? "/assets/bolso-mariposa-bordado.jpg" : "/assets/bolso-mariposa-sin-bordar.jpg";
+      imageUrl = hasBordado ? "/assets/Bolsito Mariposa.jpg" : "/assets/Bolso Mariposa sin Bordar.jpg";
     } else if (nameLower.includes("bolsito") && nameLower.includes("gato")) {
-      imageUrl = hasBordado ? "/assets/bolsito-gato-bordado.jpg" : "/assets/bolsito-gato-sin-bordar.jpg";
+      imageUrl = "/assets/Bolsito Gato.jpg"; // Same image for both variants
     } else if (nameLower.includes("lonchera")) {
-      imageUrl = hasBordado ? "/assets/lonchera-baul-bordada.jpg" : "/assets/lonchera-baul.jpg";
+      imageUrl = hasBordado ? "/assets/Lonchera baul.jpg" : "/assets/Lonchera baul sin bordar.jpg";
     } else if (nameLower.includes("mochila") && nameLower.includes("universitaria")) {
-      imageUrl = hasBordado ? "/assets/mochila-universitaria-bordada.jpg" : "/assets/mochila-universitaria-sin-bordar.jpg";
+      imageUrl = "/assets/Mochila clasica.jpg"; // Use classic mochila for universitaria
     } else if (nameLower.includes("mochila") && nameLower.includes("milan")) {
-      imageUrl = hasBordado ? "/assets/mochila-milan-bordada.jpg" : "/assets/mochila-milan-sin-bordar.jpg";
+      imageUrl = hasBordado ? "/assets/maleta-milan-bordada.jpg" : "/assets/MaletaMilan_ConBordado.jpg";
     }
   }
   
@@ -266,7 +266,7 @@ export default function CartPage() {
                         className="w-full h-full object-contain rounded-lg"
                         onError={(e) => {
                           // Fallback to default image if product image fails to load
-                          (e.target as HTMLImageElement).src = "/attached_assets/IMG-20250531-WA0015.jpg";
+                          (e.target as HTMLImageElement).src = "/assets/logo.png";
                         }}
                       />
                     </div>
