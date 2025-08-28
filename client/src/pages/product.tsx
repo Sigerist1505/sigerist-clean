@@ -521,10 +521,6 @@ function ProductPage() {
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-black/40 rounded-lg border border-gray-600/50">
                         <div className="w-2 h-2 bg-[#C0C0C0] rounded-full"></div>
-                        <span className="text-gray-300 text-sm">Pago contra entrega (solo costo de envío)</span>
-                      </div>
-                      <div className="flex items-center gap-3 p-3 bg-black/40 rounded-lg border border-gray-600/50">
-                        <div className="w-2 h-2 bg-[#C0C0C0] rounded-full"></div>
                         <span className="text-gray-300 text-sm">Transferencia bancaria</span>
                       </div>
                     </div>

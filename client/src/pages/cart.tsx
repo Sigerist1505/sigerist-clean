@@ -427,7 +427,7 @@ export default function CartPage() {
                     <div className="flex items-center justify-between bg-green-900/30 border border-green-400/30 rounded-lg p-3">
                       <div>
                         <p className="text-sm font-medium text-green-300">{discountCode}</p>
-                        <p className="text-xs text-gray-400">Descuento del 15% aplicado</p>
+                        <p className="text-xs text-gray-400">Descuento del 10% aplicado</p>
                       </div>
                       <Button
                         variant="ghost"
@@ -443,7 +443,7 @@ export default function CartPage() {
 
                 {discountCode && (
                   <div className="flex justify-between text-green-400">
-                    <span>Descuento (15%)</span>
+                    <span>Descuento (10%)</span>
                     <span>-{formatPrice(discountAmount)}</span>
                   </div>
                 )}
@@ -605,19 +605,6 @@ export default function CartPage() {
 
                 <p className="text-xs text-gray-400 text-center">
                   Al finalizar tu pedido, serás redirigido a WhatsApp para confirmar los detalles
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Security Notice */}
-            <Card className="bg-gradient-to-br from-gray-900/50 to-black/50 border border-[#C0C0C0]/20">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 bg-green-400 rounded-full" />
-                  <span className="font-medium text-[#C0C0C0]">Pago Seguro</span>
-                </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  Procesamos tu pedido de forma segura a través de WhatsApp Business
                 </p>
               </CardContent>
             </Card>

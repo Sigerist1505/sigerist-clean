@@ -7,14 +7,139 @@ import { useCart } from "./cart-provider";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
+
+// Helper function to get product image based on product name
+function getProductImage(productName: string, hasBordado?: boolean): string {
+  const defaultImage = "/attached_assets/IMG-20250531-WA0015.jpg";
+  
+  // Map product names to their corresponding images
+  const productImageMap: Record<string, string> = {
+    "Maleta Milan Bordada": "/assets/maleta-milan-bordada.jpg",
+    "Maleta Milan Sin Bordar": "/assets/maleta-milan-sin-bordar.jpg",
+    "Bolso Mariposa Bordado": "/assets/bolso-mariposa-bordado.jpg", 
+    "Bolso Mariposa Sin Bordar": "/assets/bolso-mariposa-sin-bordar.jpg",
+    "Bolsito Gato Bordado": "/assets/bolsito-gato-bordado.jpg",
+    "Bolsito Gato Sin Bordar": "/assets/bolsito-gato-sin-bordar.jpg",
+    "Lonchera Baúl Bordada": "/assets/lonchera-baul-bordada.jpg",
+    "Lonchera Baúl Sin Bordar": "/assets/lonchera-baul.jpg",
+    "Mochila Universitaria Bordada": "/assets/mochila-universitaria-bordada.jpg",
+    "Mochila Universitaria Sin Bordar": "/assets/mochila-universitaria-sin-bordar.jpg",
+    "Mochila Milán Bordada": "/assets/mochila-milan-bordada.jpg",
+    "Mochila Milán Sin Bordar": "/assets/mochila-milan-sin-bordar.jpg",
+    "Kit Luxury de 7 Piezas": "/attached_assets/IMG-20250531-WA0015.jpg",
+  };
+  
+  // Try exact match first
+  let imageUrl = productImageMap[productName];
+  
+  // If no exact match, try to match based on product type and bordado status
+  if (!imageUrl) {
+    const nameLower = productName.toLowerCase();
+    
+    if (nameLower.includes("maleta") && nameLower.includes("milan")) {
+      imageUrl = hasBordado ? "/assets/maleta-milan-bordada.jpg" : "/assets/maleta-milan-sin-bordar.jpg";
+    } else if (nameLower.includes("bolso") && nameLower.includes("mariposa")) {
+      imageUrl = hasBordado ? "/assets/bolso-mariposa-bordado.jpg" : "/assets/bolso-mariposa-sin-bordar.jpg";
+    } else if (nameLower.includes("bolsito") && nameLower.includes("gato")) {
+      imageUrl = hasBordado ? "/assets/bolsito-gato-bordado.jpg" : "/assets/bolsito-gato-sin-bordar.jpg";
+    } else if (nameLower.includes("lonchera")) {
+      imageUrl = hasBordado ? "/assets/lonchera-baul-bordada.jpg" : "/assets/lonchera-baul.jpg";
+    } else if (nameLower.includes("mochila") && nameLower.includes("universitaria")) {
+      imageUrl = hasBordado ? "/assets/mochila-universitaria-bordada.jpg" : "/assets/mochila-universitaria-sin-bordar.jpg";
+    } else if (nameLower.includes("mochila") && nameLower.includes("milan")) {
+      imageUrl = hasBordado ? "/assets/mochila-milan-bordada.jpg" : "/assets/mochila-milan-sin-bordar.jpg";
+    }
+  }
+  
+  return imageUrl || defaultImage;
+}
 
 export function Navbar() {
-  const [location] = useLocation();
-  const { itemCount } = useCart();
+  const [location, setLocation] = useLocation();
+  const { itemCount, items } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCartPreview, setShowCartPreview] = useState(false);
+
+  const handleSearch = (e: React.KeyboardEvent | React.MouseEvent) => {
+    if ('key' in e && e.key !== 'Enter') return;
+    
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return;
+
+    // Category mappings for intelligent search
+    const categoryMappings: Record<string, string> = {
+      // Maletas/Suitcases
+      'maleta': 'maleta',
+      'maletas': 'maleta', 
+      'equipaje': 'maleta',
+      'viaje': 'maleta',
+      'milan': 'maleta',
+      'milano': 'maleta',
+      
+      // Pañaleras/Diaper bags
+      'pañalera': 'pañalera',
+      'pañaleras': 'pañalera',
+      'bebe': 'pañalera',
+      'bebé': 'pañalera',
+      'diaper': 'pañalera',
+      'baby': 'pañalera',
+      'multifuncional': 'pañalera',
+      
+      // Cambiadores/Changing pads
+      'cambiador': 'cambiador',
+      'cambiadores': 'cambiador',
+      'changing': 'cambiador',
+      'pad': 'cambiador',
+      
+      // Bolsos/Bags
+      'bolso': 'bolso',
+      'bolsos': 'bolso',
+      'bag': 'bolso',
+      'bags': 'bolso',
+      'mariposa': 'bolso',
+      'butterfly': 'bolso',
+      
+      // Mochilas/Backpacks
+      'mochila': 'mochila',
+      'mochilas': 'mochila',
+      'backpack': 'mochila',
+      'universitaria': 'mochila',
+      
+      // Loncheras/Lunch boxes
+      'lonchera': 'lonchera',
+      'loncheras': 'lonchera',
+      'lunch': 'lonchera',
+      'baul': 'lonchera',
+      'porta': 'lonchera',
+      'biberones': 'lonchera',
+      
+      // Organizadores/Organizers
+      'organizador': 'organizador',
+      'organizadores': 'organizador',
+      'organizer': 'organizador',
+      'higiene': 'organizador',
+    };
+
+    // Find matching category
+    const matchedCategory = Object.entries(categoryMappings).find(([key]) => 
+      query.includes(key)
+    )?.[1];
+
+    if (matchedCategory) {
+      // Redirect to products page with category filter
+      setLocation(`/products?category=${matchedCategory}`);
+    } else {
+      // General search - redirect to products page
+      setLocation(`/products?search=${encodeURIComponent(query)}`);
+    }
+    
+    setSearchQuery("");
+    setIsSearchOpen(false);
+  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -90,14 +215,24 @@ export function Navbar() {
                     placeholder="Buscar productos..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearch}
                     className="w-48 text-black placeholder-gray-500 bg-white border-gray-300"
                     autoFocus
                   />
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={handleSearch}
+                    className="ml-1 hover:text-accent transition-colors text-gray-600"
+                    title="Buscar"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setIsSearchOpen(false)}
-                    className="ml-2 hover:text-accent transition-colors text-[#ffffff]"
+                    className="ml-1 hover:text-accent transition-colors text-[#ffffff]"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -154,22 +289,73 @@ export function Navbar() {
               </>
             )}
             
-            <Link href="/cart">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hover:text-accent transition-colors relative text-[#ffffff]"
-              >
-                <ShoppingBag className="h-4 w-4" />
-                {itemCount > 0 && (
-                  <Badge
-                    className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground"
-                  >
-                    {itemCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
+            <div className="relative">
+              <Link href="/cart">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hover:text-accent transition-colors relative text-[#ffffff]"
+                  onMouseEnter={() => setShowCartPreview(true)}
+                  onMouseLeave={() => setShowCartPreview(false)}
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  {itemCount > 0 && (
+                    <Badge
+                      className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground"
+                    >
+                      {itemCount}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+
+              {/* Cart Preview Tooltip */}
+              {showCartPreview && itemCount > 0 && (
+                <div 
+                  className="absolute right-0 top-full mt-2 w-80 bg-black border border-[#C0C0C0]/30 rounded-lg shadow-xl z-50"
+                  onMouseEnter={() => setShowCartPreview(true)}
+                  onMouseLeave={() => setShowCartPreview(false)}
+                >
+                  <div className="p-4">
+                    <h3 className="text-sm font-medium text-[#C0C0C0] mb-3">Carrito ({itemCount} productos)</h3>
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {items.slice(0, 3).map((item) => (
+                        <div key={item.id} className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-white rounded border border-[#C0C0C0]/20 p-1 flex-shrink-0">
+                            <img
+                              src={getProductImage(item.name, item.hasBordado)}
+                              alt={item.name}
+                              className="w-full h-full object-contain rounded"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/attached_assets/IMG-20250531-WA0015.jpg";
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-white truncate">{item.name}</p>
+                            <p className="text-xs text-gray-400">
+                              Cantidad: {item.quantity} | {formatPrice(item.price || 0)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      {items.length > 3 && (
+                        <p className="text-xs text-gray-400 text-center">
+                          +{items.length - 3} producto{items.length - 3 !== 1 ? 's' : ''} más
+                        </p>
+                      )}
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-[#C0C0C0]/20">
+                      <Link href="/cart">
+                        <Button className="w-full bg-[#ebc005] hover:bg-[#d4a804] text-black text-sm">
+                          Ver Carrito
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Mobile menu button */}
             <div className="md:hidden">
@@ -191,7 +377,7 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-black border-t border-gray-400/40 shadow-lg">
+          <div className="md:hidden absolute top-full left-0 right-0 mobile-menu bg-black border-t border-gray-400/40 shadow-lg">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {navItems.map((item) => (
                 <Link

@@ -113,7 +113,7 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <Card className="bg-black border border-accent/30 shadow-xl">
+        <Card className="bg-black border border-[#C0C0C0]/30 shadow-xl">
           <CardHeader className="text-center pb-4">
             <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <LogIn className="h-8 w-8 text-accent" />

@@ -130,7 +130,7 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen pt-16 bg-black">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Card className="bg-black border border-accent/30 shadow-xl">
+          <Card className="bg-black border border-[#C0C0C0]/30 shadow-xl">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <User className="h-8 w-8 text-accent" />
@@ -179,7 +179,7 @@ export default function RegisterPage() {
           </Link>
         </div>
 
-        <Card className="bg-black border border-accent/30 shadow-xl">
+        <Card className="bg-black border border-[#C0C0C0]/30 shadow-xl">
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-3xl font-bold text-accent">Crear Cuenta</CardTitle>
             <CardDescription className="text-lg text-muted-foreground">
