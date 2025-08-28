@@ -113,3 +113,6 @@ drizzle/
 !client/public/assets/
 !client/public/assets/**
 .env.test
+
+# Test files
+test-*.js
