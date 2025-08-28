@@ -9,51 +9,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
 
-// Helper function to get product image based on product name
-function getProductImage(productName: string, hasBordado?: boolean): string {
-  const defaultImage = "/attached_assets/IMG-20250531-WA0015.jpg";
-  
-  // Map product names to their corresponding images
-  const productImageMap: Record<string, string> = {
-    "Maleta Milan Bordada": "/assets/maleta-milan-bordada.jpg",
-    "Maleta Milan Sin Bordar": "/assets/maleta-milan-sin-bordar.jpg",
-    "Bolso Mariposa Bordado": "/assets/bolso-mariposa-bordado.jpg", 
-    "Bolso Mariposa Sin Bordar": "/assets/bolso-mariposa-sin-bordar.jpg",
-    "Bolsito Gato Bordado": "/assets/bolsito-gato-bordado.jpg",
-    "Bolsito Gato Sin Bordar": "/assets/bolsito-gato-sin-bordar.jpg",
-    "Lonchera Baúl Bordada": "/assets/lonchera-baul-bordada.jpg",
-    "Lonchera Baúl Sin Bordar": "/assets/lonchera-baul.jpg",
-    "Mochila Universitaria Bordada": "/assets/mochila-universitaria-bordada.jpg",
-    "Mochila Universitaria Sin Bordar": "/assets/mochila-universitaria-sin-bordar.jpg",
-    "Mochila Milán Bordada": "/assets/mochila-milan-bordada.jpg",
-    "Mochila Milán Sin Bordar": "/assets/mochila-milan-sin-bordar.jpg",
-    "Kit Luxury de 7 Piezas": "/attached_assets/IMG-20250531-WA0015.jpg",
-  };
-  
-  // Try exact match first
-  let imageUrl = productImageMap[productName];
-  
-  // If no exact match, try to match based on product type and bordado status
-  if (!imageUrl) {
-    const nameLower = productName.toLowerCase();
-    
-    if (nameLower.includes("maleta") && nameLower.includes("milan")) {
-      imageUrl = hasBordado ? "/assets/maleta-milan-bordada.jpg" : "/assets/maleta-milan-sin-bordar.jpg";
-    } else if (nameLower.includes("bolso") && nameLower.includes("mariposa")) {
-      imageUrl = hasBordado ? "/assets/bolso-mariposa-bordado.jpg" : "/assets/bolso-mariposa-sin-bordar.jpg";
-    } else if (nameLower.includes("bolsito") && nameLower.includes("gato")) {
-      imageUrl = hasBordado ? "/assets/bolsito-gato-bordado.jpg" : "/assets/bolsito-gato-sin-bordar.jpg";
-    } else if (nameLower.includes("lonchera")) {
-      imageUrl = hasBordado ? "/assets/lonchera-baul-bordada.jpg" : "/assets/lonchera-baul.jpg";
-    } else if (nameLower.includes("mochila") && nameLower.includes("universitaria")) {
-      imageUrl = hasBordado ? "/assets/mochila-universitaria-bordada.jpg" : "/assets/mochila-universitaria-sin-bordar.jpg";
-    } else if (nameLower.includes("mochila") && nameLower.includes("milan")) {
-      imageUrl = hasBordado ? "/assets/mochila-milan-bordada.jpg" : "/assets/mochila-milan-sin-bordar.jpg";
-    }
-  }
-  
-  return imageUrl || defaultImage;
-}
+
 
 export function Navbar() {
   const [location, setLocation] = useLocation();
@@ -321,16 +277,6 @@ export function Navbar() {
                     <div className="space-y-3 max-h-64 overflow-y-auto">
                       {items.slice(0, 3).map((item) => (
                         <div key={item.id} className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-white rounded border border-[#C0C0C0]/20 p-1 flex-shrink-0">
-                            <img
-                              src={getProductImage(item.name, item.hasBordado)}
-                              alt={item.name}
-                              className="w-full h-full object-contain rounded"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/attached_assets/IMG-20250531-WA0015.jpg";
-                              }}
-                            />
-                          </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium text-white truncate">{item.name}</p>
                             <p className="text-xs text-gray-400">
