@@ -208,7 +208,7 @@ const Home = () => {
                   Mochila Milán Bordada
                 </h4>
                 <p className="text-lg text-gray-400 mb-6">
-                  Nuestra mochila estrella con bordado personalizado. Elegante,
+                  Nuestra mochila estrella. Elegante,
                   funcional y perfecta para el día a día.
                 </p>
                 <div className="space-y-3 mb-6">
@@ -227,7 +227,7 @@ const Home = () => {
                 </div>
                 <WhatsAppButton
                   phone="573160183418"
-                  message="¡Hola! Me interesa el Kit Completo de Lujo de 7 piezas por $1,534,500. ¿Podrían darme más información?"
+                  message="¡Hola! Me interesa el Kit Completo de Lujo de 7 piezas por $1,435,000. ¿Podrían darme más información por favor?"
                 />
               </div>
             </div>
@@ -249,7 +249,7 @@ const Home = () => {
               className="text-4xl font-bold mb-6 text-gray-300"
               style={{ fontFamily: "Playfair Display, serif" }}
             >
-              ¡Oferta Especial por Tiempo Limitado!
+              Diferenciate con nuestros bolsos personalizados. ¡El momento es ahora!
             </h2>
 
             <div className="grid md:grid-cols-3 gap-8 mb-8">
@@ -411,7 +411,7 @@ const Home = () => {
 
             <div>
               <img
-                src="/assets/sigerist-about.png"
+                src="/assets/Bolsito perrito.jpg"
                 alt="Sobre Sigerist Luxury Bags"
                 className="w-full rounded-2xl shadow-2xl border border-gray-600"
               />
