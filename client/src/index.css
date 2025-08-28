@@ -354,25 +354,4 @@ video, iframe, embed, object {
     min-height: 100vh;
     min-height: 100svh;
   }
-  
-  /* Ensure mobile has consistent dark theme */
-  .min-h-screen {
-    background: #000000 !important;
-  }
-  
-  /* Force darker backgrounds on mobile containers */
-  div, main, section {
-    background: transparent !important;
-  }
-  
-  /* Ensure mobile navigation menu has proper dark styling */
-  nav {
-    background: #000000 !important;
-    border-color: rgba(192, 192, 192, 0.4) !important;
-  }
-  
-  /* Make sure mobile content areas maintain dark theme */
-  .bg-background {
-    background: #000000 !important;
-  }
 }
