@@ -41,7 +41,7 @@ const faqData: FAQItem[] = [
   {
     category: "Productos y Calidad",
     question: "¿Ofrecen descuentos por comprar varios productos?",
-    answer: "Sí, tenemos un Kit completo de lujo con 7 piezas (valor $1.705.000) con 10% de descuento especial, quedando en $1.534.500. Además incluye 1 accesorio GRATIS."
+    answer: "Sí, tenemos un Kit completo de lujo con 7 piezas (valor $1.595.000) con 10% de descuento especial, quedando en $1.435.500. Además incluye 1 accesorio GRATIS."
   },
   {
     category: "Empresa",
