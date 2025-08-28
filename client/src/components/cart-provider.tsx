@@ -38,7 +38,7 @@ const initialState: CartState = {
 function calculateTotals(items: CartItem[], discountCode: string | null) {
   const total = items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
   const itemCount = items.reduce((count, item) => count + item.quantity, 0);
-  const discountAmount = discountCode ? (total * 15) / 100 : 0;
+  const discountAmount = discountCode ? (total * 10) / 100 : 0;
   const finalTotal = total - discountAmount;
 
   return { total, itemCount, discountAmount, finalTotal };

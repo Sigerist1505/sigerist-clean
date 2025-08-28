@@ -355,3 +355,20 @@ video, iframe, embed, object {
     min-height: 100svh;
   }
 }
+
+/* Override browser validation styles to use gray instead of red */
+input:invalid {
+  border-color: rgb(156 163 175) !important; /* gray-400 */
+  box-shadow: 0 0 0 1px rgb(156 163 175) !important;
+}
+
+input:focus:invalid {
+  border-color: rgb(156 163 175) !important; /* gray-400 */
+  box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.2) !important;
+  outline: none !important;
+}
+
+/* Ensure mobile menu has proper z-index */
+.mobile-menu {
+  z-index: 9999 !important;
+}
