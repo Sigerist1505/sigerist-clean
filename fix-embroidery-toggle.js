@@ -24,7 +24,79 @@ async function fixEmbroideryToggle() {
 
     // Define the correct image mappings for products that support embroidery
     const embroideryMappings = {
-      // Bolso Mariposa
+      // Updated mappings based on requirements
+      'Maleta Viajera Bordada': {
+        imageUrl: '/assets/maleta-viajera-bordada.jpg',
+        blankImageUrl: '/assets/maleta-viajera-bordada.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/maleta-viajera-bordada.jpg' }
+      },
+      'Mini fantasy': {
+        imageUrl: '/assets/Bolsito Mariposa.jpg',
+        blankImageUrl: '/assets/Bolso Mariposa sin Bordar.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Bolsito Mariposa.jpg' }
+      },
+      'Mochila Clásica': {
+        imageUrl: '/assets/Mochila clasica.jpg',
+        blankImageUrl: '/assets/Mochila clasica.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Mochila clasica.jpg' }
+      },
+      'Cambiador': {
+        imageUrl: '/assets/Cambiador.jpg',
+        blankImageUrl: '/assets/Cambiador.jpg',
+        variants: { bordado: false, bordadoImageUrl: '/assets/Cambiador.jpg' }
+      },
+      'Lonchera Baúl': {
+        imageUrl: '/assets/Lonchera baul.jpg',
+        blankImageUrl: '/assets/Lonchera baul sin bordar.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Lonchera baul.jpg' }
+      },
+      'Producto de Prueba': {
+        imageUrl: '/assets/IMG-20250531-WA0015.jpg',
+        blankImageUrl: '/assets/IMG-20250531-WA0015.jpg',
+        variants: { bordado: false, bordadoImageUrl: '/assets/IMG-20250531-WA0015.jpg' }
+      },
+      'Multifuncional': {
+        imageUrl: '/assets/Multifuncional.jpg',
+        blankImageUrl: '/assets/Multifuncional 3 sin Bordado.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Multifuncional.jpg' }
+      },
+      'Pañalera Grande': {
+        imageUrl: '/assets/Pañalera Grande con nombre.jpg',
+        blankImageUrl: '/assets/Pañalera Grande.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Pañalera Grande con nombre.jpg' }
+      },
+      'Maleta Milan': {
+        imageUrl: '/assets/MaletaMilan_ConBordado.jpg',
+        blankImageUrl: '/assets/MaletaMilan_ConBordado.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/maleta-milan-bordada.jpg' }
+      },
+      'Organizador de Higiene': {
+        imageUrl: '/assets/Organizador Bordado.jpg',
+        blankImageUrl: '/assets/Organizador_Sin bordar.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Organizador Bordado.jpg' }
+      },
+      'Portachupetas': {
+        imageUrl: '/assets/Portachupeta.jpg',
+        blankImageUrl: '/assets/Portachupeta.jpg',
+        variants: { bordado: false, bordadoImageUrl: '/assets/Portachupeta.jpg' }
+      },
+      'Organizador de mudas': {
+        imageUrl: '/assets/Organizador_Bordado.jpg',
+        blankImageUrl: '/assets/Organizador.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Organizador_Bordado.jpg' }
+      },
+      'Lochera/Porta Biberones': {
+        imageUrl: '/assets/Porta Biberones_Bordado.jpg',
+        blankImageUrl: '/assets/PortaBiberones_SinBordar.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Porta Biberones_Bordado.jpg' }
+      },
+      'Porta Biberones': {
+        imageUrl: '/assets/Porta Biberones_Bordado.jpg',
+        blankImageUrl: '/assets/PortaBiberones_SinBordar.jpg',
+        variants: { bordado: true, bordadoImageUrl: '/assets/Porta Biberones_Bordado.jpg' }
+      },
+
+      // Keep existing mappings for backward compatibility
       'Bolso Mariposa Bordado': {
         imageUrl: '/assets/Bolsito Mariposa.jpg',
         blankImageUrl: '/assets/Bolso Mariposa sin Bordar.jpg',
@@ -46,14 +118,7 @@ async function fixEmbroideryToggle() {
         }
       },
 
-      // Organizador
-      'Organizador de Higiene': {
-        imageUrl: '/assets/Organizador Bordado.jpg',
-        blankImageUrl: '/assets/Organizador_Sin bordar.jpg',
-        variants: { bordado: true, bordadoImageUrl: '/assets/Organizador Bordado.jpg' }
-      },
-
-      // Porta Biberones
+      // Lonchera Porta Biberones
       'Lonchera Porta Biberones': {
         imageUrl: '/assets/Porta Biberones_Bordado.jpg',
         blankImageUrl: '/assets/PortaBiberones_SinBordar.jpg',

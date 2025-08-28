@@ -134,9 +134,109 @@ async function migrateComplete() {
         description: 'Práctico cambiador para bebé, resistente y fácil de limpiar',
         price: 85000,
         category: 'accesorios',
-        image_url: '/assets/cambiador.jpg',
+        image_url: '/assets/Cambiador.jpg',
         animal_type: null,
         colors: ['Beige', 'Rosa', 'Azul'],
+        in_stock: true
+      },
+      {
+        name: 'Mini fantasy',
+        description: 'Hermosa colección mini fantasy con bordado personalizado',
+        price: 95000,
+        category: 'bolsos',
+        image_url: '/assets/Bolsito Mariposa.jpg',
+        animal_type: 'personalizado',
+        colors: ['Rosa', 'Azul', 'Lila'],
+        in_stock: true
+      },
+      {
+        name: 'Mochila Clásica',
+        description: 'Mochila clásica resistente y funcional',
+        price: 120000,
+        category: 'mochilas',
+        image_url: '/assets/Mochila clasica.jpg',
+        animal_type: null,
+        colors: ['Negro', 'Café', 'Azul'],
+        in_stock: true
+      },
+      {
+        name: 'Producto de Prueba',
+        description: 'Producto para probar la pasarela de pagos',
+        price: 1000,
+        category: 'test',
+        image_url: '/assets/IMG-20250531-WA0015.jpg',
+        animal_type: null,
+        colors: ['Negro'],
+        in_stock: true
+      },
+      {
+        name: 'Multifuncional',
+        description: 'Pañalera multifuncional con múltiples compartimentos',
+        price: 180000,
+        category: 'pañaleras',
+        image_url: '/assets/Multifuncional.jpg',
+        animal_type: null,
+        colors: ['Rosa', 'Azul', 'Verde'],
+        in_stock: true
+      },
+      {
+        name: 'Pañalera Grande',
+        description: 'Pañalera grande con bordado personalizado',
+        price: 200000,
+        category: 'pañaleras',
+        image_url: '/assets/Pañalera Grande con nombre.jpg',
+        animal_type: 'personalizado',
+        colors: ['Rosa', 'Azul', 'Verde'],
+        in_stock: true
+      },
+      {
+        name: 'Maleta Milan',
+        description: 'Elegante maleta Milan de alta calidad',
+        price: 280000,
+        category: 'maletas',
+        image_url: '/assets/MaletaMilan_ConBordado.jpg',
+        animal_type: null,
+        colors: ['Negro', 'Café', 'Beige'],
+        in_stock: true
+      },
+      {
+        name: 'Organizador de Higiene',
+        description: 'Organizador práctico para productos de higiene',
+        price: 65000,
+        category: 'accesorios',
+        image_url: '/assets/Organizador Bordado.jpg',
+        animal_type: null,
+        colors: ['Rosa', 'Azul', 'Verde'],
+        in_stock: true
+      },
+      {
+        name: 'Portachupetas',
+        description: 'Práctico portachupetas para bebé',
+        price: 35000,
+        category: 'accesorios',
+        image_url: '/assets/Portachupeta.jpg',
+        animal_type: null,
+        colors: ['Rosa', 'Azul', 'Verde'],
+        in_stock: true
+      },
+      {
+        name: 'Organizador de mudas',
+        description: 'Organizador práctico para mudas de ropa con bordado',
+        price: 75000,
+        category: 'accesorios',
+        image_url: '/assets/Organizador_Bordado.jpg',
+        animal_type: 'personalizado',
+        colors: ['Rosa', 'Azul', 'Amarillo'],
+        in_stock: true
+      },
+      {
+        name: 'Lochera/Porta Biberones',
+        description: 'Lonchera porta biberones con bordado personalizado',
+        price: 85000,
+        category: 'loncheras',
+        image_url: '/assets/Porta Biberones_Bordado.jpg',
+        animal_type: 'personalizado',
+        colors: ['Rosa', 'Verde', 'Azul'],
         in_stock: true
       },
       {

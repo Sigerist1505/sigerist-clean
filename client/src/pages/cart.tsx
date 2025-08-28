@@ -27,6 +27,22 @@ function getProductImage(productName: string, hasBordado?: boolean): string {
   
   // Map product names to their corresponding images (using actual filenames that exist)
   const productImageMap: Record<string, string> = {
+    // Updated mappings based on requirements
+    "Maleta Viajera Bordada": "/assets/maleta-viajera-bordada.jpg",
+    "Mini fantasy": "/assets/Bolsito Mariposa.jpg",
+    "Mochila Clásica": "/assets/Mochila clasica.jpg",
+    "Cambiador": "/assets/Cambiador.jpg",
+    "Lonchera Baúl": "/assets/Lonchera baul.jpg",
+    "Producto de Prueba": "/assets/IMG-20250531-WA0015.jpg",
+    "Multifuncional": "/assets/Multifuncional.jpg",
+    "Pañalera Grande": "/assets/Pañalera Grande con nombre.jpg",
+    "Maleta Milan": "/assets/MaletaMilan_ConBordado.jpg",
+    "Organizador de Higiene": "/assets/Organizador Bordado.jpg",
+    "Portachupetas": "/assets/Portachupeta.jpg",
+    "Organizador de mudas": "/assets/Organizador_Bordado.jpg",
+    "Lochera/Porta Biberones": "/assets/Porta Biberones_Bordado.jpg",
+    "Porta Biberones": "/assets/Porta Biberones_Bordado.jpg",
+    // Keep existing mappings for backward compatibility
     "Maleta Milan Bordada": "/assets/maleta-milan-bordada.jpg",
     "Maleta Milan Sin Bordar": "/assets/MaletaMilan_ConBordado.jpg",
     "Bolso Mariposa Bordado": "/assets/Bolsito Mariposa.jpg", 
@@ -63,6 +79,28 @@ function getProductImage(productName: string, hasBordado?: boolean): string {
       imageUrl = "/assets/Mochila clasica.jpg"; // Use classic mochila for universitaria
     } else if (nameLower.includes("mochila") && nameLower.includes("milan")) {
       imageUrl = hasBordado ? "/assets/maleta-milan-bordada.jpg" : "/assets/MaletaMilan_ConBordado.jpg";
+    } else if (nameLower.includes("mochila") && nameLower.includes("clásica")) {
+      imageUrl = "/assets/Mochila clasica.jpg";
+    } else if (nameLower.includes("multifuncional")) {
+      imageUrl = "/assets/Multifuncional.jpg";
+    } else if (nameLower.includes("pañalera") && nameLower.includes("grande")) {
+      imageUrl = "/assets/Pañalera Grande con nombre.jpg";
+    } else if (nameLower.includes("organizador") && nameLower.includes("higiene")) {
+      imageUrl = "/assets/Organizador Bordado.jpg";
+    } else if (nameLower.includes("organizador") && nameLower.includes("muda")) {
+      imageUrl = "/assets/Organizador_Bordado.jpg";
+    } else if (nameLower.includes("portachupeta")) {
+      imageUrl = "/assets/Portachupeta.jpg";
+    } else if (nameLower.includes("cambiador")) {
+      imageUrl = "/assets/Cambiador.jpg";
+    } else if (nameLower.includes("porta") && nameLower.includes("biberones")) {
+      imageUrl = "/assets/Porta Biberones_Bordado.jpg";
+    } else if (nameLower.includes("maleta") && nameLower.includes("viajera")) {
+      imageUrl = "/assets/maleta-viajera-bordada.jpg";
+    } else if (nameLower.includes("mini") && nameLower.includes("fantasy")) {
+      imageUrl = "/assets/Bolsito Mariposa.jpg";
+    } else if (nameLower.includes("producto") && nameLower.includes("prueba")) {
+      imageUrl = "/assets/IMG-20250531-WA0015.jpg";
     }
   }
   
