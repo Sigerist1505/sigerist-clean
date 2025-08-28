@@ -168,8 +168,7 @@ const Home = () => {
                 <span className="text-lg">• organizador de mudas:</span>
                 <span className="font-bold text-xl">$60,000</span>
               </div>
-            </div>
-            <div className="flex justify-between items-center p-4 bg-black/40 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-black/40 rounded-lg">
                 <span className="text-lg">• Cambiador:</span>
                 <span className="font-bold text-xl">$105,000</span>
               </div>
