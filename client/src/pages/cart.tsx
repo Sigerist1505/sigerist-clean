@@ -486,17 +486,6 @@ export default function CartPage() {
                   </div>
                 )}
                 
-                <div className="flex justify-between">
-                  <span className="text-[#C0C0C0]">Personalización</span>
-                  <span className="font-medium text-green-400">Gratis</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="flex items-center gap-2 text-[#C0C0C0]">
-                    <Truck className="h-4 w-4" />
-                    Envío Regular ($25.000)
-                  </span>
-                  <span className="font-medium text-green-400">Se paga contraentrega</span>
-                </div>
                 <Separator className="bg-[#C0C0C0]/30" />
                 <div className="flex justify-between text-lg font-bold">
                   <span className="text-[#C0C0C0]">Total Final</span>
@@ -505,7 +494,7 @@ export default function CartPage() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-400">
-                  * El envío regular ($25.000) se paga contraentrega
+                  * El envío regular es de aproximadamente $25.000 y se paga contraentrega
                 </p>
 
                 {/* Payment Information */}
@@ -521,12 +510,6 @@ export default function CartPage() {
                       <p className="text-sm text-blue-300 font-medium">• Transferencia bancaria</p>
                       <p className="text-xs text-gray-400">Cuenta Ahorros Bancolombia: 23883092333</p>
                       <p className="text-xs text-gray-400">Enviar pantallazo al WhatsApp: 3160183418</p>
-                    </div>
-                    
-                    <div className="p-3 bg-orange-900/20 border border-orange-400/30 rounded-lg">
-                      <p className="text-sm text-orange-300 font-medium">• Contraentrega (solo envío)</p>
-                      <p className="text-xs text-gray-400">Solo se paga el costo de envío contraentrega</p>
-                      <p className="text-xs text-gray-400">El producto se paga previamente</p>
                     </div>
                   </div>
                 </div>
@@ -572,7 +555,7 @@ export default function CartPage() {
                   </label>
                   <Input
                     type="tel"
-                    placeholder="+57 300 123 4567"
+                    placeholder=""
                     value={customerInfo.phone}
                     onChange={(e) => updateCustomerInfo({ phone: e.target.value })}
                     className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
@@ -585,7 +568,7 @@ export default function CartPage() {
                     Dirección *
                   </label>
                   <Input
-                    placeholder="Calle 123 # 45-67, Apartamento 123"
+                    placeholder=""
                     value={customerInfo.address}
                     onChange={(e) => updateCustomerInfo({ address: e.target.value })}
                     className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
@@ -599,7 +582,7 @@ export default function CartPage() {
                       Ciudad *
                     </label>
                     <Input
-                      placeholder="Bogotá"
+                      placeholder=""
                       value={customerInfo.city}
                       onChange={(e) => updateCustomerInfo({ city: e.target.value })}
                       className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
@@ -611,7 +594,7 @@ export default function CartPage() {
                       Departamento *
                     </label>
                     <Input
-                      placeholder="Cundinamarca"
+                      placeholder=""
                       value={customerInfo.department}
                       onChange={(e) => updateCustomerInfo({ department: e.target.value })}
                       className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
@@ -625,7 +608,7 @@ export default function CartPage() {
                     Código Postal
                   </label>
                   <Input
-                    placeholder="110111"
+                    placeholder=""
                     value={customerInfo.postalCode}
                     onChange={(e) => updateCustomerInfo({ postalCode: e.target.value })}
                     className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
