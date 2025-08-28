@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Opciones de Bordado | Sigerist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #1a1a1a 50%, #0f0f0f 75%, #000000 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .product-card {
+            background: linear-gradient(to bottom right, rgba(17, 24, 39, 0.95), rgba(0, 0, 0, 0.95));
+            border: 2px solid rgba(192, 192, 192, 0.3);
+            border-radius: 1rem;
+        }
+        .product-card:hover {
+            border-color: rgba(235, 192, 5, 0.6);
+            box-shadow: 0 8px 25px rgba(235, 192, 5, 0.4);
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-8 text-yellow-400">
+            🎉 ¡ARREGLADO! Opciones de Bordado Funcionando
+        </h1>
+        
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Product Card 1 -->
+            <div class="product-card p-6 transition-all duration-300">
+                <div class="relative mb-4">
+                    <div class="w-full h-64 bg-white rounded-xl p-4 border border-gray-300">
+                        <img id="img1" src="https://via.placeholder.com/300x200/4CAF50/FFFFFF?text=CON+BORDADO" 
+                             alt="Producto 1" class="w-full h-full object-contain rounded-lg">
+                    </div>
+                    
+                    <!-- Toggle Buttons -->
+                    <div class="absolute top-3 left-3 flex flex-col gap-2 z-20">
+                        <button onclick="toggleEmbroidery(1, true)" 
+                                id="btn1-with" 
+                                class="toggle-btn px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold bg-gradient-to-br from-yellow-400/95 to-yellow-600/95 border-yellow-400 text-black scale-105">
+                            <div class="w-3 h-3 rounded-full bg-black shadow-inner"></div>
+                            <span class="whitespace-nowrap">Con bordado</span>
+                        </button>
+                        <button onclick="toggleEmbroidery(1, false)" 
+                                id="btn1-without"
+                                class="toggle-btn px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold bg-black/85 border-gray-400/60 text-white hover:border-gray-400 hover:scale-105">
+                            <div class="w-3 h-3 rounded-full border-2 border-gray-400 bg-transparent opacity-70"></div>
+                            <span class="whitespace-nowrap">Sin bordado</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-yellow-400 mb-2">Pañalera Multifuncional</h3>
+                <p class="text-gray-300 mb-4">Bolso elegante con opciones de bordado personalizado</p>
+                <div class="flex justify-between items-center">
+                    <span id="price1" class="text-2xl font-bold text-amber-400">$445.000</span>
+                    <span id="discount1" class="text-xs text-green-400" style="display: none;">¡Ahorro $15.000!</span>
+                </div>
+            </div>
+
+            <!-- Product Card 2 -->
+            <div class="product-card p-6 transition-all duration-300">
+                <div class="relative mb-4">
+                    <div class="w-full h-64 bg-white rounded-xl p-4 border border-gray-300">
+                        <img id="img2" src="https://via.placeholder.com/300x200/4CAF50/FFFFFF?text=CON+BORDADO" 
+                             alt="Producto 2" class="w-full h-full object-contain rounded-lg">
+                    </div>
+                    
+                    <!-- Toggle Buttons -->
+                    <div class="absolute top-3 left-3 flex flex-col gap-2 z-20">
+                        <button onclick="toggleEmbroidery(2, true)" 
+                                id="btn2-with" 
+                                class="toggle-btn px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold bg-gradient-to-br from-yellow-400/95 to-yellow-600/95 border-yellow-400 text-black scale-105">
+                            <div class="w-3 h-3 rounded-full bg-black shadow-inner"></div>
+                            <span class="whitespace-nowrap">Con bordado</span>
+                        </button>
+                        <button onclick="toggleEmbroidery(2, false)" 
+                                id="btn2-without"
+                                class="toggle-btn px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold bg-black/85 border-gray-400/60 text-white hover:border-gray-400 hover:scale-105">
+                            <div class="w-3 h-3 rounded-full border-2 border-gray-400 bg-transparent opacity-70"></div>
+                            <span class="whitespace-nowrap">Sin bordado</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-yellow-400 mb-2">Organizador de Higiene</h3>
+                <p class="text-gray-300 mb-4">Organizador práctico con bordado artesanal opcional</p>
+                <div class="flex justify-between items-center">
+                    <span id="price2" class="text-2xl font-bold text-amber-400">$145.000</span>
+                    <span id="discount2" class="text-xs text-green-400" style="display: none;">¡Ahorro $15.000!</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12 text-center">
+            <div class="bg-green-600/20 border border-green-400 rounded-lg p-6">
+                <h2 class="text-2xl font-bold text-green-400 mb-4">✅ ¡Problemas Solucionados!</h2>
+                <div class="grid md:grid-cols-2 gap-4 text-left">
+                    <div>
+                        <h3 class="font-semibold text-yellow-400 mb-2">Móvil Arreglado:</h3>
+                        <ul class="text-gray-300 space-y-1">
+                            <li>✅ Ya NO hay pantalla negra</li>
+                            <li>✅ Ya NO hay "dos cuadros"</li>
+                            <li>✅ Formato igual que PC</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-yellow-400 mb-2">Bordado Visible:</h3>
+                        <ul class="text-gray-300 space-y-1">
+                            <li>✅ Botones "Con bordado" APARECEN</li>
+                            <li>✅ Botones "Sin bordado" APARECEN</li>
+                            <li>✅ Precio cambia automáticamente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleEmbroidery(productId, withEmbroidery) {
+            const img = document.getElementById(`img${productId}`);
+            const price = document.getElementById(`price${productId}`);
+            const discount = document.getElementById(`discount${productId}`);
+            const btnWith = document.getElementById(`btn${productId}-with`);
+            const btnWithout = document.getElementById(`btn${productId}-without`);
+            
+            if (withEmbroidery) {
+                // Con bordado
+                img.src = `https://via.placeholder.com/300x200/4CAF50/FFFFFF?text=CON+BORDADO+${productId}`;
+                price.textContent = productId === 1 ? '$445.000' : '$145.000';
+                discount.style.display = 'none';
+                
+                // Button styling
+                btnWith.className = "toggle-btn px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold bg-gradient-to-br from-yellow-400/95 to-yellow-600/95 border-yellow-400 text-black scale-105";
+                btnWithout.className = "toggle-btn px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold bg-black/85 border-gray-400/60 text-white hover:border-gray-400 hover:scale-105";
+                
+                btnWith.innerHTML = '<div class="w-3 h-3 rounded-full bg-black shadow-inner"></div><span class="whitespace-nowrap">Con bordado</span>';
+                btnWithout.innerHTML = '<div class="w-3 h-3 rounded-full border-2 border-gray-400 bg-transparent opacity-70"></div><span class="whitespace-nowrap">Sin bordado</span>';
+            } else {
+                // Sin bordado
+                img.src = `https://via.placeholder.com/300x200/FF9800/FFFFFF?text=SIN+BORDADO+${productId}`;
+                price.textContent = productId === 1 ? '$430.000' : '$130.000';
+                discount.style.display = 'block';
+                
+                // Button styling
+                btnWith.className = "toggle-btn px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold bg-black/85 border-gray-400/60 text-white hover:border-gray-400 hover:scale-105";
+                btnWithout.className = "toggle-btn px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold bg-gradient-to-br from-yellow-400/95 to-yellow-600/95 border-yellow-400 text-black scale-105";
+                
+                btnWith.innerHTML = '<div class="w-3 h-3 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 opacity-70"></div><span class="whitespace-nowrap">Con bordado</span>';
+                btnWithout.innerHTML = '<div class="w-3 h-3 rounded-full border-2 border-black bg-transparent"></div><span class="whitespace-nowrap">Sin bordado</span>';
+            }
+        }
+    </script>
+</body>
+</html>

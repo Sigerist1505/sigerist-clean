@@ -178,27 +178,28 @@ function ProductPage() {
             <div className="relative">
               <ImageGallery images={galleryImages} alt={product.name} className="aspect-square" />
               {hasBordado && (
-                <div className="absolute top-6 left-6 flex gap-3 z-20">
+                <div className="absolute top-6 left-6 flex flex-col gap-3 z-20">
                   <button
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       setShowEmbroidery(true);
                     }}
-                    className={`w-14 h-14 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
+                    className={`px-4 py-3 rounded-lg border-2 transition-all duration-300 flex items-center gap-3 shadow-lg backdrop-blur-sm text-sm font-bold ${
                       showEmbroidery
-                        ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
-                        : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
+                        ? "bg-gradient-to-br from-[#ebc005]/95 to-[#d4a804]/95 border-[#ebc005] text-black shadow-[#ebc005]/50 scale-105"
+                        : "bg-black/85 border-[#C0C0C0]/60 text-white hover:border-[#C0C0C0] hover:scale-105"
                     }`}
-                    title="Con bordado"
+                    title="Ver con bordado"
                   >
                     <div
-                      className={`w-7 h-7 rounded-full transition-all duration-300 ${
+                      className={`w-4 h-4 rounded-full transition-all duration-300 ${
                         showEmbroidery 
-                          ? "bg-white shadow-inner" 
+                          ? "bg-black shadow-inner" 
                           : "bg-gradient-to-br from-[#ebc005] to-[#d4a804] opacity-70"
                       }`}
                     />
+                    <span className="whitespace-nowrap">CON BORDADO</span>
                   </button>
                   <button
                     onClick={(e) => {
@@ -206,26 +207,28 @@ function ProductPage() {
                       e.stopPropagation();
                       setShowEmbroidery(false);
                     }}
-                    className={`w-14 h-14 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
+                    className={`px-4 py-3 rounded-lg border-2 transition-all duration-300 flex items-center gap-3 shadow-lg backdrop-blur-sm text-sm font-bold ${
                       !showEmbroidery
-                        ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
-                        : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
+                        ? "bg-gradient-to-br from-[#ebc005]/95 to-[#d4a804]/95 border-[#ebc005] text-black shadow-[#ebc005]/50 scale-105"
+                        : "bg-black/85 border-[#C0C0C0]/60 text-white hover:border-[#C0C0C0] hover:scale-105"
                     }`}
-                    title="Sin bordado"
+                    title="Ver sin bordado"
                   >
                     <div
-                      className={`w-7 h-7 rounded-full border-3 transition-all duration-300 ${
+                      className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
                         !showEmbroidery 
-                          ? "border-white bg-transparent" 
+                          ? "border-black bg-transparent" 
                           : "border-[#C0C0C0] bg-transparent opacity-70"
                       }`}
                     />
+                    <span className="whitespace-nowrap">SIN BORDADO</span>
                   </button>
                 </div>
               )}
               {hasBordado && (
-                <div className="absolute bottom-6 left-6 bg-black/70 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-                  {showEmbroidery ? "Con bordado" : "Sin bordado"}
+                <div className="absolute bottom-6 right-6 bg-gradient-to-r from-black/90 to-gray-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg border border-[#ebc005]/60 text-sm font-bold shadow-lg">
+                  <span className="text-[#ebc005]">●</span> {showEmbroidery ? "CON BORDADO" : "SIN BORDADO"}
+                  {!showEmbroidery && <span className="text-green-400 ml-2">(¡Ahorro $15.000!)</span>}
                 </div>
               )}
             </div>
