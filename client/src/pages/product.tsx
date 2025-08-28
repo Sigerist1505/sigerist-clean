@@ -187,8 +187,8 @@ function ProductPage() {
                     }}
                     className={`w-14 h-14 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
                       showEmbroidery
-                        ? "bg-gradient-to-br from-blue-500/90 to-blue-600/90 border-blue-400 scale-110 shadow-blue-400/50"
-                        : "bg-black/80 border-gray-600 hover:border-gray-400 hover:scale-105"
+                        ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
+                        : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
                     }`}
                     title="Con bordado"
                   >
@@ -196,7 +196,7 @@ function ProductPage() {
                       className={`w-7 h-7 rounded-full transition-all duration-300 ${
                         showEmbroidery 
                           ? "bg-white shadow-inner" 
-                          : "bg-gradient-to-br from-blue-400 to-blue-500 opacity-70"
+                          : "bg-gradient-to-br from-[#ebc005] to-[#d4a804] opacity-70"
                       }`}
                     />
                   </button>
@@ -208,8 +208,8 @@ function ProductPage() {
                     }}
                     className={`w-14 h-14 rounded-full border-3 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
                       !showEmbroidery
-                        ? "bg-gradient-to-br from-blue-500/90 to-blue-600/90 border-blue-400 scale-110 shadow-blue-400/50"
-                        : "bg-black/80 border-gray-600 hover:border-gray-500 hover:scale-105"
+                        ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
+                        : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
                     }`}
                     title="Sin bordado"
                   >
@@ -217,7 +217,7 @@ function ProductPage() {
                       className={`w-7 h-7 rounded-full border-3 transition-all duration-300 ${
                         !showEmbroidery 
                           ? "border-white bg-transparent" 
-                          : "border-slate-400 bg-transparent opacity-70"
+                          : "border-[#C0C0C0] bg-transparent opacity-70"
                       }`}
                     />
                   </button>
@@ -231,8 +231,8 @@ function ProductPage() {
             </div>
             
             {hasBordado && (
-              <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 rounded-xl p-4 border-2 border-blue-500">
-                <h3 className="text-lg font-semibold mb-3 text-blue-100 text-center">
+              <div className="bg-gradient-to-br from-gray-900/90 to-black/95 rounded-xl p-4 border-2 border-[#ebc005]/60">
+                <h3 className="text-lg font-semibold mb-3 text-[#c9a920] text-center" style={{textShadow: '0 0 10px rgba(201, 169, 32, 0.4)'}}>
                   Opciones de Bordado
                 </h3>
                 <div className="flex gap-4 justify-center">
@@ -240,15 +240,15 @@ function ProductPage() {
                     onClick={() => setShowEmbroidery(true)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all duration-300 ${
                       showEmbroidery
-                        ? "border-blue-400 bg-blue-400/10 text-blue-200"
-                        : "border-gray-600 bg-black/40 text-gray-400 hover:border-gray-500"
+                        ? "border-[#ebc005] bg-[#ebc005]/10 text-[#ebc005]"
+                        : "border-[#C0C0C0]/40 bg-black/40 text-[#C0C0C0] hover:border-[#C0C0C0]/60"
                     }`}
                   >
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                         showEmbroidery 
-                          ? "border-blue-400 bg-blue-400" 
-                          : "border-gray-500"
+                          ? "border-[#ebc005] bg-[#ebc005]" 
+                          : "border-[#C0C0C0]/60"
                       }`}
                     >
                       {showEmbroidery && (
@@ -261,15 +261,15 @@ function ProductPage() {
                     onClick={() => setShowEmbroidery(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all duration-300 ${
                       !showEmbroidery
-                        ? "border-blue-400 bg-blue-400/10 text-blue-200"
-                        : "border-gray-600 bg-black/40 text-gray-400 hover:border-gray-500"
+                        ? "border-[#ebc005] bg-[#ebc005]/10 text-[#ebc005]"
+                        : "border-[#C0C0C0]/40 bg-black/40 text-[#C0C0C0] hover:border-[#C0C0C0]/60"
                     }`}
                   >
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                         !showEmbroidery 
-                          ? "border-blue-400 bg-blue-400" 
-                          : "border-gray-500"
+                          ? "border-[#ebc005] bg-[#ebc005]" 
+                          : "border-[#C0C0C0]/60"
                       }`}
                     >
                       {!showEmbroidery && (
