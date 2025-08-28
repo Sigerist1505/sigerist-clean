@@ -21,10 +21,13 @@
   --secondary-foreground: 0 0 0; /* Pure Black */
   --accent: 192 192 192; /* Silver #C0C0C0 */
   --accent-foreground: 0 0 0; /* Black text */
-  --destructive: 192 192 192; /* Silver for errors */
-  --destructive-foreground: 0 0 0;
+  --destructive: 235 192 5; /* Sigerist Gold for errors */
+  --destructive-foreground: 255 255 255; /* White text */
   --ring: 192 192 192; /* Silver #C0C0C0 */
   --radius: 0.375rem;
+  --sigerist-gold: 235 192 5; /* #ebc005 */
+  --sigerist-charcoal: 0 0 0; /* Black */
+  --sigerist-silver: 192 192 192; /* #C0C0C0 */
 }
 
 .dark {
@@ -44,8 +47,8 @@
   --secondary-foreground: 255 255 255; /* Pure White */
   --accent: 192 192 192; /* Silver #C0C0C0 */
   --accent-foreground: 0 0 0; /* Black text */
-  --destructive: 192 192 192; /* Silver for errors */
-  --destructive-foreground: 0 0 0;
+  --destructive: 235 192 5; /* Sigerist Gold for errors */
+  --destructive-foreground: 255 255 255; /* White text */
   --ring: 192 192 192; /* Silver #C0C0C0 */
   --radius: 0.375rem;
 }
