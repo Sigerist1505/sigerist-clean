@@ -338,34 +338,41 @@ video, iframe, embed, object {
   background: #000000 !important;
 }
 
-/* Smooth transition for background changes */
+/* Override any potential yellow/bright backgrounds */
 * {
-  transition: background-color 0.1s ease;
+  transition: background-color 0.1s ease !important;
 }
 
-/* Mobile responsive styling - maintain dark theme without breaking layout */
+/* Viewport background fix for mobile */
 @media screen and (max-width: 768px) {
-  /* Ensure mobile viewport has proper dark background */
-  html, body {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #1a1a1a 50%, #0f0f0f 75%, #000000 100%);
+  html {
+    background: #000000 !important;
+  }
+  
+  body {
+    background: #000000 !important;
     min-height: 100vh;
     min-height: 100svh;
   }
   
-  /* Allow cards and components to maintain their intended backgrounds on mobile */
-  .bg-card {
-    background: hsl(var(--card)) !important;
+  /* Ensure mobile has consistent dark theme */
+  .min-h-screen {
+    background: #000000 !important;
   }
   
-  /* Ensure product cards maintain their gradient backgrounds on mobile */
-  .bg-gradient-to-br {
-    background: inherit !important;
+  /* Force darker backgrounds on mobile containers */
+  div, main, section {
+    background: transparent !important;
   }
   
-  /* Mobile navigation with proper contrast */
+  /* Ensure mobile navigation menu has proper dark styling */
   nav {
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(10px);
-    border-color: rgba(192, 192, 192, 0.2);
+    background: #000000 !important;
+    border-color: rgba(192, 192, 192, 0.4) !important;
+  }
+  
+  /* Make sure mobile content areas maintain dark theme */
+  .bg-background {
+    background: #000000 !important;
   }
 }
