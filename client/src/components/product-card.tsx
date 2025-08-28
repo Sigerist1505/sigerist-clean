@@ -15,23 +15,30 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart, isAddingToCart } = useCart(); // Usamos isAddingToCart de useMutation
   const [isAdded, setIsAdded] = useState(false); // Restauramos el estado para "Agregado!"
   const [error, setError] = useState<string | null>(null);
+  const [showEmbroidery, setShowEmbroidery] = useState(true); // State for bordado toggle
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
+    // Calculate price based on embroidery selection
+    const hasBordado = product.variants?.bordado === true;
+    const finalPrice = hasBordado && !showEmbroidery 
+      ? Math.max(0, Number(product.price) - 15000) 
+      : Number(product.price);
+
     addToCart(
       {
         productId: product.id,
         name: product.name,
-        price: Number(product.price),
+        price: finalPrice,
         quantity: 1,
         personalization: "",
         addPompon: false,
         addPersonalizedKeychain: false,
         addDecorativeBow: false,
         expressService: false,
-        hasBordado: false,
+        hasBordado: hasBordado && showEmbroidery,
         keychainPersonalization: "",
       },
       {
@@ -48,11 +55,29 @@ export function ProductCard({ product }: ProductCardProps) {
     );
   };
 
-  const imgSrc = product.imageUrl
-    ? product.imageUrl.startsWith("/")
-      ? product.imageUrl
-      : `/assets/${product.imageUrl}`
-    : "/assets/placeholder.jpg";
+  // Check if product supports embroidery
+  const hasBordado = product.variants?.bordado === true;
+  
+  // Determine which image to show
+  const getImageSrc = () => {
+    let imageUrl = product.imageUrl;
+    
+    if (hasBordado) {
+      if (showEmbroidery) {
+        // Show embroidered version - use bordadoImageUrl if available, otherwise imageUrl
+        imageUrl = product.variants?.bordadoImageUrl || product.imageUrl;
+      } else {
+        // Show non-embroidered version - use blankImageUrl if available, otherwise imageUrl
+        imageUrl = product.blankImageUrl || product.imageUrl;
+      }
+    }
+    
+    return imageUrl?.startsWith("/") 
+      ? imageUrl 
+      : `/assets/${imageUrl}`;
+  };
+
+  const imgSrc = getImageSrc() || "/assets/placeholder.jpg";
 
   return (
     <Link href={`/product/${product.id}`} className="group">
@@ -67,6 +92,61 @@ export function ProductCard({ product }: ProductCardProps) {
                 loading="lazy"
               />
             </div>
+            
+            {/* Bordado toggle buttons - only show if product supports embroidery */}
+            {hasBordado && (
+              <div className="absolute top-3 left-3 flex gap-2 z-20">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowEmbroidery(true);
+                  }}
+                  className={`w-10 h-10 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
+                    showEmbroidery
+                      ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
+                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
+                  }`}
+                  title="Con bordado"
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                      showEmbroidery 
+                        ? "bg-white shadow-inner" 
+                        : "bg-gradient-to-br from-[#ebc005] to-[#d4a804] opacity-70"
+                    }`}
+                  />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowEmbroidery(false);
+                  }}
+                  className={`w-10 h-10 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
+                    !showEmbroidery
+                      ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
+                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
+                  }`}
+                  title="Sin bordado"
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                      !showEmbroidery 
+                        ? "border-white bg-transparent" 
+                        : "border-[#C0C0C0] bg-transparent opacity-70"
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
+            
+            {/* Status indicator */}
+            {hasBordado && (
+              <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
+                {showEmbroidery ? "Con bordado" : "Sin bordado"}
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -80,9 +160,18 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-amber-400">
-                {formatPrice(Number(product.price))}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold text-amber-400">
+                  {formatPrice(hasBordado && !showEmbroidery 
+                    ? Math.max(0, Number(product.price) - 15000) 
+                    : Number(product.price))}
+                </span>
+                {hasBordado && !showEmbroidery && (
+                  <span className="text-xs text-green-400">
+                    ¡Ahorro $15.000!
+                  </span>
+                )}
+              </div>
               <Button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || !product.inStock}
