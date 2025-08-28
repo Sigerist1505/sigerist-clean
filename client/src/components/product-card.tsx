@@ -56,41 +56,40 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/product/${product.id}`} className="group">
-      <Card className="group-hover:shadow-xl transition-all duration-300 bg-gray-50 rounded-2xl border border-gray-200">
+      <Card className="group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-gray-900/95 to-black/95 border-2 border-[#C0C0C0]/30 hover:border-[#ebc005]/60 rounded-2xl hover:shadow-[0_8px_25px_rgba(235,192,5,0.4)]">
         <CardContent className="p-6">
           <div className="relative mb-4">
-            <img
-              src={imgSrc}
-              alt={product.name}
-              className="w-full h-64 object-cover rounded-xl"
-              loading="lazy"
-            />
-            <Badge className="absolute top-2 left-2 bg-sigerist-gold text-sigerist-charcoal">
-              Personalizable
-            </Badge>
+            <div className="w-full h-64 bg-white rounded-xl p-4 border border-[#C0C0C0]/20">
+              <img
+                src={imgSrc}
+                alt={product.name}
+                className="w-full h-full object-contain rounded-lg"
+                loading="lazy"
+              />
+            </div>
           </div>
 
           <div className="space-y-3">
             <div>
-              <h4 className="font-bold text-xl text-sigerist-charcoal mb-1">
+              <h4 className="font-bold text-xl text-[#c9a920] mb-1" style={{textShadow: '0 0 10px rgba(201, 169, 32, 0.4)'}}>
                 {product.name}
               </h4>
-              <p className="text-gray-600 text-sm line-clamp-2">
+              <p className="text-[#C0C0C0] text-sm line-clamp-2">
                 {product.description}
               </p>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-sigerist-charcoal">
+              <span className="text-2xl font-bold text-amber-400">
                 {formatPrice(Number(product.price))}
               </span>
               <Button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || !product.inStock}
-                className={`px-6 py-2 font-semibold transition-colors ${
+                className={`px-6 py-2 font-semibold transition-all duration-300 border-2 ${
                   isAdded
-                    ? "bg-green-500 hover:bg-green-600 text-white"
-                    : "bg-sigerist-gold hover:bg-yellow-600 text-sigerist-charcoal"
+                    ? "bg-green-600 hover:bg-green-700 text-white border-green-500"
+                    : "bg-gradient-to-r from-[#ebc005] to-[#d4a804] text-[#000000] hover:from-[#d4a804] hover:to-[#b8950b] border-[#C0C0C0]/30 shadow-[0_4px_15px_rgba(235,192,5,0.3)]"
                 }`}
                 aria-label={isAdded ? "Producto agregado" : "Agregar al carrito"}
               >

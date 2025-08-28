@@ -36,12 +36,12 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
   return (
     <div className={`relative group ${className}`}>
       {/* Main Image */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 to-white shadow-lg border border-slate-200/80">
+      <div className="relative overflow-hidden rounded-xl bg-white shadow-lg border border-[#C0C0C0]/20 p-4">
         <div className="aspect-square relative">
           <img
             src={images[currentIndex]}
             alt={`${alt} - Imagen ${currentIndex + 1}`}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           />
           
           {/* Elegant overlay gradient */}
@@ -54,17 +54,17 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
                 onClick={goToPrevious}
                 variant="ghost"
                 size="icon"
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-slate-200/80 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 w-10 h-10 rounded-full backdrop-blur-sm"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#ebc005]/90 hover:bg-[#ebc005] border border-[#C0C0C0]/20 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 w-10 h-10 rounded-full backdrop-blur-sm"
               >
-                <ChevronLeft className="h-5 w-5 text-slate-700" />
+                <ChevronLeft className="h-5 w-5 text-black" />
               </Button>
               <Button
                 onClick={goToNext}
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-slate-200/80 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 w-10 h-10 rounded-full backdrop-blur-sm"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#ebc005]/90 hover:bg-[#ebc005] border border-[#C0C0C0]/20 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 w-10 h-10 rounded-full backdrop-blur-sm"
               >
-                <ChevronRight className="h-5 w-5 text-slate-700" />
+                <ChevronRight className="h-5 w-5 text-black" />
               </Button>
             </>
           )}
@@ -80,8 +80,8 @@ export function ImageGallery({ images, alt, className = "" }: ImageGalleryProps)
               onClick={(e) => goToSlide(index, e)}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? 'bg-gradient-to-r from-amber-400 to-yellow-500 shadow-md scale-110'
-                  : 'bg-slate-300 hover:bg-slate-400'
+                  ? 'bg-gradient-to-r from-[#ebc005] to-[#d4a804] shadow-md scale-110'
+                  : 'bg-[#C0C0C0]/60 hover:bg-[#C0C0C0]'
               }`}
               aria-label={`Ir a imagen ${index + 1}`}
             />

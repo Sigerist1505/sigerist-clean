@@ -21,6 +21,54 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+// Helper function to get product image based on product name
+function getProductImage(productName: string, hasBordado?: boolean): string {
+  const defaultImage = "/attached_assets/IMG-20250531-WA0015.jpg"; // Fallback image
+  
+  // Map product names to their corresponding images
+  const productImageMap: Record<string, string> = {
+    "Maleta Milan Bordada": "/assets/maleta-milan-bordada.jpg",
+    "Maleta Milan Sin Bordar": "/assets/maleta-milan-sin-bordar.jpg",
+    "Bolso Mariposa Bordado": "/assets/bolso-mariposa-bordado.jpg", 
+    "Bolso Mariposa Sin Bordar": "/assets/bolso-mariposa-sin-bordar.jpg",
+    "Bolsito Gato Bordado": "/assets/bolsito-gato-bordado.jpg",
+    "Bolsito Gato Sin Bordar": "/assets/bolsito-gato-sin-bordar.jpg",
+    "Lonchera Baúl Bordada": "/assets/lonchera-baul-bordada.jpg",
+    "Lonchera Baúl Sin Bordar": "/assets/lonchera-baul.jpg",
+    // Mochilas
+    "Mochila Universitaria Bordada": "/assets/mochila-universitaria-bordada.jpg",
+    "Mochila Universitaria Sin Bordar": "/assets/mochila-universitaria-sin-bordar.jpg",
+    "Mochila Milán Bordada": "/assets/mochila-milan-bordada.jpg",
+    "Mochila Milán Sin Bordar": "/assets/mochila-milan-sin-bordar.jpg",
+    // Kit and other products
+    "Kit Luxury de 7 Piezas": "/attached_assets/IMG-20250531-WA0015.jpg",
+  };
+  
+  // Try exact match first
+  let imageUrl = productImageMap[productName];
+  
+  // If no exact match, try to match based on product type and bordado status
+  if (!imageUrl) {
+    const nameLower = productName.toLowerCase();
+    
+    if (nameLower.includes("maleta") && nameLower.includes("milan")) {
+      imageUrl = hasBordado ? "/assets/maleta-milan-bordada.jpg" : "/assets/maleta-milan-sin-bordar.jpg";
+    } else if (nameLower.includes("bolso") && nameLower.includes("mariposa")) {
+      imageUrl = hasBordado ? "/assets/bolso-mariposa-bordado.jpg" : "/assets/bolso-mariposa-sin-bordar.jpg";
+    } else if (nameLower.includes("bolsito") && nameLower.includes("gato")) {
+      imageUrl = hasBordado ? "/assets/bolsito-gato-bordado.jpg" : "/assets/bolsito-gato-sin-bordar.jpg";
+    } else if (nameLower.includes("lonchera")) {
+      imageUrl = hasBordado ? "/assets/lonchera-baul-bordada.jpg" : "/assets/lonchera-baul.jpg";
+    } else if (nameLower.includes("mochila") && nameLower.includes("universitaria")) {
+      imageUrl = hasBordado ? "/assets/mochila-universitaria-bordada.jpg" : "/assets/mochila-universitaria-sin-bordar.jpg";
+    } else if (nameLower.includes("mochila") && nameLower.includes("milan")) {
+      imageUrl = hasBordado ? "/assets/mochila-milan-bordada.jpg" : "/assets/mochila-milan-sin-bordar.jpg";
+    }
+  }
+  
+  return imageUrl || defaultImage;
+}
+
 export default function CartPage() {
   const { items, total, finalTotal, itemCount, discountCode, discountAmount, updateItem, removeItem, clearCart, applyDiscount, removeDiscount } = useCart();
   const { customerInfo, updateCustomerInfo } = useCustomerInfo();
@@ -211,11 +259,15 @@ export default function CartPage() {
               <Card key={item.id} className="bg-gradient-to-br from-gray-900/95 to-black/95 border-2 border-[#C0C0C0]/30 hover:border-[#C0C0C0]/60 hover:shadow-2xl transition-all duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-6">
-                    <div className="w-24 h-24 bg-white/10 rounded-xl flex-shrink-0 border border-[#C0C0C0]/20">
+                    <div className="w-24 h-24 bg-white rounded-xl flex-shrink-0 border border-[#C0C0C0]/20 p-2">
                       <img
-                        src="/attached_assets/IMG-20250531-WA0015.jpg"
+                        src={getProductImage(item.name, item.hasBordado)}
                         alt={item.name}
-                        className="w-full h-full object-cover rounded-xl"
+                        className="w-full h-full object-contain rounded-lg"
+                        onError={(e) => {
+                          // Fallback to default image if product image fails to load
+                          (e.target as HTMLImageElement).src = "/attached_assets/IMG-20250531-WA0015.jpg";
+                        }}
                       />
                     </div>
 
