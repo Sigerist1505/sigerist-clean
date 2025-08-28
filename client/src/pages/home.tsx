@@ -150,38 +150,43 @@ const Home = () => {
               </div>
               <div className="flex justify-between items-center p-4 bg-black/40 rounded-lg">
                 <span className="text-lg">• Mochila Milán:</span>
-                <span className="font-bold text-xl">$435,000</span>
+                <span className="font-bold text-xl">$450,000</span>
               </div>
               <div className="flex justify-between items-center p-4 bg-black/40 rounded-lg">
                 <span className="text-lg">• Maleta viajera:</span>
-                <span className="font-bold text-xl">$350,000</span>
+                <span className="font-bold text-xl">$565,000</span>
               </div>
               <div className="flex justify-between items-center p-4 bg-black/40 rounded-lg">
-                <span className="text-lg">• Multifuncional 2:</span>
-                <span className="font-bold text-xl">$445,000</span>
+                <span className="text-lg">• Portadocumentos:</span>
+                <span className="font-bold text-xl">$190,000</span>
               </div>
               <div className="flex justify-between items-center p-4 bg-black/40 rounded-lg">
-                <span className="text-lg">• Multifuncional 3:</span>
-                <span className="font-bold text-xl">$445,000</span>
+                <span className="text-lg">• Portachupetas:</span>
+                <span className="font-bold text-xl">$80,000</span>
               </div>
               <div className="flex justify-between items-center p-4 bg-black/40 rounded-lg">
-                <span className="text-lg">• Lonchera baúl:</span>
-                <span className="font-bold text-xl">$335,000</span>
+                <span className="text-lg">• organizador de mudas:</span>
+                <span className="font-bold text-xl">$60,000</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center p-4 bg-black/40 rounded-lg">
+                <span className="text-lg">• Cambiador:</span>
+                <span className="font-bold text-xl">$105,000</span>
               </div>
             </div>
 
             <div className="border-t border-gray-600 pt-6 mb-8">
               <div className="flex justify-between items-center text-2xl font-bold text-center text-white mb-4">
                 <span>Total normal:</span>
-                <span className="line-through text-gray-400">$2,155,000</span>
+                <span className="line-through text-gray-400">$1,495,000</span>
               </div>
               <div className="flex justify-between items-center text-2xl font-bold text-center mb-4">
-                <span className="text-orange-400">Descuento (29%):</span>
-                <span className="text-orange-400">-$620,500</span>
+                <span className="text-orange-400">Descuento (10%):</span>
+                <span className="text-orange-400">-$159,500</span>
               </div>
               <div className="flex justify-between items-center text-3xl font-bold text-center text-orange-400">
                 <span>Precio final:</span>
-                <span>$1,534,500</span>
+                <span>$1,435,500</span>
               </div>
               <p className="text-center text-lg text-gray-300 mt-4">
                 ¡INCLUYE 1 accesorio GRATIS!
