@@ -95,27 +95,28 @@ export function ProductCard({ product }: ProductCardProps) {
             
             {/* Bordado toggle buttons - only show if product supports embroidery */}
             {hasBordado && (
-              <div className="absolute top-3 left-3 flex gap-2 z-20">
+              <div className="absolute top-3 left-3 flex flex-col gap-2 z-20">
                 <button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     setShowEmbroidery(true);
                   }}
-                  className={`w-10 h-10 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
+                  className={`px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold ${
                     showEmbroidery
-                      ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
-                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
+                      ? "bg-gradient-to-br from-[#ebc005]/95 to-[#d4a804]/95 border-[#ebc005] text-black shadow-[#ebc005]/50 scale-105"
+                      : "bg-black/85 border-[#C0C0C0]/60 text-white hover:border-[#C0C0C0] hover:scale-105"
                   }`}
-                  title="Con bordado"
+                  title="Ver con bordado"
                 >
                   <div
-                    className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
                       showEmbroidery 
-                        ? "bg-white shadow-inner" 
+                        ? "bg-black shadow-inner" 
                         : "bg-gradient-to-br from-[#ebc005] to-[#d4a804] opacity-70"
                     }`}
                   />
+                  <span className="whitespace-nowrap">Con bordado</span>
                 </button>
                 <button
                   onClick={(e) => {
@@ -123,28 +124,22 @@ export function ProductCard({ product }: ProductCardProps) {
                     e.stopPropagation();
                     setShowEmbroidery(false);
                   }}
-                  className={`w-10 h-10 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
+                  className={`px-3 py-2 rounded-lg border-2 transition-all duration-300 flex items-center gap-2 shadow-lg backdrop-blur-sm text-sm font-semibold ${
                     !showEmbroidery
-                      ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
-                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
+                      ? "bg-gradient-to-br from-[#ebc005]/95 to-[#d4a804]/95 border-[#ebc005] text-black shadow-[#ebc005]/50 scale-105"
+                      : "bg-black/85 border-[#C0C0C0]/60 text-white hover:border-[#C0C0C0] hover:scale-105"
                   }`}
-                  title="Sin bordado"
+                  title="Ver sin bordado"
                 >
                   <div
-                    className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                    className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
                       !showEmbroidery 
-                        ? "border-white bg-transparent" 
+                        ? "border-black bg-transparent" 
                         : "border-[#C0C0C0] bg-transparent opacity-70"
                     }`}
                   />
+                  <span className="whitespace-nowrap">Sin bordado</span>
                 </button>
-              </div>
-            )}
-            
-            {/* Status indicator */}
-            {hasBordado && (
-              <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
-                {showEmbroidery ? "Con bordado" : "Sin bordado"}
               </div>
             )}
           </div>
