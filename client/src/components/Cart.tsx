@@ -11,10 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Minus, Plus, Trash2, MessageCircle } from "lucide-react";
-import { useCart } from "@/components/cart-provider";
+import { useCart } from "@/hooks/use-cart";
 import { formatPrice, openWhatsApp } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import type { CartItem } from "@shared/schema";
 
 interface CartProps {
   isOpen: boolean;
@@ -23,10 +22,10 @@ interface CartProps {
 
 export function Cart({ isOpen, onClose }: CartProps) {
   const {
-    items,
-    total,
-    itemCount,
-    updateItem,
+    cartItems: items,
+    cartTotal: total,
+    cartCount: itemCount,
+    updateQuantity,
     removeItem,
     clearCart,
     isLoading,
@@ -76,7 +75,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
       });
       return;
     }
-    if (itemId) updateItem(itemId, newQuantity);
+    if (itemId) updateQuantity({ id: itemId, quantity: newQuantity });
   };
 
   if (isLoading) {
@@ -126,11 +125,16 @@ export function Cart({ isOpen, onClose }: CartProps) {
             <>
               <ScrollArea className="flex-1 pr-4">
                 <div className="space-y-4 py-4">
-                  {items.map((item: CartItem) => (
+                  {items.map((item) => (
                     <div key={item.id} className="border rounded-lg p-4">
                       <div className="flex gap-4">
                         <img
-                          src="/assets/placeholder.jpg"
+                          src={item.product?.imageUrl?.startsWith("/") 
+                            ? item.product.imageUrl 
+                            : item.product?.imageUrl 
+                              ? `/assets/${item.product.imageUrl}` 
+                              : "/assets/placeholder.jpg"
+                          }
                           alt={item.name}
                           className="w-16 h-16 object-cover rounded-lg"
                         />

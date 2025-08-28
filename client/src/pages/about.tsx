@@ -18,7 +18,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="inline-block bg-gradient-to-r from-[#ebc005]/20 to-[#C0C0C0]/20 px-6 py-2 rounded-full mb-6 border border-[#C0C0C0]/30">
-              <span className="text-[#ebc005] font-bold text-sm uppercase tracking-widest">🏆 ARTESANOS DESDE 2018</span>
+              <span className="text-[#ebc005] font-bold text-sm uppercase tracking-widest">🏆 ARTESANOS DESDE 2024</span>
             </div>
             <h1 className="text-6xl font-black text-[#c9a920] mb-8 tracking-wide" style={{textShadow: '0 0 20px rgba(201, 169, 32, 0.6), 0 0 40px rgba(201, 169, 32, 0.3)'}}>
               SIGERIST LUXURY BAGS
