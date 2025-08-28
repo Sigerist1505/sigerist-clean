@@ -140,7 +140,7 @@ function ProductPage() {
       return product.variants?.galleryImages || [product.imageUrl];
     }
     if (!showEmbroidery) {
-      return product.variants?.galleryImages || [product.blankImageUrl || product.imageUrl];
+      return product.variants?.galleryImages || [product.variants?.blankImageUrl || product.imageUrl];
     } else {
       return (
         product.variants?.bordadoGalleryImages ||
