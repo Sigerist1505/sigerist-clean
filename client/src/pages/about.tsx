@@ -198,19 +198,19 @@ export default function About() {
                 step: "01",
                 title: "Diseño Personalizado",
                 description: "Trabajamos contigo para crear un diseño único que capture la esencia de tu historia personal.",
-                image: "/attached_assets/IMG-20250531-WA0003.jpg"
+                image: "/assets/Multifuncional 2 Bordada.jpg"
               },
               {
                 step: "02", 
                 title: "Bordado Artesanal",
                 description: "Nuestros artesanos expertos dan vida al diseño con técnicas tradicionales de bordado de lujo.",
-                image: "/attached_assets/IMG-20250531-WA0008.jpg"
+                image: "/assets/Bolso Rosadito Bordado Minifantasy.jpg"
               },
               {
                 step: "03",
                 title: "Acabados de Lujo",
                 description: "Cada detalle se perfecciona con materiales premium y controles de calidad rigurosos.",
-                image: "/attached_assets/IMG-20250531-WA0015.jpg"
+                image: "/assets/Stitch Blanco.jpg"
               }
             ].map((process, index) => (
               <Card key={index} className="bg-gradient-to-br from-black to-gray-900 border-2 border-[#C0C0C0]/50 hover:border-[#ebc005] transition-all duration-500 hover:scale-105">
