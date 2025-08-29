@@ -72,12 +72,14 @@ export class EmailService {
   async sendEmail(message: EmailMessage): Promise<boolean> {
     if (!this.transporter) {
       console.error('❌ Email service not configured - cannot send email');
+      console.log('💡 To configure email service, set these environment variables:');
+      console.log('   EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD');
       return false;
     }
 
     try {
       const mailOptions = {
-        from: `"Sigerist Luxury Bags" <${this.fromEmail}>`,
+        from: `"SigeristLuxuryBags" <${this.fromEmail}>`,
         to: message.to,
         subject: message.subject,
         html: message.html,
