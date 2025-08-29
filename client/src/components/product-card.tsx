@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false); // Restauramos el estado para "Agregado!"
   const [error, setError] = useState<string | null>(null);
   const [showEmbroidery, setShowEmbroidery] = useState(true); // State for bordado toggle
+  const [imageLoading, setImageLoading] = useState(false); // State for image loading
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -58,8 +59,8 @@ export function ProductCard({ product }: ProductCardProps) {
   // Check if product supports embroidery
   const hasBordado = product.variants?.bordado === true;
   
-  // Determine which image to show
-  const getImageSrc = () => {
+  // Memoize image source calculation to prevent flickering
+  const imgSrc = useMemo(() => {
     let imageUrl = product.imageUrl;
     
     if (hasBordado) {
@@ -68,16 +69,16 @@ export function ProductCard({ product }: ProductCardProps) {
         imageUrl = product.variants?.bordadoImageUrl || product.imageUrl;
       } else {
         // Show non-embroidered version - use blankImageUrl if available, otherwise imageUrl
-        imageUrl = product.blankImageUrl || product.imageUrl;
+        imageUrl = product.variants?.blankImageUrl || product.imageUrl;
       }
     }
     
-    return imageUrl?.startsWith("/") 
+    const finalImageUrl = imageUrl?.startsWith("/") 
       ? imageUrl 
       : `/assets/${imageUrl}`;
-  };
-
-  const imgSrc = getImageSrc() || "/assets/placeholder.jpg";
+      
+    return finalImageUrl || "/assets/placeholder.jpg";
+  }, [product, showEmbroidery, hasBordado]);
 
   return (
     <Link href={`/product/${product.id}`} className="group">
@@ -85,32 +86,41 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardContent className="p-6">
           <div className="relative mb-4">
             <div className="w-full h-64 bg-white rounded-xl p-4 border border-[#C0C0C0]/20">
+              {imageLoading && (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+                </div>
+              )}
               <img
                 src={imgSrc}
                 alt={product.name}
-                className="w-full h-full object-contain rounded-lg"
+                className={`w-full h-full object-contain rounded-lg transition-opacity duration-200 ${
+                  imageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
                 loading="lazy"
+                onLoad={() => setImageLoading(false)}
+                onLoadStart={() => setImageLoading(true)}
               />
             </div>
             
             {/* Bordado toggle buttons - only show if product supports embroidery */}
             {hasBordado && (
-              <div className="absolute top-3 left-3 flex gap-2 z-20">
+              <div className="absolute top-3 left-3 flex gap-3 z-20">
                 <button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     setShowEmbroidery(true);
                   }}
-                  className={`w-10 h-10 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
+                  className={`w-12 h-12 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm hover:scale-105 ${
                     showEmbroidery
                       ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
-                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
+                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0]"
                   }`}
                   title="Con bordado"
                 >
                   <div
-                    className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                    className={`w-5 h-5 rounded-full transition-all duration-300 ${
                       showEmbroidery 
                         ? "bg-white shadow-inner" 
                         : "bg-gradient-to-br from-[#ebc005] to-[#d4a804] opacity-70"
@@ -123,15 +133,15 @@ export function ProductCard({ product }: ProductCardProps) {
                     e.stopPropagation();
                     setShowEmbroidery(false);
                   }}
-                  className={`w-10 h-10 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm ${
+                  className={`w-12 h-12 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm hover:scale-105 ${
                     !showEmbroidery
                       ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
-                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0] hover:scale-105"
+                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0]"
                   }`}
                   title="Sin bordado"
                 >
                   <div
-                    className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                    className={`w-5 h-5 rounded-full border-2 transition-all duration-300 ${
                       !showEmbroidery 
                         ? "border-white bg-transparent" 
                         : "border-[#C0C0C0] bg-transparent opacity-70"
