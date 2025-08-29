@@ -163,6 +163,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertOrderSchema.parse(req.body);
       const order = await storage.createOrder(validated);
+      
+      // Send purchase confirmation email
+      try {
+        const items = JSON.parse(validated.items);
+        const firstName = validated.customerName.split(' ')[0] || validated.customerName;
+        const emailSent = await emailService.sendPurchaseConfirmation(
+          validated.customerEmail, 
+          firstName, 
+          order, 
+          items
+        );
+        
+        if (!emailSent) {
+          console.warn(`Failed to send purchase confirmation email to ${validated.customerEmail}`);
+        }
+      } catch (emailError) {
+        console.error("Error sending purchase confirmation email:", emailError);
+        // Don't fail the order if email fails
+      }
+      
       res.json(order);
     } catch (error) {
       if (error instanceof z.ZodError) {

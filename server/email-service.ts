@@ -98,7 +98,7 @@ export class EmailService {
   }
 
   async sendRegistrationConfirmation(to: string, firstName: string): Promise<boolean> {
-    const subject = '¡Bienvenido a Sigerist Luxury Bags! 🎉';
+    const subject = 'Bienvenido a SigeristLuxuryBags';
     const html = `
       <!DOCTYPE html>
       <html>
@@ -116,12 +116,12 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Sigerist Luxury Bags</h1>
+            <h1>SigeristLuxuryBags</h1>
             <p>Bolsos de Lujo Personalizados</p>
           </div>
           <div class="content">
             <h2>¡Hola ${firstName}!</h2>
-            <p>¡Bienvenido a la familia Sigerist! Tu cuenta ha sido creada exitosamente.</p>
+            <p><strong>Bienvenido a SigeristLuxuryBags, Te has registrado con éxito</strong></p>
             <p>Ahora puedes disfrutar de:</p>
             <ul>
               <li>✨ Acceso a nuestra colección exclusiva de bolsos de lujo</li>
@@ -133,10 +133,10 @@ export class EmailService {
               <a href="${process.env.FRONTEND_URL || 'https://sigerist.com'}" class="button">Explorar Productos</a>
             </p>
             <p>Si tienes alguna pregunta, no dudes en contactarnos por WhatsApp al +57 316 018 3418.</p>
-            <p>¡Gracias por elegir Sigerist Luxury Bags!</p>
+            <p>¡Gracias por elegir SigeristLuxuryBags!</p>
           </div>
           <div class="footer">
-            <p>© 2024 Sigerist Luxury Bags - Medellín, Colombia</p>
+            <p>© 2024 SigeristLuxuryBags - Medellín, Colombia</p>
             <p>Este correo fue enviado a ${to}</p>
           </div>
         </div>
@@ -182,6 +182,101 @@ export class EmailService {
           </div>
           <div class="footer">
             <p>© 2024 Sigerist Luxury Bags - Medellín, Colombia</p>
+            <p>Este correo fue enviado a ${to}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return this.sendEmail({ to, subject, html });
+  }
+
+  async sendPurchaseConfirmation(to: string, firstName: string, order: any, items: any[]): Promise<boolean> {
+    const subject = 'Gracias por haber elegido a SigeristLuxuryBags';
+    
+    // Build items list for email
+    let itemsHtml = '';
+    let itemsDescription = '';
+    
+    items.forEach((item) => {
+      itemsHtml += `
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+            <strong>${item.name}</strong><br>
+            ${item.personalization ? `Personalización: ${item.personalization}<br>` : ''}
+            ${item.addNameEmbroidery ? 'Bordado de nombre incluido<br>' : ''}
+            ${item.keychainPersonalization ? `Llavero personalizado: ${item.keychainPersonalization}<br>` : ''}
+            Cantidad: ${item.quantity}
+          </td>
+          <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">
+            $${(item.price * item.quantity).toLocaleString('es-CO')}
+          </td>
+        </tr>
+      `;
+      
+      itemsDescription += `• ${item.name} (Cantidad: ${item.quantity})`;
+      if (item.personalization) itemsDescription += ` - Personalización: ${item.personalization}`;
+      if (item.addNameEmbroidery) itemsDescription += ` - Con bordado de nombre`;
+      if (item.keychainPersonalization) itemsDescription += ` - Llavero: ${item.keychainPersonalization}`;
+      itemsDescription += '\n';
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { text-align: center; background: #000; color: #ebc005; padding: 20px; }
+          .content { padding: 20px; background: #f9f9f9; }
+          .order-details { background: #fff; padding: 15px; border-radius: 5px; margin: 20px 0; }
+          .items-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          .items-table th { background: #000; color: #ebc005; padding: 10px; text-align: left; }
+          .total { font-size: 18px; font-weight: bold; color: #ebc005; text-align: right; padding: 15px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>SigeristLuxuryBags</h1>
+            <p>Confirmación de Compra</p>
+          </div>
+          <div class="content">
+            <h2>¡Hola ${firstName}!</h2>
+            <p><strong>Gracias por haber elegido a SigeristLuxuryBags</strong></p>
+            
+            <div class="order-details">
+              <h3>Detalles de tu Compra</h3>
+              <p><strong>Número de Pedido:</strong> #${order.id}</p>
+              <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-CO')}</p>
+              
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+              
+              <div class="total">
+                Total: $${order.total.toLocaleString('es-CO')}
+              </div>
+            </div>
+            
+            <p>Tu pedido ha sido recibido y está siendo procesado. Te notificaremos cuando esté listo para envío.</p>
+            <p>Si tienes alguna pregunta sobre tu pedido, no dudes en contactarnos por WhatsApp al +57 316 018 3418.</p>
+            <p>¡Gracias nuevamente por elegir SigeristLuxuryBags!</p>
+          </div>
+          <div class="footer">
+            <p>© 2024 SigeristLuxuryBags - Medellín, Colombia</p>
             <p>Este correo fue enviado a ${to}</p>
           </div>
         </div>
