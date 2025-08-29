@@ -2,6 +2,7 @@ import type { Express, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { WompiService } from "./wompi-service";
+import { emailService } from "./email-service";
 import { z } from "zod";
 import {
   insertCartItemSchema,
@@ -470,6 +471,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         shippingAddress: validated.shippingAddress,
       });
 
+      // Send welcome email
+      const firstName = newUser.name.split(' ')[0] || '';
+      const emailSent = await emailService.sendRegistrationConfirmation(newUser.email, firstName);
+      
+      if (!emailSent) {
+        console.warn(`Failed to send welcome email to ${newUser.email}`);
+        // Don't fail the registration if email fails
+      }
+
       // Return user data (excluding password hash)
       const userResponse = {
         id: newUser.id,
@@ -480,7 +490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         user: userResponse,
-        message: "Usuario registrado exitosamente" 
+        message: "Usuario registrado exitosamente. ¡Revisa tu email para la confirmación!" 
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -531,6 +541,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error en login:", error);
       res.status(500).json({ 
         message: "Error al iniciar sesión", 
+        error: errorMessage 
+      });
+    }
+  });
+
+  // Forgot Password - Request Reset Code
+  app.post("/api/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ 
+          message: "El email es requerido" 
+        });
+      }
+
+      // Check if user exists
+      const user = await storage.getRegisteredUserByEmail(email);
+      if (!user) {
+        // Don't reveal if email exists or not for security
+        return res.json({ 
+          message: "Si el email existe, recibirás un código de recuperación en unos minutos." 
+        });
+      }
+
+      // Generate 6-digit reset code
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Save reset code to database
+      const codeCreated = await storage.createPasswordResetCode(email, resetCode);
+      if (!codeCreated) {
+        return res.status(500).json({ 
+          message: "Error al generar el código de recuperación" 
+        });
+      }
+
+      // Send email with reset code
+      const firstName = user.name.split(' ')[0] || '';
+      const emailSent = await emailService.sendPasswordResetCode(email, firstName, resetCode);
+      
+      if (!emailSent) {
+        console.warn(`Failed to send password reset email to ${email}`);
+        // Don't fail the request if email fails - the code was still created
+      }
+
+      res.json({ 
+        message: "Si el email existe, recibirás un código de recuperación en unos minutos." 
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      console.error("Error en forgot password:", error);
+      res.status(500).json({ 
+        message: "Error al procesar la solicitud", 
+        error: errorMessage 
+      });
+    }
+  });
+
+  // Reset Password with Code
+  app.post("/api/reset-password", async (req, res) => {
+    try {
+      const { email, code, newPassword } = req.body;
+
+      if (!email || !code || !newPassword) {
+        return res.status(400).json({ 
+          message: "Email, código y nueva contraseña son requeridos" 
+        });
+      }
+
+      // Validate password strength
+      if (newPassword.length < 8) {
+        return res.status(400).json({ 
+          message: "La contraseña debe tener al menos 8 caracteres" 
+        });
+      }
+
+      // Validate reset code
+      const isValidCode = await storage.validatePasswordResetCode(email, code);
+      if (!isValidCode) {
+        return res.status(400).json({ 
+          message: "Código inválido o expirado" 
+        });
+      }
+
+      // Update password
+      const passwordUpdated = await storage.updateUserPassword(email, newPassword);
+      if (!passwordUpdated) {
+        return res.status(500).json({ 
+          message: "Error al actualizar la contraseña" 
+        });
+      }
+
+      res.json({ 
+        message: "Contraseña actualizada exitosamente" 
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      console.error("Error en reset password:", error);
+      res.status(500).json({ 
+        message: "Error al restablecer la contraseña", 
+        error: errorMessage 
+      });
+    }
+  });
+
+  // Verify Reset Code (optional endpoint for frontend validation)
+  app.post("/api/verify-reset-code", async (req, res) => {
+    try {
+      const { email, code } = req.body;
+
+      if (!email || !code) {
+        return res.status(400).json({ 
+          message: "Email y código son requeridos" 
+        });
+      }
+
+      const isValidCode = await storage.validatePasswordResetCode(email, code);
+      
+      res.json({ 
+        valid: isValidCode,
+        message: isValidCode ? "Código válido" : "Código inválido o expirado"
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      console.error("Error en verify reset code:", error);
+      res.status(500).json({ 
+        message: "Error al verificar el código", 
         error: errorMessage 
       });
     }

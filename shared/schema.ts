@@ -148,6 +148,15 @@ export const registeredUsers = pgTable("registered_users", {
   createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
 });
 
+export const passwordResetCodes = pgTable("password_reset_codes", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(), // Email del usuario
+  code: text("code").notNull(), // Código de 6 dígitos
+  expiresAt: timestamp("expires_at").notNull(), // Fecha de expiración (15 minutos)
+  used: boolean("used").default(false).notNull(), // Si el código ya fue usado
+  createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación
+});
+
 // === SCHEMAS ZOD ===
 export const insertProductSchema = createInsertSchema(products, {
   name: (s) => s.name.min(1),
@@ -222,6 +231,13 @@ export const insertRegisteredUserSchema = createInsertSchema(registeredUsers, {
   shippingAddress: (s) => s.shippingAddress.optional(),
 }).omit({ id: true, createdAt: true });
 
+export const insertPasswordResetCodeSchema = createInsertSchema(passwordResetCodes, {
+  email: (s) => s.email.email(),
+  code: (s) => s.code.length(6, "El código debe tener 6 dígitos"),
+  expiresAt: (s) => s.expiresAt,
+  used: (s) => s.used,
+}).omit({ id: true, createdAt: true });
+
 // === TYPES ===
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -237,3 +253,5 @@ export type EmailCampaign = typeof emailCampaigns.$inferSelect;
 export type InsertEmailCampaign = z.infer<typeof insertEmailCampaignSchema>;
 export type RegisteredUser = typeof registeredUsers.$inferSelect;
 export type InsertRegisteredUser = z.infer<typeof insertRegisteredUserSchema>;
+export type PasswordResetCode = typeof passwordResetCodes.$inferSelect;
+export type InsertPasswordResetCode = z.infer<typeof insertPasswordResetCodeSchema>;
