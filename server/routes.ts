@@ -7,6 +7,7 @@ import {
   insertCartItemSchema,
   insertOrderSchema,
   insertContactMessageSchema,
+  insertRegisteredUserSchema,
 } from "@shared/schema";
 
 // ⚠️ Stripe deshabilitado: NO importamos "stripe" ni exigimos STRIPE_SECRET_KEY.
@@ -443,6 +444,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } else {
       res.status(400).send("Bad Request");
+    }
+  });
+
+  // User Registration
+  app.post("/api/register", async (req, res) => {
+    try {
+      // Validate request data
+      const validated = insertRegisteredUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getRegisteredUserByEmail(validated.email);
+      if (existingUser) {
+        return res.status(400).json({ 
+          message: "El correo electrónico ya está registrado" 
+        });
+      }
+
+      // Create the user
+      const newUser = await storage.createRegisteredUser({
+        email: validated.email,
+        passwordHash: validated.passwordHash, // Will be hashed in storage
+        name: validated.name,
+        phone: validated.phone,
+        shippingAddress: validated.shippingAddress,
+      });
+
+      // Return user data (excluding password hash)
+      const userResponse = {
+        id: newUser.id,
+        firstName: newUser.name.split(' ')[0] || '',
+        lastName: newUser.name.split(' ').slice(1).join(' ') || '',
+        email: newUser.email,
+      };
+
+      res.json({ 
+        user: userResponse,
+        message: "Usuario registrado exitosamente" 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Datos inválidos", 
+          errors: error.errors 
+        });
+      }
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      console.error("Error en registro:", error);
+      res.status(500).json({ 
+        message: "Error en el registro", 
+        error: errorMessage 
+      });
+    }
+  });
+
+  // User Login
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ 
+          message: "Email y contraseña son requeridos" 
+        });
+      }
+
+      // Authenticate user
+      const user = await storage.authenticateUser(email, password);
+      if (!user) {
+        return res.status(401).json({ 
+          message: "Credenciales incorrectas" 
+        });
+      }
+
+      // Return user data (excluding password hash)
+      const userResponse = {
+        id: user.id,
+        firstName: user.name.split(' ')[0] || '',
+        lastName: user.name.split(' ').slice(1).join(' ') || '',
+        email: user.email,
+      };
+
+      res.json(userResponse);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      console.error("Error en login:", error);
+      res.status(500).json({ 
+        message: "Error al iniciar sesión", 
+        error: errorMessage 
+      });
     }
   });
 
