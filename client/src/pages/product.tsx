@@ -60,23 +60,192 @@ function ProductPage() {
     retry: 1,
   });
 
+  // Dynamic mock product mapping based on product ID
+  const getMockProduct = (id: number) => {
+    const mockProducts: Record<number, any> = {
+      1: {
+        id: 1,
+        name: "Pañalera Multifuncional",
+        description: "Pañalera multifuncional con bordado personalizado y múltiples compartimentos - ¡Nuestro producto estrella!",
+        price: 445000,
+        category: "Pañaleras",
+        imageUrl: "/assets/Multifuncional 3 Bordada.jpg",
+        inStock: true,
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/assets/Multifuncional 3 Bordada.jpg",
+          blankImageUrl: "/assets/Multifuncional 3 sin Bordado.jpg",
+          galleryImages: ["/assets/Multifuncional 3sinB.jpg"],
+          bordadoGalleryImages: [
+            "/assets/Multifuncional 3 Bordada.jpg",
+            "/assets/Multifuncional 2 Bordada.jpg",
+          ],
+        }
+      },
+      2: {
+        id: 2,
+        name: "Organizador de Higiene",
+        description: "Organizador de higiene transparente con bordado personalizado de flores - Perfecto para viajes",
+        price: 145000,
+        category: "Organizadores",
+        imageUrl: "/assets/Organizador Bordado.jpg",
+        inStock: true,
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/assets/Organizador Bordado.jpg",
+          blankImageUrl: "/assets/Organizador_Sin bordar.jpg",
+          galleryImages: ["/assets/Organizador_Sin bordar.jpg"],
+          bordadoGalleryImages: ["/assets/Organizador Bordado.jpg"],
+        }
+      },
+      3: {
+        id: 3,
+        name: "Mochila Clásica",
+        description: "Mochila clásica con bordado de leoncito adorable y acabados premium en beige y café",
+        price: 425000,
+        category: "Mochilas",
+        imageUrl: "/assets/Mochila clasica.jpg",
+        inStock: true,
+        variants: {
+          bordado: false,
+          galleryImages: ["/assets/Mochila clasica.jpg"],
+        }
+      },
+      4: {
+        id: 4,
+        name: "Bolso Mariposa",
+        description: "Elegante bolso con diseño de mariposa y bordado personalizado. Perfecto para el día a día con un toque de distinción.",
+        price: 285000,
+        category: "Bolsos",
+        imageUrl: "/assets/Bolsito Mariposa.jpg",
+        inStock: true,
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/assets/Bolsito Mariposa.jpg",
+          blankImageUrl: "/assets/Bolso Mariposa sin Bordar.jpg",
+          galleryImages: ["/assets/Bolso Mariposa sin Bordar.jpg"],
+          bordadoGalleryImages: ["/assets/Bolsito Mariposa.jpg"]
+        }
+      },
+      5: {
+        id: 5,
+        name: "Organizador de Mudas",
+        description: "Organizador de mudas con bordado personalizado y diseño práctico",
+        price: 145000,
+        category: "Organizadores",
+        imageUrl: "/assets/Organizador_Bordado.jpg",
+        inStock: true,
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/assets/Organizador_Bordado.jpg",
+          blankImageUrl: "/assets/Organizador.jpg",
+          galleryImages: ["/assets/Organizador.jpg"],
+          bordadoGalleryImages: ["/assets/Organizador_Bordado.jpg"],
+        }
+      },
+      6: {
+        id: 6,
+        name: "Mochila León",
+        description: "Mochila con bordado de león y acabados premium",
+        price: 435000,
+        category: "Mochilas",
+        imageUrl: "/assets/Mochila leon.jpg",
+        inStock: true,
+        variants: {
+          bordado: false,
+        }
+      },
+      7: {
+        id: 7,
+        name: "Mochila Milano",
+        description: "Mochila Milano con diseño elegante y bordado de leoncito premium",
+        price: 435000,
+        category: "Mochilas",
+        imageUrl: "/assets/MaletaMilan_ConBordado_1754093212912.jpg",
+        inStock: true,
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/assets/MaletaMilan_ConBordado_1754093212912.jpg",
+          blankImageUrl: "/assets/Maleta_Milan_SinBordar_1754094149304.jpg",
+        }
+      },
+      8: {
+        id: 8,
+        name: "Cambiador",
+        description: "Cambiador portátil con diseño funcional y elegante - Solo disponible sin bordado",
+        price: 105000,
+        category: "Accesorios",
+        imageUrl: "/assets/Cambiador_1754094149302.jpg",
+        inStock: true,
+        variants: {
+          bordado: false,
+        }
+      },
+      9: {
+        id: 9,
+        name: "Lonchera Porta Biberones",
+        description: "Lonchera porta biberones con bordado de osita personalizado",
+        price: 335000,
+        category: "Loncheras",
+        imageUrl: "/assets/Porta Biberones_Bordado.jpg",
+        inStock: true,
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/assets/Porta Biberones_Bordado.jpg",
+          blankImageUrl: "/assets/PortaBiberones_SinBordar.jpg",
+          galleryImages: ["/assets/PortaBiberones_SinBordar.jpg"],
+          bordadoGalleryImages: ["/assets/Porta Biberones_Bordado.jpg"],
+        }
+      },
+      10: {
+        id: 10,
+        name: "Lonchera Baul",
+        description: "Lonchera baúl con bordado de osito y acabados premium con moño azul",
+        price: 335000,
+        category: "Loncheras",
+        imageUrl: "/assets/Lonchera baul.jpg",
+        inStock: true,
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/assets/Lonchera baul.jpg",
+          blankImageUrl: "/assets/Lonchera baul sin bordar.jpg",
+          galleryImages: ["/assets/Lonchera baul sin bordar.jpg"],
+          bordadoGalleryImages: ["/assets/Lonchera baul.jpg"],
+        }
+      },
+      11: {
+        id: 11,
+        name: "Maleta Viajera",
+        description: "Maleta viajera con diseño floral bordado y detalles en rosa",
+        price: 550000,
+        category: "Maletas",
+        imageUrl: "/assets/Maleta viajera_Bordada_1754093212912.jpg",
+        inStock: true,
+        variants: {
+          bordado: true,
+          bordadoImageUrl: "/assets/Maleta viajera_Bordada_1754093212912.jpg",
+          blankImageUrl: "/assets/Maleta Viajera_Sin bordar_1754094149303.jpg",
+        }
+      },
+      12: {
+        id: 12,
+        name: "Portachupeta",
+        description: "Portachupeta elegante con bordado personalizado y acabados premium",
+        price: 80000,
+        category: "Accesorios",
+        imageUrl: "/assets/Portachupeta.jpg",
+        inStock: true,
+        variants: {
+          bordado: false,
+        }
+      }
+    };
+
+    return mockProducts[id] || null;
+  };
+
   // For development testing - fallback to mock data when API fails
-  const mockProduct = productId && (error || !product) ? {
-    id: productId,
-    name: "Bolso Mariposa Bordado",
-    description: "Elegante bolso con diseño de mariposa y bordado personalizado. Perfecto para el día a día con un toque de distinción.",
-    price: 285000,
-    category: "Bolsos",
-    imageUrl: "/assets/Bolsito Mariposa.jpg",
-    inStock: true,
-    variants: {
-      bordado: true,
-      bordadoImageUrl: "/assets/Bolsito Mariposa.jpg",
-      blankImageUrl: "/assets/Bolso Mariposa sin Bordar.jpg",
-      galleryImages: ["/assets/Bolsito Mariposa.jpg"],
-      bordadoGalleryImages: ["/assets/Bolsito Mariposa.jpg"]
-    }
-  } : null;
+  const mockProduct = productId && (error || !product) ? getMockProduct(productId) : null;
 
   // Use product from API or fallback to mock data for UI testing
   const finalProduct = product || mockProduct;
