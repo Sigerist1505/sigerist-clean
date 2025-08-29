@@ -18,6 +18,7 @@ import ChatbotTestPage from "@/pages/chatbot-test";
 import CustomizePage from "@/pages/customize";
 import RegisterPage from "@/pages/register";
 import LoginPage from "@/pages/login";
+import ForgotPasswordPage from "@/pages/forgot-password";
 import NotFound from "@/pages/not-found";
 import FAQ from "@/pages/faq";
 import ProductsPage from "@/pages/products"; // Asegúrate de crear este archivo
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/wompi-demo" component={WompiDemoPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/chatbot-test" component={ChatbotTestPage} />
       <Route path="/faq" component={FAQ} />
       <Route path="/productos" component={ProductsPage} /> {/* Nueva ruta */}

@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, lt } from "drizzle-orm";
 import * as bcrypt from "bcryptjs";
 import {
   products,
@@ -7,6 +7,7 @@ import {
   orders,
   contactMessages,
   registeredUsers,
+  passwordResetCodes,
   whatsappSessions,
   emailCampaigns,
   type Product,
@@ -20,6 +21,8 @@ import {
   type InsertContactMessage,
   type RegisteredUser,
   type InsertRegisteredUser,
+  type PasswordResetCode,
+  type InsertPasswordResetCode,
   type WhatsappSession,
   type InsertWhatsappSession,
 } from "@shared/schema";
@@ -74,6 +77,12 @@ export interface IStorage {
 
   // Authentication
   authenticateUser(email: string, password: string): Promise<RegisteredUser | null>;
+
+  // Password Reset
+  createPasswordResetCode(email: string, code: string): Promise<boolean>;
+  validatePasswordResetCode(email: string, code: string): Promise<boolean>;
+  updateUserPassword(email: string, newPasswordHash: string): Promise<boolean>;
+  cleanupExpiredResetCodes(): Promise<void>;
 
   // WhatsApp Sessions
   getWhatsappSession(phoneNumber: string): Promise<WhatsappSession | undefined>;
@@ -374,6 +383,101 @@ export class DatabaseStorage implements IStorage {
     }
 
     return user;
+  }
+
+  // Password Reset
+  async createPasswordResetCode(email: string, code: string): Promise<boolean> {
+    try {
+      // First, clean up any existing codes for this email
+      await db
+        .delete(passwordResetCodes)
+        .where(eq(passwordResetCodes.email, email.toLowerCase()));
+
+      // Create new reset code with 15-minute expiration
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+      await db.insert(passwordResetCodes).values({
+        email: email.toLowerCase(),
+        code,
+        expiresAt,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error creating password reset code:", error);
+      return false;
+    }
+  }
+
+  async validatePasswordResetCode(email: string, code: string): Promise<boolean> {
+    try {
+      const [resetCode] = await db
+        .select()
+        .from(passwordResetCodes)
+        .where(eq(passwordResetCodes.email, email.toLowerCase()));
+
+      if (!resetCode) {
+        return false;
+      }
+
+      // Check if code matches
+      if (resetCode.code !== code) {
+        return false;
+      }
+
+      // Check if code has been used
+      if (resetCode.used) {
+        return false;
+      }
+
+      // Check if code has expired
+      if (new Date() > resetCode.expiresAt) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error validating password reset code:", error);
+      return false;
+    }
+  }
+
+  async updateUserPassword(email: string, newPasswordHash: string): Promise<boolean> {
+    try {
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(newPasswordHash, saltRounds);
+
+      // Update user password
+      const result = await db
+        .update(registeredUsers)
+        .set({ passwordHash: hashedPassword })
+        .where(eq(registeredUsers.email, email.toLowerCase()));
+
+      // Mark the reset code as used
+      await db
+        .update(passwordResetCodes)
+        .set({ used: true })
+        .where(eq(passwordResetCodes.email, email.toLowerCase()));
+
+      return true;
+    } catch (error) {
+      console.error("Error updating user password:", error);
+      return false;
+    }
+  }
+
+  async cleanupExpiredResetCodes(): Promise<void> {
+    try {
+      const now = new Date();
+      await db
+        .delete(passwordResetCodes)
+        .where(lt(passwordResetCodes.expiresAt, now));
+      
+      console.log("Cleaned up expired password reset codes");
+    } catch (error) {
+      console.error("Error cleaning up expired reset codes:", error);
+    }
   }
 
   // WhatsApp Sessions
