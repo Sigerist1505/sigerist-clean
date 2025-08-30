@@ -85,3 +85,4 @@ app.get("/api/health", (_req, res) => {
   process.exit(1);
 });
 export { app };
+export { EmailService, emailService } from "./email-service";
