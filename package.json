@@ -10,6 +10,7 @@
     "postbuild": "cpx \"client/public/assets/**/*\" dist/public/assets",
     "start": "node dist/index.cjs",
     "migrate": "node migrate-clean.js",
+    "migrate:auth": "node migrate-auth-tables.js",
     "migrate:cart": "node migrate-cart-items.js",
     "fix:add-name-embroidery": "node fix-add-name-embroidery-column.js",
     "fix:cart-schema": "node comprehensive-cart-fix.js",
