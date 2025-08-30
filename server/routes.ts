@@ -565,7 +565,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       req.session.user = userResponse;
 
-      res.json(userResponse);
+      // Ensure session is saved before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Error saving session:", err);
+          return res.status(500).json({ 
+            message: "Error al guardar la sesión" 
+          });
+        }
+        res.json(userResponse);
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Error desconocido";
       console.error("Error en login:", error);

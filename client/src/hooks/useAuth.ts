@@ -40,6 +40,10 @@ export function useAuth() {
     // No need for localStorage since we're using server sessions
   };
 
+  const refreshAuthStatus = () => {
+    return checkAuthStatus();
+  };
+
   const logout = async () => {
     try {
       await fetch('/api/logout', { method: 'POST' });
@@ -57,5 +61,6 @@ export function useAuth() {
     isLoading,
     login,
     logout,
+    refreshAuthStatus,
   };
 }
