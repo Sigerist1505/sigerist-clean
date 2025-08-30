@@ -402,6 +402,7 @@ export class DatabaseStorage implements IStorage {
         code,
         expiresAt,
         used: false, // Explicitly set used to false
+        createdAt: new Date(), // Explicitly set createdAt to current timestamp
       });
 
       return true;
