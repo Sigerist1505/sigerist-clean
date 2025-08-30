@@ -12,6 +12,7 @@
     "migrate": "node migrate-clean.js",
     "migrate:auth": "node migrate-auth-tables.js",
     "migrate:cart": "node migrate-cart-items.js",
+    "test:auth-fixes": "node test-auth-fixes.js",
     "fix:add-name-embroidery": "node fix-add-name-embroidery-column.js",
     "fix:cart-schema": "node comprehensive-cart-fix.js",
     "audit:cart-schema": "node audit-cart-schema.js",
