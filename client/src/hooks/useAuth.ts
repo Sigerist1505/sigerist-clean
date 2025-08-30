@@ -23,16 +23,13 @@ export function useAuth() {
         const data = await response.json();
         if (data.isAuthenticated && data.user) {
           setUser(data.user);
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
         } else {
           setUser(null);
-          localStorage.removeItem('currentUser');
         }
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
       setUser(null);
-      localStorage.removeItem('currentUser');
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +37,7 @@ export function useAuth() {
 
   const login = (userData: User) => {
     setUser(userData);
-    localStorage.setItem('currentUser', JSON.stringify(userData));
+    // No need for localStorage since we're using server sessions
   };
 
   const logout = async () => {
@@ -50,7 +47,6 @@ export function useAuth() {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
-      localStorage.removeItem('currentUser');
       window.location.reload(); // Refresh page to clear any cached state
     }
   };

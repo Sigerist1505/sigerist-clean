@@ -77,8 +77,8 @@ export default function LoginPage() {
         description: `Bienvenido de vuelta, ${data.firstName}!`,
         variant: "default",
       });
-      // Force a page reload to ensure navbar updates
-      window.location.href = "/";
+      // Navigate to home page
+      setLocation("/");
     },
     onError: (error) => {
       console.error("Login mutation error:", error);

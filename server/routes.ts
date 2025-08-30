@@ -10,6 +10,7 @@ import {
   insertContactMessageSchema,
   insertRegisteredUserSchema,
 } from "@shared/schema";
+import "./types"; // Import session types
 
 // ⚠️ Stripe deshabilitado: NO importamos "stripe" ni exigimos STRIPE_SECRET_KEY.
 function stripeGuard(res: Response) {
@@ -508,6 +509,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: newUser.email,
       };
 
+      // Store user data in session after successful registration
+      req.session.user = userResponse;
+
       res.json({ 
         user: userResponse,
         message: "Usuario registrado exitosamente. ¡Revisa tu email para la confirmación!" 
@@ -547,13 +551,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Return user data (excluding password hash)
+      // Store user data in session
       const userResponse = {
         id: user.id,
         firstName: user.name.split(' ')[0] || '',
         lastName: user.name.split(' ').slice(1).join(' ') || '',
         email: user.email,
       };
+
+      req.session.user = userResponse;
 
       res.json(userResponse);
     } catch (error) {
@@ -564,6 +570,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: errorMessage 
       });
     }
+  });
+
+  // User Logout
+  app.post("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        return res.status(500).json({ 
+          message: "Error al cerrar sesión" 
+        });
+      }
+      
+      res.clearCookie('connect.sid'); // Clear the session cookie
+      res.json({ 
+        message: "Sesión cerrada exitosamente" 
+      });
+    });
   });
 
   // Forgot Password - Request Reset Code
@@ -693,9 +716,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth (dummy)
-  app.get("/api/auth/check", (_req, res) => {
-    res.json({ isAuthenticated: false, user: null });
+  // Auth check - return actual session data
+  app.get("/api/auth/check", (req, res) => {
+    if (req.session.user) {
+      res.json({ 
+        isAuthenticated: true, 
+        user: req.session.user 
+      });
+    } else {
+      res.json({ 
+        isAuthenticated: false, 
+        user: null 
+      });
+    }
   });
 
   const server = createServer(app);
