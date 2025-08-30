@@ -7,6 +7,11 @@ export interface EmailConfig {
   secure: boolean;
   user: string;
   password: string;
+  dkim?: {
+    domainName: string;
+    keySelector: string;
+    privateKey: string;
+  };
 }
 
 export interface EmailMessage {
@@ -34,7 +39,7 @@ export class EmailService {
     }
 
     try {
-      this.transporter = nodemailer.createTransport({
+      const transportConfig: any = {
         host: emailConfig.host,
         port: emailConfig.port,
         secure: emailConfig.secure,
@@ -42,7 +47,19 @@ export class EmailService {
           user: emailConfig.user,
           pass: emailConfig.password,
         },
-      });
+      };
+
+      // Add DKIM configuration if available
+      if (emailConfig.dkim) {
+        transportConfig.dkim = {
+          domainName: emailConfig.dkim.domainName,
+          keySelector: emailConfig.dkim.keySelector,
+          privateKey: emailConfig.dkim.privateKey,
+        };
+        console.log('🔐 DKIM signing enabled for domain:', emailConfig.dkim.domainName);
+      }
+
+      this.transporter = nodemailer.createTransport(transportConfig);
 
       console.log('✅ Email service initialized successfully');
     } catch (error) {
@@ -60,13 +77,31 @@ export class EmailService {
       return null;
     }
 
-    return {
+    const config: EmailConfig = {
       host: process.env.EMAIL_HOST!,
       port: parseInt(process.env.EMAIL_PORT!),
       secure: process.env.EMAIL_SECURE === 'true',
       user: process.env.EMAIL_USER!,
       password: process.env.EMAIL_PASSWORD!,
     };
+
+    // Add DKIM configuration if all DKIM variables are present
+    const dkimVars = ['DKIM_DOMAIN', 'DKIM_SELECTOR', 'DKIM_PRIVATE_KEY'];
+    const dkimMissing = dkimVars.filter(varName => !process.env[varName]);
+    
+    if (dkimMissing.length === 0) {
+      config.dkim = {
+        domainName: process.env.DKIM_DOMAIN!,
+        keySelector: process.env.DKIM_SELECTOR!,
+        privateKey: process.env.DKIM_PRIVATE_KEY!,
+      };
+      console.log('🔐 DKIM configuration loaded for domain:', config.dkim.domainName);
+    } else {
+      console.log('⚠️ DKIM not configured - missing:', dkimMissing.join(', '));
+      console.log('💡 For better email deliverability, configure DKIM signing');
+    }
+
+    return config;
   }
 
   async sendEmail(message: EmailMessage): Promise<boolean> {
@@ -80,6 +115,10 @@ export class EmailService {
       console.log('   EMAIL_USER:', process.env.EMAIL_USER ? '✅ Set' : '❌ Missing');
       console.log('   EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '✅ Set' : '❌ Missing');
       console.log('   EMAIL_FROM:', process.env.EMAIL_FROM ? '✅ Set' : '❌ Missing (will use default)');
+      console.log('🔐 DKIM configuration status:');
+      console.log('   DKIM_DOMAIN:', process.env.DKIM_DOMAIN ? '✅ Set' : '⚠️ Missing (optional)');
+      console.log('   DKIM_SELECTOR:', process.env.DKIM_SELECTOR ? '✅ Set' : '⚠️ Missing (optional)');
+      console.log('   DKIM_PRIVATE_KEY:', process.env.DKIM_PRIVATE_KEY ? '✅ Set' : '⚠️ Missing (optional)');
       return false;
     }
 
@@ -371,9 +410,13 @@ export class EmailService {
   }
 
   // Get email configuration status for diagnostics
-  getConfigurationStatus(): { configured: boolean; missingVars: string[]; config: any } {
+  getConfigurationStatus(): { configured: boolean; missingVars: string[]; config: any; dkim: any } {
     const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASSWORD'];
     const missingVars = requiredVars.filter(varName => !process.env[varName]);
+    
+    const dkimVars = ['DKIM_DOMAIN', 'DKIM_SELECTOR', 'DKIM_PRIVATE_KEY'];
+    const dkimMissing = dkimVars.filter(varName => !process.env[varName]);
+    const dkimConfigured = dkimMissing.length === 0;
     
     return {
       configured: missingVars.length === 0,
@@ -385,6 +428,13 @@ export class EmailService {
         from: process.env.EMAIL_FROM || this.fromEmail,
         secure: process.env.EMAIL_SECURE,
         hasPassword: !!process.env.EMAIL_PASSWORD
+      },
+      dkim: {
+        configured: dkimConfigured,
+        missingVars: dkimMissing,
+        domain: process.env.DKIM_DOMAIN,
+        selector: process.env.DKIM_SELECTOR,
+        hasPrivateKey: !!process.env.DKIM_PRIVATE_KEY
       }
     };
   }
