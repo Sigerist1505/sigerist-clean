@@ -1,4 +1,23 @@
-# 📧 Configuración de Email con Namecheap - Sigerist Luxury Bags
+# 📧 Configuración de Email - Sigerist Luxury Bags
+
+## 🚀 Nueva Opción: SMTP2GO API (Recomendado para Railway)
+
+**¡Configuración actualizada!** Ahora soportamos SMTP2GO API para resolver problemas de bloqueo SMTP en Railway.
+
+### Opción 1: SMTP2GO API (Recomendado)
+```env
+SMTP2GO_API_KEY=api-4CD6CD4114304458A8C441E6FFC36D52
+EMAIL_FROM=info@sigeristluxurybags.com
+```
+
+**Ventajas**:
+- ✅ Compatible con Railway (sin bloqueo de puertos SMTP)
+- ✅ Más confiable que SMTP tradicional
+- ✅ Mejor monitoreo y logging
+- ✅ Configuración simple
+
+### Opción 2: SMTP Tradicional (Respaldo)
+Si prefieres usar SMTP tradicional, la configuración original sigue funcionando:
 
 ## Resumen
 
