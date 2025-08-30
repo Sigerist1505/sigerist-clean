@@ -47,14 +47,19 @@ export class EmailService {
           user: emailConfig.user,
           pass: emailConfig.password,
         },
-        // Timeout configurations to prevent connection timeouts
-        connectionTimeout: 60000, // 60 seconds to establish connection
-        socketTimeout: 60000, // 60 seconds of socket inactivity
-        greetingTimeout: 30000, // 30 seconds to wait for greeting
+        // Enhanced timeout configurations for unreliable networks
+        connectionTimeout: 120000, // 2 minutes to establish connection
+        socketTimeout: 120000, // 2 minutes of socket inactivity
+        greetingTimeout: 60000, // 1 minute to wait for greeting
         // Connection pooling for better performance
         pool: true,
         maxConnections: 5,
         maxMessages: 100,
+        // Additional reliability settings
+        requireTLS: !emailConfig.secure, // Use STARTTLS for non-secure connections
+        tls: {
+          rejectUnauthorized: false // Allow self-signed certificates
+        }
       };
 
       // Add DKIM configuration if available
@@ -130,60 +135,94 @@ export class EmailService {
       return false;
     }
 
-    try {
-      console.log(`📧 Attempting to send email to: ${message.to}`);
-      console.log(`📧 Subject: ${message.subject}`);
-      
-      const mailOptions = {
-        from: `"SigeristLuxuryBags" <${this.fromEmail}>`,
-        to: message.to,
-        subject: message.subject,
-        html: message.html,
-        text: message.text || this.stripHtml(message.html),
-      };
+    const maxRetries = 3;
+    const baseDelay = 5000; // 5 seconds base delay
 
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log('✅ Email sent successfully:', {
-        to: message.to,
-        subject: message.subject,
-        messageId: result.messageId,
-        timestamp: new Date().toISOString()
-      });
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to send email:', {
-        to: message.to,
-        subject: message.subject,
-        error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString()
-      });
-      
-      // More detailed error information
-      if (error instanceof Error) {
-        console.error('📧 Email Error Details:', {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`📧 Attempting to send email to: ${message.to} (attempt ${attempt}/${maxRetries})`);
+        console.log(`📧 Subject: ${message.subject}`);
+        
+        const mailOptions = {
+          from: `"SigeristLuxuryBags" <${this.fromEmail}>`,
+          to: message.to,
+          subject: message.subject,
+          html: message.html,
+          text: message.text || this.stripHtml(message.html),
+        };
+
+        const result = await this.transporter.sendMail(mailOptions);
+        console.log('✅ Email sent successfully:', {
+          to: message.to,
+          subject: message.subject,
+          messageId: result.messageId,
+          timestamp: new Date().toISOString(),
+          attempt: attempt
+        });
+        return true;
+      } catch (error) {
+        const isLastAttempt = attempt === maxRetries;
+        const isTimeoutError = error instanceof Error && 
+          (error.message.includes('timeout') || error.message.includes('Connection timeout'));
+
+        console.error(`❌ Failed to send email (attempt ${attempt}/${maxRetries}):`, {
+          to: message.to,
+          subject: message.subject,
+          error: error instanceof Error ? error.message : String(error),
+          timestamp: new Date().toISOString()
         });
         
-        // Common email configuration issues
-        if (error.message.includes('ECONNREFUSED')) {
-          console.error('💡 Connection refused - check EMAIL_HOST and EMAIL_PORT');
-        } else if (error.message.includes('authentication')) {
-          console.error('💡 Authentication failed - check EMAIL_USER and EMAIL_PASSWORD');
-        } else if (error.message.includes('Invalid mail command')) {
-          console.error('💡 Invalid email format - check EMAIL_FROM and recipient email');
-        } else if (error.message.includes('timeout') || error.message.includes('Connection timeout')) {
-          console.error('💡 Connection timeout - check network connectivity and SMTP server availability');
-          console.error('   Try using a different EMAIL_HOST or EMAIL_PORT (e.g., 465 with secure=true)');
-          console.error('   Current config: host=' + process.env.EMAIL_HOST + ', port=' + process.env.EMAIL_PORT + ', secure=' + process.env.EMAIL_SECURE);
-        } else if (error.message.includes('ENOTFOUND')) {
-          console.error('💡 DNS lookup failed - check EMAIL_HOST value');
+        // More detailed error information
+        if (error instanceof Error) {
+          console.error('📧 Email Error Details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+          });
+          
+          // Common email configuration issues with enhanced timeout guidance
+          if (error.message.includes('ECONNREFUSED')) {
+            console.error('💡 Connection refused - check EMAIL_HOST and EMAIL_PORT');
+          } else if (error.message.includes('authentication')) {
+            console.error('💡 Authentication failed - check EMAIL_USER and EMAIL_PASSWORD');
+          } else if (error.message.includes('Invalid mail command')) {
+            console.error('💡 Invalid email format - check EMAIL_FROM and recipient email');
+          } else if (isTimeoutError) {
+            console.error('💡 Connection timeout - check network connectivity and SMTP server availability');
+            
+            if (isLastAttempt) {
+              console.error('🔧 Recommended solutions for persistent timeouts:');
+              console.error('   1. Try alternative SMTP configuration:');
+              console.error('      EMAIL_HOST=mail.privateemail.com (instead of smtp.privateemail.com)');
+              console.error('      EMAIL_PORT=587');
+              console.error('      EMAIL_SECURE=false');
+              console.error('   2. Check firewall settings and network connectivity');
+              console.error('   3. Contact your email provider to verify SMTP settings');
+              console.error('   4. Consider using alternative email service (Gmail SMTP, SendGrid, etc.)');
+            }
+            console.error('   Current config: host=' + process.env.EMAIL_HOST + ', port=' + process.env.EMAIL_PORT + ', secure=' + process.env.EMAIL_SECURE);
+          } else if (error.message.includes('ENOTFOUND')) {
+            console.error('💡 DNS lookup failed - check EMAIL_HOST value');
+          }
         }
+        
+        // If this isn't the last attempt and it's a timeout error, wait and retry
+        if (!isLastAttempt && isTimeoutError) {
+          const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
+          console.log(`⏳ Waiting ${delay}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        // If it's the last attempt or not a timeout error, return false
+        if (isLastAttempt) {
+          console.error(`❌ Failed to send email after ${maxRetries} attempts. Email delivery failed.`);
+        }
+        return false;
       }
-      
-      return false;
     }
+    
+    return false;
   }
 
   async sendRegistrationConfirmation(to: string, firstName: string): Promise<boolean> {
@@ -418,11 +457,80 @@ export class EmailService {
           console.error('💡 Connection timeout - check network connectivity and EMAIL_HOST');
           console.error('   Try using a different EMAIL_HOST or EMAIL_PORT configuration');
           console.error('   Current config: host=' + process.env.EMAIL_HOST + ', port=' + process.env.EMAIL_PORT + ', secure=' + process.env.EMAIL_SECURE);
+          
+          // If connection test fails due to timeout, try fallback configuration
+          console.log('🔄 Attempting fallback configuration...');
+          return await this.tryFallbackConfiguration();
         }
       }
       
       return false;
     }
+  }
+
+  // Try alternative SMTP configurations for better reliability
+  private async tryFallbackConfiguration(): Promise<boolean> {
+    const currentHost = process.env.EMAIL_HOST;
+    const fallbackConfigs = [
+      // Namecheap alternative configuration
+      {
+        host: 'mail.privateemail.com',
+        port: 587,
+        secure: false,
+        description: 'Namecheap Private Email (TLS)'
+      },
+      // Alternative Namecheap configuration
+      {
+        host: 'smtp.privateemail.com',
+        port: 587,
+        secure: false,
+        description: 'Namecheap Private Email Alt (TLS)'
+      }
+    ];
+
+    for (const config of fallbackConfigs) {
+      // Skip if this is already the current configuration
+      if (currentHost === config.host) continue;
+
+      console.log(`🔄 Trying fallback: ${config.description}`);
+      
+      try {
+        const fallbackTransportConfig = {
+          host: config.host,
+          port: config.port,
+          secure: config.secure,
+          auth: {
+            user: process.env.EMAIL_USER!,
+            pass: process.env.EMAIL_PASSWORD!,
+          },
+          connectionTimeout: 120000,
+          socketTimeout: 120000,
+          greetingTimeout: 60000,
+          requireTLS: !config.secure,
+          tls: {
+            rejectUnauthorized: false
+          }
+        };
+
+        const testTransporter = nodemailer.createTransporter(fallbackTransportConfig);
+        await testTransporter.verify();
+        
+        console.log(`✅ Fallback configuration works: ${config.description}`);
+        console.log(`💡 Consider updating your .env file with:`);
+        console.log(`   EMAIL_HOST=${config.host}`);
+        console.log(`   EMAIL_PORT=${config.port}`);
+        console.log(`   EMAIL_SECURE=${config.secure}`);
+        
+        // Update the current transporter to use the working configuration
+        this.transporter = testTransporter;
+        return true;
+      } catch (error) {
+        console.log(`❌ Fallback failed: ${config.description} - ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    console.error('❌ All fallback configurations failed');
+    return false;
   }
 
   // Get email configuration status for diagnostics
