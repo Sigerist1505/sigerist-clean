@@ -29,6 +29,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // Email service status endpoint
+  app.get("/api/email/status", async (_req, res) => {
+    try {
+      const status = emailService.getConfigurationStatus();
+      const connectionTest = await emailService.testConnection();
+      
+      res.json({
+        configured: status.configured,
+        connectionWorking: connectionTest,
+        missingVariables: status.missingVars,
+        configuration: status.config,
+        dkim: status.dkim,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({
+        configured: false,
+        connectionWorking: false,
+        error: errorMessage,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Products
   app.get("/api/products", async (_req, res) => {
     try {
@@ -476,6 +501,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User Registration
   app.post("/api/register", async (req, res) => {
     try {
+      console.log('📧 Registration request received:', { 
+        email: req.body.email, 
+        name: req.body.name,
+        acceptsMarketing: req.body.acceptsMarketing
+      });
+      
       // Validate request data
       const validated = insertRegisteredUserSchema.parse(req.body);
       
@@ -496,13 +527,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         shippingAddress: validated.shippingAddress,
       });
 
-      // Send welcome email
+      // Send welcome email only if user accepts marketing
       const firstName = newUser.name.split(' ')[0] || '';
-      const emailSent = await emailService.sendRegistrationConfirmation(newUser.email, firstName);
+      const acceptsMarketing = req.body.acceptsMarketing === true;
       
-      if (!emailSent) {
-        console.warn(`Failed to send welcome email to ${newUser.email}`);
-        // Don't fail the registration if email fails
+      console.log(`📧 User ${newUser.email} acceptsMarketing: ${acceptsMarketing}`);
+      
+      if (acceptsMarketing) {
+        console.log(`📧 Sending welcome email to ${newUser.email}...`);
+        const emailSent = await emailService.sendRegistrationConfirmation(newUser.email, firstName);
+        
+        if (emailSent) {
+          console.log(`✅ Welcome email sent to ${newUser.email}: true`);
+        } else {
+          console.log(`❌ Welcome email sent to ${newUser.email}: false`);
+          console.warn(`Failed to send welcome email to ${newUser.email}`);
+        }
+      } else {
+        console.log(`📧 No welcome email sent to ${newUser.email}: acceptsMarketing is false`);
       }
 
       // Return user data (excluding password hash)
@@ -518,7 +560,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         user: userResponse,
-        message: "Usuario registrado exitosamente. ¡Revisa tu email para la confirmación!" 
+        message: acceptsMarketing ? 
+          "Usuario registrado exitosamente. ¡Revisa tu email para la confirmación!" :
+          "Usuario registrado exitosamente."
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -606,6 +650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/forgot-password", async (req, res) => {
     try {
       const { email } = req.body;
+      console.log(`🔐 Password reset requested for: ${email}`);
 
       if (!email) {
         return res.status(400).json({ 
@@ -616,29 +661,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user exists
       const user = await activeStorage.getRegisteredUserByEmail(email);
       if (!user) {
+        console.log(`⚠️ Password reset requested for non-existent email: ${email}`);
         // Don't reveal if email exists or not for security
         return res.json({ 
           message: "Si el email existe, recibirás un código de recuperación en unos minutos." 
         });
       }
 
+      console.log(`✅ User found for password reset: ${email}`);
+
       // Generate 6-digit reset code
       const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log(`🔑 Generated reset code for ${email}: ${resetCode}`);
 
       // Save reset code to database
       const codeCreated = await activeStorage.createPasswordResetCode(email, resetCode);
       if (!codeCreated) {
+        console.error(`❌ Failed to create password reset code for ${email}`);
         return res.status(500).json({ 
           message: "Error al generar el código de recuperación" 
         });
       }
 
+      console.log(`💾 Password reset code saved to database for ${email}`);
+
       // Send email with reset code
       const firstName = user.name.split(' ')[0] || '';
+      console.log(`📧 Attempting to send password reset email to ${email} (${firstName})...`);
+      
       const emailSent = await emailService.sendPasswordResetCode(email, firstName, resetCode);
       
-      if (!emailSent) {
-        console.warn(`Failed to send password reset email to ${email}`);
+      if (emailSent) {
+        console.log(`✅ Password reset email sent successfully to ${email}`);
+      } else {
+        console.error(`❌ Failed to send password reset email to ${email}`);
         // Don't fail the request if email fails - the code was still created
       }
 

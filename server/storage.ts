@@ -402,12 +402,23 @@ export class DatabaseStorage implements IStorage {
         code,
         expiresAt,
         used: false, // Explicitly set used to false
-        createdAt: new Date(), // Explicitly set createdAt to current timestamp
+        // createdAt will be set automatically by database default
       });
 
+      console.log(`💾 Password reset code created for ${email.toLowerCase()}, expires at ${expiresAt.toISOString()}`);
       return true;
     } catch (error) {
       console.error("Error creating password reset code:", error);
+      
+      // Provide more specific error information
+      if (error instanceof Error) {
+        if (error.message.includes('created_at') && error.message.includes('does not exist')) {
+          console.error('❌ Database schema error: password_reset_codes table missing created_at column');
+          console.error('💡 Run the following SQL to fix this:');
+          console.error('   ALTER TABLE password_reset_codes ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;');
+        }
+      }
+      
       return false;
     }
   }
