@@ -744,6 +744,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Email testing and diagnostic endpoints
+  app.get("/api/email/status", (req, res) => {
+    const emailConfig = {
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      user: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM,
+      hasPassword: !!process.env.EMAIL_PASSWORD,
+      secure: process.env.EMAIL_SECURE
+    };
+
+    const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASSWORD'];
+    const missingVars = requiredVars.filter(varName => !process.env[varName]);
+    
+    res.json({
+      configured: missingVars.length === 0,
+      missingVariables: missingVars,
+      config: emailConfig,
+      message: missingVars.length === 0 
+        ? "Email service is configured" 
+        : `Missing required variables: ${missingVars.join(', ')}`
+    });
+  });
+
+  app.post("/api/test-email", async (req, res) => {
+    try {
+      const { to } = req.body;
+      
+      if (!to) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Email address is required in 'to' field" 
+        });
+      }
+
+      // Test email connection first
+      const connectionTest = await emailService.testConnection();
+      if (!connectionTest) {
+        return res.status(503).json({
+          success: false,
+          message: "Email service is not properly configured",
+          details: "Check EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD environment variables"
+        });
+      }
+
+      // Send test email
+      const testEmailSent = await emailService.sendEmail({
+        to,
+        subject: "🧪 Test Email - SigeristLuxuryBags",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; background: #000; color: #ebc005; padding: 20px; margin-bottom: 20px;">
+              <h1>SigeristLuxuryBags</h1>
+              <p>Test Email Successful ✅</p>
+            </div>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 5px;">
+              <h2>Email Configuration Test</h2>
+              <p>If you're receiving this email, your email configuration is working correctly!</p>
+              <p><strong>Sent at:</strong> ${new Date().toLocaleString('es-CO')}</p>
+              <p><strong>Test ID:</strong> ${Date.now()}</p>
+            </div>
+            <div style="text-align: center; padding: 20px; color: #666; font-size: 12px;">
+              <p>© 2024 SigeristLuxuryBags - Medellín, Colombia</p>
+            </div>
+          </div>
+        `
+      });
+
+      if (testEmailSent) {
+        res.json({
+          success: true,
+          message: `Test email sent successfully to ${to}`,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "Failed to send test email",
+          details: "Check server logs for detailed error information"
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      console.error("Error in test email endpoint:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error sending test email",
+        error: errorMessage
+      });
+    }
+  });
+
   const server = createServer(app);
 
   // Manejo global de excepciones
