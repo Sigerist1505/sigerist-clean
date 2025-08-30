@@ -401,6 +401,7 @@ export class DatabaseStorage implements IStorage {
         email: email.toLowerCase(),
         code,
         expiresAt,
+        used: false, // Explicitly set used to false
       });
 
       return true;
