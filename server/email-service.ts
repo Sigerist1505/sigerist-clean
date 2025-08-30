@@ -74,10 +74,19 @@ export class EmailService {
       console.error('❌ Email service not configured - cannot send email');
       console.log('💡 To configure email service, set these environment variables:');
       console.log('   EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD');
+      console.log('📧 Current configuration status:');
+      console.log('   EMAIL_HOST:', process.env.EMAIL_HOST ? '✅ Set' : '❌ Missing');
+      console.log('   EMAIL_PORT:', process.env.EMAIL_PORT ? '✅ Set' : '❌ Missing');
+      console.log('   EMAIL_USER:', process.env.EMAIL_USER ? '✅ Set' : '❌ Missing');
+      console.log('   EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '✅ Set' : '❌ Missing');
+      console.log('   EMAIL_FROM:', process.env.EMAIL_FROM ? '✅ Set' : '❌ Missing (will use default)');
       return false;
     }
 
     try {
+      console.log(`📧 Attempting to send email to: ${message.to}`);
+      console.log(`📧 Subject: ${message.subject}`);
+      
       const mailOptions = {
         from: `"SigeristLuxuryBags" <${this.fromEmail}>`,
         to: message.to,
@@ -90,11 +99,36 @@ export class EmailService {
       console.log('✅ Email sent successfully:', {
         to: message.to,
         subject: message.subject,
-        messageId: result.messageId
+        messageId: result.messageId,
+        timestamp: new Date().toISOString()
       });
       return true;
     } catch (error) {
-      console.error('❌ Failed to send email:', error);
+      console.error('❌ Failed to send email:', {
+        to: message.to,
+        subject: message.subject,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString()
+      });
+      
+      // More detailed error information
+      if (error instanceof Error) {
+        console.error('📧 Email Error Details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+        
+        // Common email configuration issues
+        if (error.message.includes('ECONNREFUSED')) {
+          console.error('💡 Connection refused - check EMAIL_HOST and EMAIL_PORT');
+        } else if (error.message.includes('authentication')) {
+          console.error('💡 Authentication failed - check EMAIL_USER and EMAIL_PASSWORD');
+        } else if (error.message.includes('Invalid mail command')) {
+          console.error('💡 Invalid email format - check EMAIL_FROM and recipient email');
+        }
+      }
+      
       return false;
     }
   }
@@ -296,17 +330,63 @@ export class EmailService {
   // Test email configuration
   async testConnection(): Promise<boolean> {
     if (!this.transporter) {
+      console.error('❌ Cannot test connection - transporter not initialized');
+      const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASSWORD'];
+      const missingVars = requiredVars.filter(varName => !process.env[varName]);
+      console.error(`❌ Missing variables: ${missingVars.join(', ')}`);
       return false;
     }
 
     try {
+      console.log('🔍 Testing email connection...');
+      console.log(`📧 Host: ${process.env.EMAIL_HOST}`);
+      console.log(`📧 Port: ${process.env.EMAIL_PORT}`);
+      console.log(`📧 User: ${process.env.EMAIL_USER}`);
+      console.log(`📧 Secure: ${process.env.EMAIL_SECURE}`);
+      
       await this.transporter.verify();
       console.log('✅ Email connection verified successfully');
       return true;
     } catch (error) {
-      console.error('❌ Email connection test failed:', error);
+      console.error('❌ Email connection test failed:', {
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString()
+      });
+      
+      if (error instanceof Error) {
+        // Provide specific troubleshooting advice
+        if (error.message.includes('ENOTFOUND')) {
+          console.error('💡 DNS lookup failed - check EMAIL_HOST value');
+        } else if (error.message.includes('ECONNREFUSED')) {
+          console.error('💡 Connection refused - check EMAIL_HOST and EMAIL_PORT');
+        } else if (error.message.includes('authentication')) {
+          console.error('💡 Authentication failed - check EMAIL_USER and EMAIL_PASSWORD');
+        } else if (error.message.includes('timeout')) {
+          console.error('💡 Connection timeout - check network connectivity and EMAIL_HOST');
+        }
+      }
+      
       return false;
     }
+  }
+
+  // Get email configuration status for diagnostics
+  getConfigurationStatus(): { configured: boolean; missingVars: string[]; config: any } {
+    const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASSWORD'];
+    const missingVars = requiredVars.filter(varName => !process.env[varName]);
+    
+    return {
+      configured: missingVars.length === 0,
+      missingVars,
+      config: {
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
+        user: process.env.EMAIL_USER,
+        from: process.env.EMAIL_FROM || this.fromEmail,
+        secure: process.env.EMAIL_SECURE,
+        hasPassword: !!process.env.EMAIL_PASSWORD
+      }
+    };
   }
 }
 
