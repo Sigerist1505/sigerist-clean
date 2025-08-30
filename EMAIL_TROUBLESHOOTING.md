@@ -76,6 +76,15 @@ curl -X POST http://localhost:5000/api/test-email \
   3. Configure SPF/DKIM records in Namecheap
   4. Test with different email providers
 
+### 5. "Connection timeout" errors
+- **Cause:** Network connectivity issues or slow SMTP server response
+- **Solution:** 
+  - The system now includes improved timeout handling (60-second limits)
+  - Timeouts will fail faster (60 seconds instead of 120+ seconds)
+  - Check network connectivity and SMTP server availability
+  - Try alternative EMAIL_HOST configurations if timeouts persist
+  - Consider using port 465 with `EMAIL_SECURE=true` for better reliability
+
 ## Testing Steps
 
 1. **Run diagnostics:**
@@ -134,5 +143,7 @@ If emails still don't work after following this guide:
 ✅ Added `npm run diagnose:email` command
 ✅ Improved error logging and debugging
 ✅ Added detailed troubleshooting guide
+✅ Fixed email timeout issues - connections now timeout in 60 seconds instead of 120+ seconds
+✅ Added connection pooling for better email performance
 
 The email system is fully implemented and just needs proper configuration!
