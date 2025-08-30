@@ -61,7 +61,12 @@ if (missingVars.length > 0) {
   console.log('3. Alternative configuration (if the above doesn\'t work):');
   console.log('   EMAIL_HOST=smtp.privateemail.com');
   console.log('   EMAIL_PORT=465');
-  console.log('   EMAIL_SECURE=true\n');
+  console.log('   EMAIL_SECURE=true');
+  
+  console.log('\n4. If you\'re still having issues, try:');
+  console.log('   EMAIL_HOST=mail.privateemail.com (alternative host)');
+  console.log('   Or check if your server port matches your access attempts');
+  console.log('   Server runs on PORT from .env (default 5000 in development)\n');
   
   process.exit(1);
 }
