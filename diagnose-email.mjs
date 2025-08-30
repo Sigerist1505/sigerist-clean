@@ -13,6 +13,7 @@ console.log('📋 Checking Email Configuration...\n');
 
 const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASSWORD'];
 const optionalVars = ['EMAIL_FROM', 'EMAIL_SECURE'];
+const dkimVars = ['DKIM_DOMAIN', 'DKIM_SELECTOR', 'DKIM_PRIVATE_KEY'];
 
 console.log('Required Variables:');
 requiredVars.forEach(varName => {
@@ -29,6 +30,17 @@ optionalVars.forEach(varName => {
   const display = value || 'USING DEFAULT';
   console.log(`  ${status} ${varName}: ${display}`);
 });
+
+console.log('\nDKIM Variables (Optional - for better deliverability):');
+dkimVars.forEach(varName => {
+  const value = process.env[varName];
+  const status = value ? '✅' : '⚠️';
+  const display = value ? (varName === 'DKIM_PRIVATE_KEY' ? '[HIDDEN]' : value) : 'NOT SET';
+  console.log(`  ${status} ${varName}: ${display}`);
+});
+
+const dkimMissing = dkimVars.filter(varName => !process.env[varName]);
+const dkimConfigured = dkimMissing.length === 0;
 
 const missingVars = requiredVars.filter(varName => !process.env[varName]);
 
@@ -54,10 +66,22 @@ if (missingVars.length > 0) {
   process.exit(1);
 }
 
-console.log('\n✅ All required email variables are configured!\n');
+console.log('\n✅ All required email variables are configured!');
+
+if (dkimConfigured) {
+  console.log('🔐 DKIM is configured - your emails will be signed for better deliverability!');
+} else {
+  console.log('⚠️ DKIM is not configured - emails will work but may have lower deliverability');
+  console.log('💡 To configure DKIM, add these variables to your .env:');
+  console.log('   DKIM_DOMAIN=sigeristluxurybags.com');
+  console.log('   DKIM_SELECTOR=default');
+  console.log('   DKIM_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\\nYOUR_KEY_HERE\\n-----END RSA PRIVATE KEY-----"');
+}
+
+console.log('');
 
 // Create transporter for testing
-const transporter = nodemailer.createTransport({
+const transportConfig = {
   host: process.env.EMAIL_HOST,
   port: parseInt(process.env.EMAIL_PORT),
   secure: process.env.EMAIL_SECURE === 'true',
@@ -65,7 +89,19 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
-});
+};
+
+// Add DKIM configuration if available
+if (dkimConfigured) {
+  transportConfig.dkim = {
+    domainName: process.env.DKIM_DOMAIN,
+    keySelector: process.env.DKIM_SELECTOR,
+    privateKey: process.env.DKIM_PRIVATE_KEY,
+  };
+  console.log('🔐 DKIM signing will be applied to test emails');
+}
+
+const transporter = nodemailer.createTransport(transportConfig);
 
 // Test connection
 console.log('🔍 Testing email connection...');

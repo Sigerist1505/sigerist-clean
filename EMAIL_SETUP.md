@@ -122,12 +122,13 @@ curl -X POST http://localhost:5000/api/test-email \
 - **Causa**: Posible filtro de spam
 - **Solución**:
   1. Revisar carpeta de spam/promociones
-  2. Configurar SPF, DKIM en Namecheap
+  2. Configurar SPF, DKIM en Namecheap (ver `DKIM_SETUP.md`)
   3. Usar "mail-tester.com" para verificar reputación
 
 ## 📋 Lista de Verificación para Producción
 
 - [ ] **Configurar DNS**: SPF, DKIM, DMARC records en Namecheap
+- [ ] **Configurar DKIM**: Seguir la guía en `DKIM_SETUP.md` para configuración completa
 - [ ] **Verificar dominio**: Completar verificación en Namecheap
 - [ ] **Configurar variables**: Actualizar .env con credenciales reales
 - [ ] **Probar emails**: Enviar emails de prueba a diferentes proveedores
