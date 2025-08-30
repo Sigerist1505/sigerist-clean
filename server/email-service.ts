@@ -1,12 +1,18 @@
 // server/email-service.ts
 import * as nodemailer from 'nodemailer';
+import fetch from 'node-fetch';
 
 export interface EmailConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  user: string;
-  password: string;
+  // SMTP2GO API Configuration
+  apiKey?: string;
+  apiUrl?: string;
+  
+  // Legacy SMTP Configuration (deprecated)
+  host?: string;
+  port?: number;
+  secure?: boolean;
+  user?: string;
+  password?: string;
   dkim?: {
     domainName: string;
     keySelector: string;
@@ -99,14 +105,22 @@ export class EmailService {
       return;
     }
 
+    // If using SMTP2GO API, we don't need nodemailer transporter
+    if (emailConfig.apiKey) {
+      console.log('✅ SMTP2GO API email service initialized successfully');
+      this.transporter = null; // We'll use API calls instead
+      return;
+    }
+
+    // Legacy SMTP configuration
     try {
       const transportConfig: any = {
-        host: emailConfig.host,
-        port: emailConfig.port,
-        secure: emailConfig.secure,
+        host: emailConfig.host!,
+        port: emailConfig.port!,
+        secure: emailConfig.secure!,
         auth: {
-          user: emailConfig.user,
-          pass: emailConfig.password,
+          user: emailConfig.user!,
+          pass: emailConfig.password!,
         },
         // Enhanced timeout configurations for unreliable networks
         connectionTimeout: 60000, // 1 minute to establish connection (reduced from 2 minutes)
@@ -138,7 +152,7 @@ export class EmailService {
 
       this.transporter = nodemailer.createTransport(transportConfig);
 
-      console.log('✅ Email service initialized successfully');
+      console.log('✅ Legacy SMTP email service initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize email service:', error);
       this.transporter = null;
@@ -146,14 +160,26 @@ export class EmailService {
   }
 
   private getEmailConfig(): EmailConfig | null {
+    // Check for SMTP2GO API configuration first (preferred)
+    if (process.env.SMTP2GO_API_KEY) {
+      console.log('🚀 Using SMTP2GO API for email delivery');
+      return {
+        apiKey: process.env.SMTP2GO_API_KEY,
+        apiUrl: process.env.SMTP2GO_API_URL || 'https://api.smtp2go.com/v3/email/send'
+      };
+    }
+
+    // Fall back to legacy SMTP configuration
     const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASSWORD'];
     const missingVars = requiredVars.filter(varName => !process.env[varName]);
 
     if (missingVars.length > 0) {
       console.warn(`⚠️ Missing email configuration variables: ${missingVars.join(', ')}`);
+      console.warn('💡 Consider using SMTP2GO API by setting SMTP2GO_API_KEY instead');
       return null;
     }
 
+    console.log('📧 Using legacy SMTP configuration');
     const config: EmailConfig = {
       host: process.env.EMAIL_HOST!,
       port: parseInt(process.env.EMAIL_PORT!),
@@ -181,21 +207,97 @@ export class EmailService {
     return config;
   }
 
+  private async sendEmailViaSmtp2Go(message: EmailMessage): Promise<boolean> {
+    const emailConfig = this.getEmailConfig();
+    
+    if (!emailConfig?.apiKey) {
+      console.error('❌ SMTP2GO API key not configured');
+      return false;
+    }
+
+    const payload = {
+      api_key: emailConfig.apiKey,
+      to: [message.to],
+      sender: this.fromEmail,
+      subject: message.subject,
+      html_body: message.html,
+      text_body: message.text || this.stripHtml(message.html)
+    };
+
+    try {
+      console.log(`📧 Sending email via SMTP2GO API to: ${message.to}`);
+      console.log(`📧 Subject: ${message.subject}`);
+      
+      const response = await fetch(emailConfig.apiUrl!, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Smtp2go-Api-Key': emailConfig.apiKey
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.request_id) {
+        console.log('✅ Email sent successfully via SMTP2GO:', {
+          to: message.to,
+          subject: message.subject,
+          requestId: result.request_id,
+          timestamp: new Date().toISOString()
+        });
+        return true;
+      } else {
+        console.error('❌ SMTP2GO API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: result.error || result,
+          to: message.to,
+          subject: message.subject
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Failed to send email via SMTP2GO API:', {
+        to: message.to,
+        subject: message.subject,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString()
+      });
+      return false;
+    }
+  }
+
   async sendEmail(message: EmailMessage): Promise<boolean> {
-    if (!this.transporter) {
+    const emailConfig = this.getEmailConfig();
+    
+    if (!emailConfig) {
       console.error('❌ Email service not configured - cannot send email');
-      console.log('💡 To configure email service, set these environment variables:');
-      console.log('   EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD');
+      console.log('💡 To configure email service, set one of:');
+      console.log('   Option 1 (Recommended): SMTP2GO_API_KEY=your-api-key');
+      console.log('   Option 2 (Legacy): EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD');
       console.log('📧 Current configuration status:');
+      console.log('   SMTP2GO_API_KEY:', process.env.SMTP2GO_API_KEY ? '✅ Set' : '❌ Missing');
       console.log('   EMAIL_HOST:', process.env.EMAIL_HOST ? '✅ Set' : '❌ Missing');
       console.log('   EMAIL_PORT:', process.env.EMAIL_PORT ? '✅ Set' : '❌ Missing');
       console.log('   EMAIL_USER:', process.env.EMAIL_USER ? '✅ Set' : '❌ Missing');
       console.log('   EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '✅ Set' : '❌ Missing');
       console.log('   EMAIL_FROM:', process.env.EMAIL_FROM ? '✅ Set' : '❌ Missing (will use default)');
-      console.log('🔐 DKIM configuration status:');
-      console.log('   DKIM_DOMAIN:', process.env.DKIM_DOMAIN ? '✅ Set' : '⚠️ Missing (optional)');
-      console.log('   DKIM_SELECTOR:', process.env.DKIM_SELECTOR ? '✅ Set' : '⚠️ Missing (optional)');
-      console.log('   DKIM_PRIVATE_KEY:', process.env.DKIM_PRIVATE_KEY ? '✅ Set' : '⚠️ Missing (optional)');
+      return false;
+    }
+
+    // Use SMTP2GO API if configured
+    if (emailConfig.apiKey) {
+      return this.sendEmailViaSmtp2Go(message);
+    }
+
+    // Fall back to legacy SMTP
+    return this.sendEmailViaSmtp(message);
+  }
+
+  private async sendEmailViaSmtp(message: EmailMessage): Promise<boolean> {
+    if (!this.transporter) {
+      console.error('❌ SMTP email service not configured - cannot send email');
       return false;
     }
 
@@ -204,7 +306,7 @@ export class EmailService {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`📧 Attempting to send email to: ${message.to} (attempt ${attempt}/${maxRetries})`);
+        console.log(`📧 Attempting to send email via SMTP to: ${message.to} (attempt ${attempt}/${maxRetries})`);
         console.log(`📧 Subject: ${message.subject}`);
         
         const mailOptions = {
@@ -216,7 +318,7 @@ export class EmailService {
         };
 
         const result = await this.transporter.sendMail(mailOptions);
-        console.log('✅ Email sent successfully:', {
+        console.log('✅ Email sent successfully via SMTP:', {
           to: message.to,
           subject: message.subject,
           messageId: result.messageId,
@@ -229,7 +331,7 @@ export class EmailService {
         const isTimeoutError = error instanceof Error && 
           (error.message.includes('timeout') || error.message.includes('Connection timeout'));
 
-        console.error(`❌ Failed to send email (attempt ${attempt}/${maxRetries}):`, {
+        console.error(`❌ Failed to send email via SMTP (attempt ${attempt}/${maxRetries}):`, {
           to: message.to,
           subject: message.subject,
           error: error instanceof Error ? error.message : String(error),
@@ -238,7 +340,7 @@ export class EmailService {
         
         // More detailed error information
         if (error instanceof Error) {
-          console.error('📧 Email Error Details:', {
+          console.error('📧 SMTP Email Error Details:', {
             name: error.name,
             message: error.message,
             stack: error.stack
@@ -253,16 +355,17 @@ export class EmailService {
             console.error('💡 Invalid email format - check EMAIL_FROM and recipient email');
           } else if (isTimeoutError) {
             console.error('💡 Connection timeout - check network connectivity and SMTP server availability');
+            console.error('💡 Consider switching to SMTP2GO API for better reliability on Railway');
             
             if (isLastAttempt) {
               console.error('🔧 Recommended solutions for persistent timeouts:');
-              console.error('   1. Try alternative SMTP configuration:');
+              console.error('   1. Switch to SMTP2GO API (recommended for Railway):');
+              console.error('      SMTP2GO_API_KEY=your-api-key');
+              console.error('   2. Try alternative SMTP configuration:');
               console.error('      EMAIL_HOST=mail.privateemail.com (instead of smtp.privateemail.com)');
               console.error('      EMAIL_PORT=587');
               console.error('      EMAIL_SECURE=false');
-              console.error('   2. Check firewall settings and network connectivity');
-              console.error('   3. Contact your email provider to verify SMTP settings');
-              console.error('   4. Consider using alternative email service (Gmail SMTP, SendGrid, etc.)');
+              console.error('   3. Check firewall settings and network connectivity');
             }
             console.error('   Current config: host=' + process.env.EMAIL_HOST + ', port=' + process.env.EMAIL_PORT + ', secure=' + process.env.EMAIL_SECURE);
           } else if (error.message.includes('ENOTFOUND')) {
@@ -491,8 +594,61 @@ export class EmailService {
 
   // Test email configuration
   async testConnection(): Promise<boolean> {
+    const emailConfig = this.getEmailConfig();
+    
+    if (!emailConfig) {
+      console.error('❌ Cannot test connection - no email configuration found');
+      console.error('💡 Set either SMTP2GO_API_KEY or EMAIL_HOST/EMAIL_PORT/EMAIL_USER/EMAIL_PASSWORD');
+      return false;
+    }
+
+    // Test SMTP2GO API connection
+    if (emailConfig.apiKey) {
+      try {
+        console.log('🔍 Testing SMTP2GO API connection...');
+        console.log(`📧 API URL: ${emailConfig.apiUrl}`);
+        
+        // Test API connectivity with a simple ping (or test the API endpoint)
+        const response = await fetch(emailConfig.apiUrl!, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Smtp2go-Api-Key': emailConfig.apiKey
+          },
+          body: JSON.stringify({
+            api_key: emailConfig.apiKey,
+            to: ['test@example.com'],
+            sender: this.fromEmail,
+            subject: 'Test Connection',
+            html_body: '<p>Test</p>',
+            test_mode: true // Use test mode if supported
+          })
+        });
+
+        if (response.ok) {
+          console.log('✅ SMTP2GO API connection verified successfully');
+          return true;
+        } else {
+          const result = await response.json();
+          console.error('❌ SMTP2GO API connection test failed:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: result.error || result
+          });
+          return false;
+        }
+      } catch (error) {
+        console.error('❌ SMTP2GO API connection test failed:', {
+          error: error instanceof Error ? error.message : String(error),
+          timestamp: new Date().toISOString()
+        });
+        return false;
+      }
+    }
+
+    // Test legacy SMTP connection
     if (!this.transporter) {
-      console.error('❌ Cannot test connection - transporter not initialized');
+      console.error('❌ Cannot test connection - SMTP transporter not initialized');
       const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASSWORD'];
       const missingVars = requiredVars.filter(varName => !process.env[varName]);
       console.error(`❌ Missing variables: ${missingVars.join(', ')}`);
@@ -500,17 +656,17 @@ export class EmailService {
     }
 
     try {
-      console.log('🔍 Testing email connection...');
+      console.log('🔍 Testing SMTP connection...');
       console.log(`📧 Host: ${process.env.EMAIL_HOST}`);
       console.log(`📧 Port: ${process.env.EMAIL_PORT}`);
       console.log(`📧 User: ${process.env.EMAIL_USER}`);
       console.log(`📧 Secure: ${process.env.EMAIL_SECURE}`);
       
       await this.transporter.verify();
-      console.log('✅ Email connection verified successfully');
+      console.log('✅ SMTP connection verified successfully');
       return true;
     } catch (error) {
-      console.error('❌ Email connection test failed:', {
+      console.error('❌ SMTP connection test failed:', {
         error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString()
       });
@@ -525,7 +681,7 @@ export class EmailService {
           console.error('💡 Authentication failed - check EMAIL_USER and EMAIL_PASSWORD');
         } else if (error.message.includes('timeout') || error.message.includes('Connection timeout')) {
           console.error('💡 Connection timeout - check network connectivity and EMAIL_HOST');
-          console.error('   Try using a different EMAIL_HOST or EMAIL_PORT configuration');
+          console.error('💡 Consider switching to SMTP2GO API for better reliability on Railway');
           console.error('   Current config: host=' + process.env.EMAIL_HOST + ', port=' + process.env.EMAIL_PORT + ', secure=' + process.env.EMAIL_SECURE);
           
           // If connection test fails due to timeout, try fallback configuration
@@ -604,24 +760,35 @@ export class EmailService {
   }
 
   // Get email configuration status for diagnostics
-  getConfigurationStatus(): { configured: boolean; missingVars: string[]; config: any; dkim: any } {
+  getConfigurationStatus(): { configured: boolean; missingVars: string[]; config: any; dkim: any; smtp2go: any } {
+    // Check SMTP2GO configuration
+    const smtp2goConfigured = !!process.env.SMTP2GO_API_KEY;
+    
+    // Check legacy SMTP configuration
     const requiredVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASSWORD'];
     const missingVars = requiredVars.filter(varName => !process.env[varName]);
+    const smtpConfigured = missingVars.length === 0;
     
     const dkimVars = ['DKIM_DOMAIN', 'DKIM_SELECTOR', 'DKIM_PRIVATE_KEY'];
     const dkimMissing = dkimVars.filter(varName => !process.env[varName]);
     const dkimConfigured = dkimMissing.length === 0;
     
     return {
-      configured: missingVars.length === 0,
-      missingVars,
+      configured: smtp2goConfigured || smtpConfigured,
+      missingVars: smtp2goConfigured ? [] : missingVars,
       config: {
+        provider: smtp2goConfigured ? 'SMTP2GO API' : (smtpConfigured ? 'Legacy SMTP' : 'None'),
         host: process.env.EMAIL_HOST,
         port: process.env.EMAIL_PORT,
         user: process.env.EMAIL_USER,
         from: process.env.EMAIL_FROM || this.fromEmail,
         secure: process.env.EMAIL_SECURE,
         hasPassword: !!process.env.EMAIL_PASSWORD
+      },
+      smtp2go: {
+        configured: smtp2goConfigured,
+        hasApiKey: !!process.env.SMTP2GO_API_KEY,
+        apiUrl: process.env.SMTP2GO_API_URL || 'https://api.smtp2go.com/v3/email/send'
       },
       dkim: {
         configured: dkimConfigured,
