@@ -47,6 +47,14 @@ export class EmailService {
           user: emailConfig.user,
           pass: emailConfig.password,
         },
+        // Timeout configurations to prevent connection timeouts
+        connectionTimeout: 60000, // 60 seconds to establish connection
+        socketTimeout: 60000, // 60 seconds of socket inactivity
+        greetingTimeout: 30000, // 30 seconds to wait for greeting
+        // Connection pooling for better performance
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100,
       };
 
       // Add DKIM configuration if available
@@ -165,6 +173,12 @@ export class EmailService {
           console.error('💡 Authentication failed - check EMAIL_USER and EMAIL_PASSWORD');
         } else if (error.message.includes('Invalid mail command')) {
           console.error('💡 Invalid email format - check EMAIL_FROM and recipient email');
+        } else if (error.message.includes('timeout') || error.message.includes('Connection timeout')) {
+          console.error('💡 Connection timeout - check network connectivity and SMTP server availability');
+          console.error('   Try using a different EMAIL_HOST or EMAIL_PORT (e.g., 465 with secure=true)');
+          console.error('   Current config: host=' + process.env.EMAIL_HOST + ', port=' + process.env.EMAIL_PORT + ', secure=' + process.env.EMAIL_SECURE);
+        } else if (error.message.includes('ENOTFOUND')) {
+          console.error('💡 DNS lookup failed - check EMAIL_HOST value');
         }
       }
       
@@ -400,8 +414,10 @@ export class EmailService {
           console.error('💡 Connection refused - check EMAIL_HOST and EMAIL_PORT');
         } else if (error.message.includes('authentication')) {
           console.error('💡 Authentication failed - check EMAIL_USER and EMAIL_PASSWORD');
-        } else if (error.message.includes('timeout')) {
+        } else if (error.message.includes('timeout') || error.message.includes('Connection timeout')) {
           console.error('💡 Connection timeout - check network connectivity and EMAIL_HOST');
+          console.error('   Try using a different EMAIL_HOST or EMAIL_PORT configuration');
+          console.error('   Current config: host=' + process.env.EMAIL_HOST + ', port=' + process.env.EMAIL_PORT + ', secure=' + process.env.EMAIL_SECURE);
         }
       }
       
