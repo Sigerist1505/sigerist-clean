@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string>("");
-  const { login } = useAuth();
+  const { login, refreshAuthStatus } = useAuth();
 
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -63,7 +63,7 @@ export default function LoginPage() {
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Login mutation success with data:", data);
       setLoginError("");
       login({
@@ -77,8 +77,12 @@ export default function LoginPage() {
         description: `Bienvenido de vuelta, ${data.firstName}!`,
         variant: "default",
       });
-      // Navigate to home page after a brief delay to ensure state is set
-      setTimeout(() => setLocation("/"), 200);
+      
+      // Wait a moment for session to be saved, then refresh auth status and navigate
+      setTimeout(async () => {
+        await refreshAuthStatus();
+        setLocation("/");
+      }, 500);
     },
     onError: (error) => {
       console.error("Login mutation error:", error);
