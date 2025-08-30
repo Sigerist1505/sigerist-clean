@@ -30,6 +30,67 @@ export class EmailService {
     this.initializeTransporter();
   }
 
+  private async initializeFallbackTransporter() {
+    console.log('🔄 Attempting to initialize fallback email configuration...');
+    
+    const fallbackConfigs = [
+      {
+        host: 'mail.privateemail.com',
+        port: 587,
+        secure: false,
+        description: 'Namecheap Private Email (TLS)'
+      },
+      {
+        host: 'smtp.privateemail.com', 
+        port: 587,
+        secure: false,
+        description: 'Namecheap SMTP Alt (TLS)'
+      },
+      {
+        host: 'mail.privateemail.com',
+        port: 465,
+        secure: true,
+        description: 'Namecheap Private Email (SSL)'
+      }
+    ];
+
+    for (const config of fallbackConfigs) {
+      try {
+        console.log(`🔄 Trying: ${config.description}`);
+        
+        const fallbackTransportConfig: any = {
+          host: config.host,
+          port: config.port,
+          secure: config.secure,
+          auth: {
+            user: process.env.EMAIL_USER!,
+            pass: process.env.EMAIL_PASSWORD!,
+          },
+          connectionTimeout: 30000, // Shorter timeout for fallback attempts
+          socketTimeout: 30000,
+          greetingTimeout: 15000,
+          pool: false,
+          requireTLS: !config.secure,
+          tls: {
+            rejectUnauthorized: false,
+            ciphers: 'SSLv3'
+          }
+        };
+
+        const testTransporter = nodemailer.createTransporter(fallbackTransportConfig);
+        await testTransporter.verify();
+        
+        console.log(`✅ Fallback configuration successful: ${config.description}`);
+        this.transporter = testTransporter;
+        return;
+      } catch (error) {
+        console.log(`❌ Fallback failed: ${config.description} - ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    
+    console.log('❌ All fallback configurations failed, keeping original transporter');
+  }
+
   private initializeTransporter() {
     const emailConfig = this.getEmailConfig();
     
@@ -48,18 +109,21 @@ export class EmailService {
           pass: emailConfig.password,
         },
         // Enhanced timeout configurations for unreliable networks
-        connectionTimeout: 120000, // 2 minutes to establish connection
-        socketTimeout: 120000, // 2 minutes of socket inactivity
-        greetingTimeout: 60000, // 1 minute to wait for greeting
-        // Connection pooling for better performance
-        pool: true,
-        maxConnections: 5,
-        maxMessages: 100,
+        connectionTimeout: 60000, // 1 minute to establish connection (reduced from 2 minutes)
+        socketTimeout: 60000, // 1 minute of socket inactivity
+        greetingTimeout: 30000, // 30 seconds to wait for greeting (reduced from 1 minute)
+        // Connection pooling disabled for better reliability with timeouts
+        pool: false,
         // Additional reliability settings
         requireTLS: !emailConfig.secure, // Use STARTTLS for non-secure connections
         tls: {
-          rejectUnauthorized: false // Allow self-signed certificates
-        }
+          rejectUnauthorized: false, // Allow self-signed certificates
+          // Add TLS ciphers for better compatibility
+          ciphers: 'SSLv3'
+        },
+        // Add logger for debugging connection issues
+        logger: false, // Set to true only for debugging
+        debug: false // Set to true only for debugging
       };
 
       // Add DKIM configuration if available
@@ -136,7 +200,7 @@ export class EmailService {
     }
 
     const maxRetries = 3;
-    const baseDelay = 5000; // 5 seconds base delay
+    const baseDelay = 2000; // 2 seconds base delay (reduced for faster retries)
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -206,11 +270,17 @@ export class EmailService {
           }
         }
         
-        // If this isn't the last attempt and it's a timeout error, wait and retry
-        if (!isLastAttempt && isTimeoutError) {
-          const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
+        // If this isn't the last attempt and it's a timeout or connection error, wait and retry
+        if (!isLastAttempt && (isTimeoutError || error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND'))) {
+          const delay = baseDelay * Math.pow(1.5, attempt - 1); // Gentler exponential backoff
           console.log(`⏳ Waiting ${delay}ms before retry...`);
           await new Promise(resolve => setTimeout(resolve, delay));
+          
+          // Try fallback configuration on second attempt for timeout errors
+          if (attempt === 2 && isTimeoutError) {
+            console.log('🔄 Trying fallback configuration on retry...');
+            await this.initializeFallbackTransporter();
+          }
           continue;
         }
         
