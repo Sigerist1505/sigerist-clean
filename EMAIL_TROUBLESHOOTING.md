@@ -27,9 +27,28 @@ EMAIL_FROM=info@sigeristluxurybags.com
 
 **Important:** Replace `your-actual-email-password-here` with your real Namecheap email password.
 
-### Step 3: Alternative Configuration
+### Step 3: Connection Timeout Fix (NEW)
 
-If the above doesn't work, try:
+If you're experiencing "Connection timeout" errors, the system now includes:
+
+✅ **Enhanced Timeout Handling**:
+- Extended connection timeout: 2 minutes (was 1 minute)
+- Extended socket timeout: 2 minutes (was 1 minute)  
+- Extended greeting timeout: 1 minute (was 30 seconds)
+
+✅ **Automatic Retry Logic**:
+- Up to 3 attempts with exponential backoff
+- 5s, 10s, 20s delays between retries
+- Timeout-specific retry behavior
+
+✅ **Fallback Configuration**:
+- Automatically tries `mail.privateemail.com:587` if `smtp.privateemail.com:465` times out
+- Automatic transporter switching on connection failure
+- Enhanced error reporting with specific recommendations
+
+### Step 4: Alternative Configuration
+
+If timeouts persist, manually try:
 
 ```env
 EMAIL_HOST=smtp.privateemail.com
@@ -37,7 +56,7 @@ EMAIL_PORT=465
 EMAIL_SECURE=true
 ```
 
-### Step 4: Test Email Configuration
+### Step 5: Test Email Configuration
 
 Use the API endpoints to test:
 
