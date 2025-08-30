@@ -77,8 +77,8 @@ export default function LoginPage() {
         description: `Bienvenido de vuelta, ${data.firstName}!`,
         variant: "default",
       });
-      // Navigate to home page
-      setLocation("/");
+      // Navigate to home page after a brief delay to ensure state is set
+      setTimeout(() => setLocation("/"), 200);
     },
     onError: (error) => {
       console.error("Login mutation error:", error);
