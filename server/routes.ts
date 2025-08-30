@@ -1,6 +1,7 @@
 import type { Express, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { mockStorage } from "./mock-storage";
 import { WompiService } from "./wompi-service";
 import { emailService } from "./email-service";
 import { z } from "zod";
@@ -10,6 +11,10 @@ import {
   insertContactMessageSchema,
   insertRegisteredUserSchema,
 } from "@shared/schema";
+import "./types"; // Import session types
+
+// Use mock storage if database is not available (for testing)
+const activeStorage = process.env.USE_MOCK_STORAGE === 'true' ? mockStorage : storage;
 
 // ⚠️ Stripe deshabilitado: NO importamos "stripe" ni exigimos STRIPE_SECRET_KEY.
 function stripeGuard(res: Response) {
@@ -475,7 +480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validated = insertRegisteredUserSchema.parse(req.body);
       
       // Check if user already exists
-      const existingUser = await storage.getRegisteredUserByEmail(validated.email);
+      const existingUser = await activeStorage.getRegisteredUserByEmail(validated.email);
       if (existingUser) {
         return res.status(400).json({ 
           message: "El correo electrónico ya está registrado" 
@@ -483,7 +488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create the user
-      const newUser = await storage.createRegisteredUser({
+      const newUser = await activeStorage.createRegisteredUser({
         email: validated.email,
         passwordHash: validated.passwordHash, // Will be hashed in storage
         name: validated.name,
@@ -507,6 +512,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: newUser.name.split(' ').slice(1).join(' ') || '',
         email: newUser.email,
       };
+
+      // Store user data in session after successful registration
+      req.session.user = userResponse;
 
       res.json({ 
         user: userResponse,
@@ -540,20 +548,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Authenticate user
-      const user = await storage.authenticateUser(email, password);
+      const user = await activeStorage.authenticateUser(email, password);
       if (!user) {
         return res.status(401).json({ 
           message: "Credenciales incorrectas" 
         });
       }
 
-      // Return user data (excluding password hash)
+      // Store user data in session
       const userResponse = {
         id: user.id,
         firstName: user.name.split(' ')[0] || '',
         lastName: user.name.split(' ').slice(1).join(' ') || '',
         email: user.email,
       };
+
+      req.session.user = userResponse;
 
       res.json(userResponse);
     } catch (error) {
@@ -564,6 +574,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: errorMessage 
       });
     }
+  });
+
+  // User Logout
+  app.post("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        return res.status(500).json({ 
+          message: "Error al cerrar sesión" 
+        });
+      }
+      
+      res.clearCookie('connect.sid'); // Clear the session cookie
+      res.json({ 
+        message: "Sesión cerrada exitosamente" 
+      });
+    });
   });
 
   // Forgot Password - Request Reset Code
@@ -578,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user exists
-      const user = await storage.getRegisteredUserByEmail(email);
+      const user = await activeStorage.getRegisteredUserByEmail(email);
       if (!user) {
         // Don't reveal if email exists or not for security
         return res.json({ 
@@ -590,7 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 
       // Save reset code to database
-      const codeCreated = await storage.createPasswordResetCode(email, resetCode);
+      const codeCreated = await activeStorage.createPasswordResetCode(email, resetCode);
       if (!codeCreated) {
         return res.status(500).json({ 
           message: "Error al generar el código de recuperación" 
@@ -638,7 +665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate reset code
-      const isValidCode = await storage.validatePasswordResetCode(email, code);
+      const isValidCode = await activeStorage.validatePasswordResetCode(email, code);
       if (!isValidCode) {
         return res.status(400).json({ 
           message: "Código inválido o expirado" 
@@ -646,7 +673,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update password
-      const passwordUpdated = await storage.updateUserPassword(email, newPassword);
+      const passwordUpdated = await activeStorage.updateUserPassword(email, newPassword);
       if (!passwordUpdated) {
         return res.status(500).json({ 
           message: "Error al actualizar la contraseña" 
@@ -677,7 +704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const isValidCode = await storage.validatePasswordResetCode(email, code);
+      const isValidCode = await activeStorage.validatePasswordResetCode(email, code);
       
       res.json({ 
         valid: isValidCode,
@@ -693,9 +720,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth (dummy)
-  app.get("/api/auth/check", (_req, res) => {
-    res.json({ isAuthenticated: false, user: null });
+  // Auth check - return actual session data
+  app.get("/api/auth/check", (req, res) => {
+    if (req.session.user) {
+      res.json({ 
+        isAuthenticated: true, 
+        user: req.session.user 
+      });
+    } else {
+      res.json({ 
+        isAuthenticated: false, 
+        user: null 
+      });
+    }
   });
 
   const server = createServer(app);
