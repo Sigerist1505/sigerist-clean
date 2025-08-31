@@ -177,7 +177,7 @@ const Home = () => {
             <div className="border-t border-gray-600 pt-6 mb-8">
               <div className="flex justify-between items-center text-2xl font-bold text-center text-white mb-4">
                 <span>Total normal:</span>
-                <span className="line-through text-gray-400">$1,495,000</span>
+                <span className="line-through text-gray-400">$1,595,000</span>
               </div>
               <div className="flex justify-between items-center text-2xl font-bold text-center mb-4">
                 <span className="text-orange-400">Descuento (10%):</span>
