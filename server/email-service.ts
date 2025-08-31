@@ -83,7 +83,7 @@ export class EmailService {
           }
         };
 
-        const testTransporter = nodemailer.createTransporter(fallbackTransportConfig);
+        const testTransporter = nodemailer.createTransport(fallbackTransportConfig);
         await testTransporter.verify();
         
         console.log(`✅ Fallback configuration successful: ${config.description}`);
@@ -374,7 +374,9 @@ export class EmailService {
         }
         
         // If this isn't the last attempt and it's a timeout or connection error, wait and retry
-        if (!isLastAttempt && (isTimeoutError || error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND'))) {
+        if (!isLastAttempt && (isTimeoutError || 
+            (error instanceof Error && error.message.includes('ECONNREFUSED')) || 
+            (error instanceof Error && error.message.includes('ENOTFOUND')))) {
           const delay = baseDelay * Math.pow(1.5, attempt - 1); // Gentler exponential backoff
           console.log(`⏳ Waiting ${delay}ms before retry...`);
           await new Promise(resolve => setTimeout(resolve, delay));
@@ -494,7 +496,7 @@ export class EmailService {
   }
 
   async sendPurchaseConfirmation(to: string, firstName: string, order: any, items: any[]): Promise<boolean> {
-    const subject = '¡Gracias por tu compra! - SigeristLuxuryBags';
+    const subject = 'Gracias por tu compra y elegirnos - SigeristLuxuryBags';
     
     // Build items list for email
     let itemsHtml = '';
@@ -548,7 +550,7 @@ export class EmailService {
           </div>
           <div class="content">
             <h2>¡Hola ${firstName}!</h2>
-            <p><strong>¡Gracias por tu compra! Has elegido calidad y estilo únicos.</strong></p>
+            <p><strong>¡Gracias por tu compra y elegirnos!</strong></p>
             <p>Estamos emocionados de ser parte de tu historia y de que hayas confiado en nosotros para crear algo especial para ti.</p>
             
             <div class="order-details">
@@ -569,7 +571,7 @@ export class EmailService {
               </table>
               
               <div class="total">
-                Total: $${order.total.toLocaleString('es-CO')}
+                Total recibido: $${order.total.toLocaleString('es-CO')}
               </div>
             </div>
             
@@ -745,7 +747,7 @@ export class EmailService {
           }
         };
 
-        const testTransporter = nodemailer.createTransporter(fallbackTransportConfig);
+        const testTransporter = nodemailer.createTransport(fallbackTransportConfig);
         await testTransporter.verify();
         
         console.log(`✅ Fallback configuration works: ${config.description}`);
