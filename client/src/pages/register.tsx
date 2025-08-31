@@ -52,7 +52,7 @@ export default function RegisterPage() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login } = useAuth();
+  const { login, refreshAuthStatus } = useAuth();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -82,7 +82,7 @@ export default function RegisterPage() {
       }
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // si tu backend devuelve { user: { id, name, email, ... } }
       const fullName: string = data?.user?.name ?? "";
       const [firstName, ...rest] = fullName.trim().split(/\s+/);
@@ -99,6 +99,11 @@ export default function RegisterPage() {
         title: "¡Registro exitoso!",
         description: `Bienvenido ${firstName || fullName}. Tu cuenta ha sido creada correctamente.`,
       });
+
+      // Refresh auth status to ensure navbar updates immediately
+      setTimeout(async () => {
+        await refreshAuthStatus();
+      }, 100);
 
       setIsRegistered(true);
       form.reset();

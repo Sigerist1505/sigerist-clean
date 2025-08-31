@@ -321,16 +321,16 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 mobile-menu bg-black border-t border-gray-400/40 shadow-lg">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        {/* Mobile Navigation - Always visible on mobile */}
+        <div className="md:hidden bg-black border-t border-gray-400/40">
+          <div className="px-2 py-2">
+            <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "block px-3 py-2 text-base font-medium text-white hover:text-accent transition-colors rounded-md hover:bg-gray-800",
+                    "whitespace-nowrap px-3 py-2 text-sm font-medium text-white hover:text-accent transition-colors rounded-md hover:bg-gray-800 flex-shrink-0",
                     location === item.href && "text-accent bg-gray-800"
                   )}
                   onClick={(e) => handleNavClick(item.href, e)}
@@ -338,6 +338,53 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Menu - Additional options when hamburger is clicked */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 mobile-menu bg-black border-t border-gray-400/40 shadow-lg">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {/* User actions for mobile */}
+              {isAuthenticated ? (
+                <div className="space-y-2 border-t border-gray-400/40 pt-3">
+                  <div className="px-3 py-2 text-sm text-accent">
+                    <User className="h-4 w-4 inline mr-2" />
+                    Hola, {user?.firstName}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={logout}
+                    className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Cerrar Sesión
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2 border-t border-gray-400/40 pt-3">
+                  <Link href="/login">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-[#ffffff] hover:bg-accent/10 transition-colors bg-transparent border border-[#C0C0C0]"
+                    >
+                      Iniciar Sesión
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start border-[#C0C0C0] text-[#ffffff] hover:bg-[#C0C0C0] hover:text-black transition-colors bg-transparent"
+                    >
+                      Registrarse
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

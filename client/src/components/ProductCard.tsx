@@ -57,7 +57,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <img
               src={imgSrc}
               alt={product.name}
-              className="w-full h-64 object-contain rounded-xl bg-white"
+              className="w-full h-64 object-contain rounded-xl bg-white product-image-bg"
               loading="lazy"
             />
           </div>

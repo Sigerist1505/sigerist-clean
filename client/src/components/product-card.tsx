@@ -85,7 +85,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <Card className="group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-gray-900/95 to-black/95 border-2 border-[#C0C0C0]/30 hover:border-[#ebc005]/60 rounded-2xl hover:shadow-[0_8px_25px_rgba(235,192,5,0.4)]">
         <CardContent className="p-6">
           <div className="relative mb-4">
-            <div className="w-full h-64 bg-white rounded-xl p-4 border border-[#C0C0C0]/20">
+            <div className="w-full h-64 bg-white product-image-bg rounded-xl p-4 border border-[#C0C0C0]/20">
               {imageLoading && (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>

@@ -525,26 +525,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: validated.name,
         phone: validated.phone,
         shippingAddress: validated.shippingAddress,
+        acceptsMarketing: req.body.acceptsMarketing === true,
       });
 
-      // Send welcome email only if user accepts marketing
+      // Send welcome email to all users (requirement: welcome email for all registrations)
       const firstName = newUser.name.split(' ')[0] || '';
       const acceptsMarketing = req.body.acceptsMarketing === true;
       
       console.log(`📧 User ${newUser.email} acceptsMarketing: ${acceptsMarketing}`);
+      console.log(`📧 Sending welcome email to ${newUser.email}...`);
       
-      if (acceptsMarketing) {
-        console.log(`📧 Sending welcome email to ${newUser.email}...`);
-        const emailSent = await emailService.sendRegistrationConfirmation(newUser.email, firstName);
-        
-        if (emailSent) {
-          console.log(`✅ Welcome email sent to ${newUser.email}: true`);
-        } else {
-          console.log(`❌ Welcome email sent to ${newUser.email}: false`);
-          console.warn(`Failed to send welcome email to ${newUser.email}`);
-        }
+      const emailSent = await emailService.sendRegistrationConfirmation(newUser.email, firstName);
+      
+      if (emailSent) {
+        console.log(`✅ Welcome email sent to ${newUser.email}: true`);
       } else {
-        console.log(`📧 No welcome email sent to ${newUser.email}: acceptsMarketing is false`);
+        console.log(`❌ Welcome email sent to ${newUser.email}: false`);
+        console.warn(`Failed to send welcome email to ${newUser.email}`);
       }
 
       // Return user data (excluding password hash)
