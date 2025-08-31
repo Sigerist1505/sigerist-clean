@@ -22,9 +22,10 @@ export default function ProductsPage() {
       
       switch(categoryFilter) {
         case 'maleta':
-          return nameLower.includes('maleta') || nameLower.includes('milan') || categoryLower.includes('maleta');
+          return nameLower.includes('maleta') || nameLower.includes('milan') || nameLower.includes('viajera') || categoryLower.includes('maleta');
         case 'pañalera':
-          return nameLower.includes('pañalera') || nameLower.includes('multifuncional') || categoryLower.includes('pañalera');
+          return nameLower.includes('pañalera') || nameLower.includes('multifuncional') || 
+                 nameLower.includes('grande') || nameLower.includes('mediana') || categoryLower.includes('pañalera');
         case 'cambiador':
           return nameLower.includes('cambiador') || categoryLower.includes('cambiador');
         case 'bolso':
@@ -32,9 +33,11 @@ export default function ProductsPage() {
         case 'mochila':
           return nameLower.includes('mochila') || categoryLower.includes('mochila');
         case 'lonchera':
-          return nameLower.includes('lonchera') || nameLower.includes('porta') || nameLower.includes('baul') || categoryLower.includes('lonchera');
+          return nameLower.includes('lonchera') || nameLower.includes('porta') || nameLower.includes('baul') || 
+                 nameLower.includes('biberones') || nameLower.includes('chupetas') || categoryLower.includes('lonchera');
         case 'organizador':
-          return nameLower.includes('organizador') || categoryLower.includes('organizador');
+          return nameLower.includes('organizador') || nameLower.includes('higiene') || 
+                 nameLower.includes('mudas') || categoryLower.includes('organizador');
         default:
           return true;
       }
