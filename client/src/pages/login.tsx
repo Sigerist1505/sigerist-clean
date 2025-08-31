@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/auth-context";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { z } from "zod";
 
@@ -78,9 +78,13 @@ export default function LoginPage() {
         variant: "default",
       });
       
-      // Refresh auth status immediately, then navigate
+      // Refresh auth status immediately to ensure navbar updates
       await refreshAuthStatus();
-      setLocation("/");
+      
+      // Small delay to ensure state propagation before navigation
+      setTimeout(() => {
+        setLocation("/");
+      }, 100);
     },
     onError: (error) => {
       console.error("Login mutation error:", error);

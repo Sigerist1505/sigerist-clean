@@ -82,7 +82,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/product/${product.id}`} className="group">
-      <Card className="group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-2 border-[#C0C0C0]/30 hover:border-[#ebc005]/60 rounded-2xl hover:shadow-[0_8px_25px_rgba(235,192,5,0.4)]">
+      <Card className="group-hover:shadow-xl transition-all duration-300 bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-2xl hover:border-gray-600 hover:shadow-[0_8px_25px_rgba(156,163,175,0.2)] md:bg-gradient-to-br md:from-slate-800/95 md:to-slate-900/95 md:border-2 md:border-[#C0C0C0]/30 md:hover:border-[#ebc005]/60 md:hover:shadow-[0_8px_25px_rgba(235,192,5,0.4)]">
         <CardContent className="p-6">
           <div className="relative mb-4">
             <div className="w-full h-64 bg-white product-image-bg rounded-xl p-4 border border-[#C0C0C0]/20">
