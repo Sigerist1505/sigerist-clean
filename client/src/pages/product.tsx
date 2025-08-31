@@ -347,11 +347,14 @@ function ProductPage() {
 
   const getGalleryImages = () => {
     if (!hasBordado) {
+      // Product doesn't support embroidery, use regular gallery images
       return finalProduct.variants?.galleryImages || [finalProduct.imageUrl];
     }
     if (!showEmbroidery) {
-      return finalProduct.variants?.galleryImages || [finalProduct.variants?.blankImageUrl || finalProduct.imageUrl];
+      // User chose "without embroidery", show blank images
+      return [finalProduct.variants?.blankImageUrl || finalProduct.imageUrl];
     } else {
+      // User chose "with embroidery", show embroidered images
       return (
         finalProduct.variants?.bordadoGalleryImages ||
         [finalProduct.variants?.bordadoImageUrl || finalProduct.variants?.referenceImageUrl || finalProduct.imageUrl]
