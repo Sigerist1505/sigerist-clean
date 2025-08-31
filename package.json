@@ -19,6 +19,7 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "verify:wompi": "node verify-wompi-config.js",
+    "verify:port": "node verify-port-fix.js",
     "diagnose:email": "node diagnose-email.mjs",
     "diagnose:complete": "node diagnose-complete.mjs",
     "diagnose:server": "curl http://localhost:5000/api/health && echo '' && curl http://localhost:5000/api/email/status"
