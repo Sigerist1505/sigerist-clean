@@ -260,7 +260,7 @@ const Home = () => {
                 <h3 className="text-xl font-bold text-white mb-2">
                   Entrega Rápida
                 </h3>
-                <p className="text-gray-400">7-15 días hábiles</p>
+                <p className="text-gray-400">15-20 días hábiles</p>
               </div>
 
               <div className="text-center">
