@@ -43,7 +43,18 @@ async function fixEmbroideryToggle() {
       'Cambiador': {
         imageUrl: '/assets/Cambiador.jpg',
         blankImageUrl: '/assets/Cambiador.jpg',
-        variants: { bordado: false, bordadoImageUrl: '/assets/Cambiador.jpg' }
+        variants: { 
+          bordado: false, 
+          bordadoImageUrl: '/assets/Cambiador.jpg',
+          galleryImages: [
+            '/assets/Cambiador.jpg',
+            '/assets/Cambiador 2.jpg'
+          ],
+          bordadoGalleryImages: [
+            '/assets/Cambiador.jpg',
+            '/assets/Cambiador 2.jpg'
+          ]
+        }
       },
       'Lonchera Baúl': {
         imageUrl: '/assets/Lonchera baul.jpg',
@@ -68,7 +79,19 @@ async function fixEmbroideryToggle() {
       'Maleta Milan': {
         imageUrl: '/assets/MaletaMilan_ConBordado.jpg',
         blankImageUrl: '/assets/MaletaMilan_ConBordado.jpg',
-        variants: { bordado: true, bordadoImageUrl: '/assets/maleta-milan-bordada.jpg' }
+        variants: { 
+          bordado: true, 
+          bordadoImageUrl: '/assets/MaletaMilan_ConBordado.jpg',
+          galleryImages: [
+            '/assets/MaletaMilan_ConBordado.jpg',
+            '/assets/MaletaMilan_ConMoño.jpg'
+          ],
+          bordadoGalleryImages: [
+            '/assets/MaletaMilan_ConBordado.jpg',
+            '/assets/maleta-milan-bordada.jpg',
+            '/assets/MaletaMilan_ConMoño.jpg'
+          ]
+        }
       },
       'Organizador de Higiene': {
         imageUrl: '/assets/Organizador Bordado.jpg',
@@ -132,11 +155,23 @@ async function fixEmbroideryToggle() {
         variants: { bordado: true, bordadoImageUrl: '/assets/Lonchera baul.jpg' }
       },
 
-      // Maleta Milan
+      // Maleta Milan / Mochila Milano
       'Mochila Milano': {
         imageUrl: '/assets/maleta-milan-bordada.jpg',
-        blankImageUrl: '/assets/MaletaMilan_ConBordado.jpg', // This might be the non-embroidered version
-        variants: { bordado: true, bordadoImageUrl: '/assets/maleta-milan-bordada.jpg' }
+        blankImageUrl: '/assets/MaletaMilan_ConBordado.jpg',
+        variants: { 
+          bordado: true, 
+          bordadoImageUrl: '/assets/maleta-milan-bordada.jpg',
+          galleryImages: [
+            '/assets/MaletaMilan_ConBordado.jpg',
+            '/assets/MaletaMilan_ConMoño.jpg'
+          ],
+          bordadoGalleryImages: [
+            '/assets/maleta-milan-bordada.jpg',
+            '/assets/MaletaMilan_ConBordado.jpg',
+            '/assets/MaletaMilan_ConMoño.jpg'
+          ]
+        }
       },
 
       // Mini Fantasy Collection
