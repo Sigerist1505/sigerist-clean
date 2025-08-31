@@ -71,7 +71,7 @@ WOMPI_PRIVATE_KEY=your-wompi-key
 # App
 SESSION_SECRET=random-secure-string
 NODE_ENV=production
-PORT=5000
+# PORT - Railway lo asigna automáticamente, no configurar manualmente
 ```
 
 ### 3. Deploy en Railway
@@ -150,7 +150,7 @@ DATABASE_URL=postgresql://...     # Se genera automáticamente en Railway
 ### Para desarrollo local
 ```env
 NODE_ENV=development
-PORT=5000  # Puerto del backend
+PORT=5000  # Puerto del backend (solo para desarrollo local)
 ```
 
 # 3. Ejecutar en desarrollo
@@ -187,7 +187,7 @@ DATABASE_URL=postgresql://...
 
 # Opcional para desarrollo
 NODE_ENV=development
-PORT=5000  # Backend port
+PORT=5000  # Backend port (solo para desarrollo local)
 ```
 
 ## ✅ Funcionalidades

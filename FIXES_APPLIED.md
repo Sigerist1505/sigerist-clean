@@ -85,7 +85,7 @@ DATABASE_URL=postgresql://...
 ```env
 SESSION_SECRET=your-secure-secret
 NODE_ENV=production
-PORT=5000
+# PORT - Let Railway/hosting platform assign automatically
 ```
 
 ## 🎯 Expected User Experience
