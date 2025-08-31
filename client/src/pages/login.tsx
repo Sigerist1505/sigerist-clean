@@ -78,11 +78,9 @@ export default function LoginPage() {
         variant: "default",
       });
       
-      // Wait a moment for session to be saved, then refresh auth status and navigate
-      setTimeout(async () => {
-        await refreshAuthStatus();
-        setLocation("/");
-      }, 500);
+      // Refresh auth status immediately, then navigate
+      await refreshAuthStatus();
+      setLocation("/");
     },
     onError: (error) => {
       console.error("Login mutation error:", error);
