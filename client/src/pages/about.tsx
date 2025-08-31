@@ -54,11 +54,11 @@ export default function About() {
 
               <div className="grid grid-cols-2 gap-6 mb-8">
                 <div className="text-center p-6 bg-gradient-to-br from-[#ebc005]/10 to-[#C0C0C0]/10 rounded-xl border border-[#C0C0C0]/20">
-                  <div className="text-3xl font-black text-[#ebc005]" style={{textShadow: '0 0 10px rgba(235, 192, 5, 0.5)'}}>500+</div>
+                  <div className="text-3xl font-black text-[#ebc005]" style={{textShadow: '0 0 10px rgba(235, 192, 5, 0.5)'}}>100+</div>
                   <div className="text-sm text-[#C0C0C0] font-semibold">Familias Felices</div>
                 </div>
                 <div className="text-center p-6 bg-gradient-to-br from-[#ebc005]/10 to-[#C0C0C0]/10 rounded-xl border border-[#C0C0C0]/20">
-                  <div className="text-3xl font-black text-[#ebc005]" style={{textShadow: '0 0 10px rgba(235, 192, 5, 0.5)'}}>6</div>
+                  <div className="text-3xl font-black text-[#ebc005]" style={{textShadow: '0 0 10px rgba(235, 192, 5, 0.5)'}}>1</div>
                   <div className="text-sm text-[#C0C0C0] font-semibold">Años de Experiencia</div>
                 </div>
               </div>
@@ -243,7 +243,7 @@ export default function About() {
             ¿LISTO PARA CREAR TU HISTORIA?
           </h2>
           <p className="text-xl text-[#C0C0C0] mb-8 max-w-2xl mx-auto">
-            Únete a las +500 familias que han confiado en Sigerist para crear sus tesoros más preciados
+            Únete a las +100 familias que han confiado en Sigerist para crear sus tesoros más preciados
           </p>
           <Button 
             size="lg"
