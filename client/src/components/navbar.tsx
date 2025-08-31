@@ -168,9 +168,9 @@ export function Navbar() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Search */}
-            <div className="relative">
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Search - Hidden on mobile */}
+            <div className="relative hidden md:block">
               {isSearchOpen ? (
                 <div className="flex items-center">
                   <Input
@@ -212,8 +212,9 @@ export function Navbar() {
               )}
             </div>
 
+            {/* Auth buttons - Hidden on mobile, shown in hamburger menu */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-3">
                 <span className="text-white text-sm">
                   <User className="h-4 w-4 inline mr-1" />
                   Hola, {user?.firstName}
@@ -229,7 +230,7 @@ export function Navbar() {
                 </Button>
               </div>
             ) : (
-              <>
+              <div className="hidden md:flex items-center gap-2">
                 <Link href="/login">
                   <Button
                     variant="ghost"
@@ -249,7 +250,7 @@ export function Navbar() {
                     Registrarse
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
             
             <div className="relative">

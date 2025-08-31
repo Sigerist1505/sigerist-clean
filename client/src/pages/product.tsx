@@ -167,23 +167,20 @@ function ProductPage() {
         description: "Mochila Milano con diseño elegante y bordado de leoncito premium",
         price: 435000,
         category: "Mochilas",
-        imageUrl: "/assets/MaletaMilan_ConBordado_1754093212912.jpg",
+        imageUrl: "/assets/maleta-milan-bordada.jpg",
         inStock: true,
         variants: {
           bordado: true,
-          bordadoImageUrl: "/assets/MaletaMilan_ConBordado_1754093212912.jpg",
-          blankImageUrl: "/assets/Maleta_Milan_SinBordar_1754094149304.jpg",
+          bordadoImageUrl: "/assets/maleta-milan-bordada.jpg",
+          blankImageUrl: "/assets/MaletaMilan_ConBordado.jpg",
           galleryImages: [
-            "/assets/Maleta_Milan_SinBordar_1754094149304.jpg",
-            "/assets/Milan_Extra1.jpg",
-            "/assets/Milan_Extra2.jpg",
-            "/assets/Milan_Extra3.jpg"
+            "/assets/MaletaMilan_ConBordado.jpg",
+            "/assets/MaletaMilan_ConMoño.jpg"
           ],
           bordadoGalleryImages: [
-            "/assets/MaletaMilan_ConBordado_1754093212912.jpg",
-            "/assets/Milan_Bordado_Extra1.jpg",
-            "/assets/Milan_Bordado_Extra2.jpg",
-            "/assets/Milan_Bordado_Extra3.jpg"
+            "/assets/maleta-milan-bordada.jpg",
+            "/assets/MaletaMilan_ConBordado.jpg",
+            "/assets/MaletaMilan_ConMoño.jpg"
           ],
         }
       },
@@ -193,10 +190,18 @@ function ProductPage() {
         description: "Cambiador portátil con diseño funcional y elegante - Solo disponible sin bordado",
         price: 105000,
         category: "Accesorios",
-        imageUrl: "/assets/Cambiador_1754094149302.jpg",
+        imageUrl: "/assets/Cambiador.jpg",
         inStock: true,
         variants: {
           bordado: false,
+          galleryImages: [
+            "/assets/Cambiador.jpg",
+            "/assets/Cambiador 2.jpg"
+          ],
+          bordadoGalleryImages: [
+            "/assets/Cambiador.jpg",
+            "/assets/Cambiador 2.jpg"
+          ]
         }
       },
       9: {
