@@ -202,27 +202,27 @@ export default function PaymentSuccessPage() {
                 </p>
                 
                 {orderData && (
-                  <div className="bg-green-900/30 border border-green-500/30 rounded-lg p-4 mb-6 max-w-md mx-auto">
-                    <p className="text-green-400 text-sm font-semibold mb-2">
+                  <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4 mb-6 max-w-md mx-auto">
+                    <p className="text-blue-400 text-sm font-semibold mb-2">
                       ✅ Orden #{orderData.id} confirmada
                     </p>
-                    <p className="text-green-400 text-sm">
+                    <p className="text-blue-400 text-sm">
                       💰 Total: ${orderData.total?.toLocaleString('es-CO')} COP
                     </p>
-                    <p className="text-green-400 text-sm">
+                    <p className="text-blue-400 text-sm">
                       📧 Email enviado a: {orderData.customerEmail}
                     </p>
-                    <p className="text-green-400 text-sm">
+                    <p className="text-blue-400 text-sm">
                       🛍️ {orderData.items?.length || 0} {orderData.items?.length === 1 ? 'producto' : 'productos'}
                     </p>
                   </div>
                 )}
 
-                <div className="bg-green-900/30 border border-green-500/30 rounded-lg p-4 mb-6 max-w-md mx-auto">
-                  <p className="text-green-400 text-sm">
+                <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4 mb-6 max-w-md mx-auto">
+                  <p className="text-blue-400 text-sm">
                     ✅ Pago procesado en Pesos Colombianos (COP)
                   </p>
-                  <p className="text-green-400 text-sm">
+                  <p className="text-blue-400 text-sm">
                     🏦 Transacción verificada por Wompi
                   </p>
                 </div>
