@@ -498,6 +498,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Calculate server-side total for validation
+      const calculatedTotal = cartItems.reduce((sum, item) => {
+        return sum + (item.price * item.quantity);
+      }, 0);
+
+      // Log total validation
+      console.log(`💰 Server-side calculated total: ${calculatedTotal}`);
+      console.log(`💰 Client-provided amount: ${amount}`);
+      
+      // Use the calculated total (more reliable than client-provided amount)
+      const finalAmount = calculatedTotal;
+
       // Prepare order data
       const orderData = {
         customerName,
@@ -518,12 +530,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           expressService: item.expressService,
           hasBordado: item.hasBordado
         }))),
-        total: amount,
+        total: finalAmount,
         status: "completed"
       };
 
       // Create the order
+      console.log(`📝 Creating order with total: ${orderData.total} for customer: ${customerEmail}`);
       const order = await storage.createOrder(orderData);
+      console.log(`✅ Order created successfully with ID: ${order.id} and total: ${order.total}`);
       
       // Send purchase confirmation email
       try {
@@ -537,6 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           keychainPersonalization: item.keychainPersonalization
         }));
         
+        console.log(`📧 Attempting to send purchase confirmation email to ${customerEmail}`);
         const emailSent = await emailService.sendPurchaseConfirmation(
           customerEmail, 
           firstName, 
@@ -545,12 +560,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         
         if (!emailSent) {
-          console.warn(`Failed to send purchase confirmation email to ${customerEmail}`);
+          console.warn(`⚠️ Failed to send purchase confirmation email to ${customerEmail}`);
         } else {
           console.log(`✅ Purchase confirmation email sent to ${customerEmail} for order #${order.id}`);
         }
       } catch (emailError) {
-        console.error("Error sending purchase confirmation email:", emailError);
+        console.error("❌ Error sending purchase confirmation email:", emailError);
         // Don't fail the order if email fails
       }
 

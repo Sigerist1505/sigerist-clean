@@ -52,7 +52,7 @@ export default function PaymentSuccessPage() {
       transactionId: transactionId || 'N/A',
       date: new Date().toLocaleDateString('es-CO'),
       time: new Date().toLocaleTimeString('es-CO'),
-      amount: '15,000', // Fallback amount
+      amount: 'Monto no disponible', // More appropriate fallback
       status: 'PROCESADO',
       paymentMethod: 'Tarjeta de Crédito',
       reference: 'N/A',
