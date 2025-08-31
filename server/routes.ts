@@ -469,6 +469,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment completion endpoint - creates order and sends confirmation email
+  app.post("/api/payment/complete", async (req, res) => {
+    try {
+      const { 
+        transactionId, 
+        reference, 
+        customerEmail, 
+        customerName, 
+        customerPhone, 
+        amount, 
+        sessionId 
+      } = req.body;
+
+      if (!transactionId || !reference || !customerEmail || !customerName || !customerPhone || !amount || !sessionId) {
+        return res.status(400).json({
+          message: "Missing required fields",
+          required: ["transactionId", "reference", "customerEmail", "customerName", "customerPhone", "amount", "sessionId"]
+        });
+      }
+
+      // Get cart items for this session
+      const cartItems = await storage.getCartItemsBySession(sessionId);
+      
+      if (!cartItems || cartItems.length === 0) {
+        return res.status(400).json({
+          message: "No cart items found for this session"
+        });
+      }
+
+      // Prepare order data
+      const orderData = {
+        customerName,
+        customerEmail,
+        customerPhone,
+        items: JSON.stringify(cartItems.map(item => ({
+          id: item.id,
+          productId: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          personalization: item.personalization,
+          addNameEmbroidery: item.addNameEmbroidery,
+          keychainPersonalization: item.keychainPersonalization,
+          addPompon: item.addPompon,
+          addPersonalizedKeychain: item.addPersonalizedKeychain,
+          addDecorativeBow: item.addDecorativeBow,
+          expressService: item.expressService,
+          hasBordado: item.hasBordado
+        }))),
+        total: amount,
+        status: "completed"
+      };
+
+      // Create the order
+      const order = await storage.createOrder(orderData);
+      
+      // Send purchase confirmation email
+      try {
+        const firstName = customerName.split(' ')[0] || customerName;
+        const itemsForEmail = cartItems.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          personalization: item.personalization,
+          addNameEmbroidery: item.addNameEmbroidery,
+          keychainPersonalization: item.keychainPersonalization
+        }));
+        
+        const emailSent = await emailService.sendPurchaseConfirmation(
+          customerEmail, 
+          firstName, 
+          order, 
+          itemsForEmail
+        );
+        
+        if (!emailSent) {
+          console.warn(`Failed to send purchase confirmation email to ${customerEmail}`);
+        } else {
+          console.log(`✅ Purchase confirmation email sent to ${customerEmail} for order #${order.id}`);
+        }
+      } catch (emailError) {
+        console.error("Error sending purchase confirmation email:", emailError);
+        // Don't fail the order if email fails
+      }
+
+      // Clear the cart for this session
+      await storage.clearCartBySession(sessionId);
+
+      res.json({
+        success: true,
+        order: {
+          id: order.id,
+          total: order.total,
+          items: cartItems,
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          transactionId,
+          reference,
+          createdAt: order.createdAt
+        }
+      });
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      console.error("Error completing payment:", error);
+      res.status(500).json({ 
+        message: "Error completing payment", 
+        error: errorMessage 
+      });
+    }
+  });
+
   // WhatsApp (simplificado)
   app.post("/webhook/whatsapp", async (req, res) => {
     try {
