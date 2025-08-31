@@ -25,8 +25,25 @@ function stripeGuard(res: Response) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check
-  app.get("/api/health", (_req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  app.get("/api/health", async (_req, res) => {
+    try {
+      // Test database connectivity
+      await storage.getProducts();
+      res.json({ 
+        ok: true,
+        status: "Luxury service ready", 
+        database: "connected",
+        timestamp: new Date().toISOString() 
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        ok: false,
+        status: "Service degraded", 
+        database: "disconnected",
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString() 
+      });
+    }
   });
 
   // Email service status endpoint
@@ -536,8 +553,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create the order
       console.log(`📝 Creating order with total: ${orderData.total} for customer: ${customerEmail}`);
-      const order = await storage.createOrder(orderData);
-      console.log(`✅ Order created successfully with ID: ${order.id} and total: ${order.total}`);
+      let order;
+      try {
+        order = await storage.createOrder(orderData);
+        console.log(`✅ Order created successfully with ID: ${order.id} and total: ${order.total}`);
+      } catch (dbError) {
+        console.error(`❌ Database error creating order:`, dbError);
+        return res.status(500).json({
+          message: "Error saving order to database",
+          error: dbError instanceof Error ? dbError.message : "Database connection failed"
+        });
+      }
       
       // Send purchase confirmation email
       try {
