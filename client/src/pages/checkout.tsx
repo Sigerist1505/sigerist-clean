@@ -77,7 +77,7 @@ export default function CheckoutPage() {
     localStorage.setItem(storageKey, newReference);
     
     return newReference;
-  }, [items.length, finalTotal]); // Only regenerate if cart changes significantly
+  }, [items.length, total]); // Only regenerate if cart changes significantly
 
   if (items.length === 0) {
     return (
@@ -125,7 +125,7 @@ export default function CheckoutPage() {
                   Descuento {discountCode}: -{formatPrice(discountAmount)} • 
                 </span>
               )}
-              Total: {formatPrice(finalTotal)}
+              Total: {formatPrice(total)}
             </p>
           </div>
           <Link href="/cart">
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
 
         {/* Wompi Widget Component with Cart Data */}
         <WompiWidget 
-          amount={finalTotal}
+          amount={total} // Use regular total for now
           reference={stableReference}
           customerEmail={customerInfo.email || "daniel.sigerist101@gmail.com"}
           customerPhone={customerInfo.phone || "3160183418"}
@@ -185,12 +185,55 @@ export default function CheckoutPage() {
           redirectUrl={`${window.location.origin}/payment-success`}
           onSuccess={(transactionId) => {
             console.log('Payment successful:', transactionId);
-            // Clear checkout reference from localStorage on successful payment
-            const sessionId = getSessionId();
-            localStorage.removeItem(`checkout_ref_${sessionId}`);
-            // Limpiar carrito y redirigir a página de éxito
-            clearCart();
-            setLocation(`/payment-success?transaction=${transactionId}`);
+            
+            // Call payment completion endpoint to create order and send email
+            const completePayment = async () => {
+              try {
+                const response = await fetch('/api/payment/complete', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    transactionId,
+                    reference: stableReference,
+                    customerEmail: customerInfo.email || "daniel.sigerist101@gmail.com",
+                    customerName: customerInfo.name || "Cliente",
+                    customerPhone: customerInfo.phone || "3160183418",
+                    amount: total, // Use regular total for now
+                    sessionId: getSessionId()
+                  })
+                });
+                
+                if (response.ok) {
+                  const orderData = await response.json();
+                  console.log('Order created successfully:', orderData);
+                  
+                  // Store order data for payment success page
+                  sessionStorage.setItem('completedOrder', JSON.stringify(orderData.order));
+                  
+                  // Clear checkout reference from localStorage on successful payment
+                  const sessionId = getSessionId();
+                  localStorage.removeItem(`checkout_ref_${sessionId}`);
+                  
+                  // Navigate to success page
+                  setLocation(`/payment-success?transaction=${transactionId}`);
+                } else {
+                  const error = await response.json();
+                  console.error('Failed to complete payment:', error);
+                  // Still redirect to success page, but without order data
+                  clearCart();
+                  setLocation(`/payment-success?transaction=${transactionId}`);
+                }
+              } catch (error) {
+                console.error('Error completing payment:', error);
+                // Still redirect to success page, but without order data
+                clearCart();
+                setLocation(`/payment-success?transaction=${transactionId}`);
+              }
+            };
+            
+            completePayment();
           }}
           onError={(error) => {
             console.error('Payment error:', error);
