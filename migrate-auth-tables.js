@@ -29,6 +29,7 @@ async function migrate() {
         discount_code TEXT,
         discount_used BOOLEAN DEFAULT false NOT NULL,
         discount_expires_at TIMESTAMP,
+        accepts_marketing BOOLEAN DEFAULT false NOT NULL,
         created_at TIMESTAMP DEFAULT NOW() NOT NULL
       )
     `;
