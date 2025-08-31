@@ -14,21 +14,67 @@ export default function CheckoutPage() {
   const { customerInfo } = useCustomerInfo();
   const [, setLocation] = useLocation();
 
+  // Function to force generate a new reference (useful after failed payments)
+  const generateFreshReference = () => {
+    const sessionId = getSessionId();
+    const storageKey = `checkout_ref_${sessionId}`;
+    localStorage.removeItem(storageKey);
+    
+    // Generate completely new reference
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substr(2, 5);
+    const newReference = `SIGERIST-${sessionId}-${timestamp}-${randomSuffix}`;
+    localStorage.setItem(storageKey, newReference);
+    
+    return newReference;
+  };
+
   // Generate a stable reference number that persists across re-renders
   // Uses session ID to ensure uniqueness per user session and a consistent timestamp
   const stableReference = useMemo(() => {
     const sessionId = getSessionId();
-    const checkoutSession = localStorage.getItem(`checkout_ref_${sessionId}`);
+    const storageKey = `checkout_ref_${sessionId}`;
+    const existingRef = localStorage.getItem(storageKey);
     
-    if (checkoutSession) {
-      // Use existing reference if we're in the same checkout session
-      return checkoutSession;
+    // Check if existing reference is still valid (not older than 30 minutes)
+    if (existingRef) {
+      try {
+        const parts = existingRef.split('-');
+        if (parts.length >= 4) {
+          // New format: SIGERIST-{sessionId}-{timestamp}-{randomSuffix}
+          const timestamp = parseInt(parts[2]);
+          const now = Date.now();
+          const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+          
+          // If reference is still fresh (less than 30 minutes old), reuse it
+          if (!isNaN(timestamp) && now - timestamp < thirtyMinutes) {
+            return existingRef;
+          }
+        } else if (parts.length === 3) {
+          // Old format: SIGERIST-{sessionId}-{timestamp}
+          const timestamp = parseInt(parts[2]);
+          const now = Date.now();
+          const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+          
+          // If reference is still fresh (less than 30 minutes old), reuse it
+          if (!isNaN(timestamp) && now - timestamp < thirtyMinutes) {
+            return existingRef;
+          }
+        }
+      } catch (error) {
+        console.warn('Invalid existing reference format, generating new one');
+      }
+      
+      // Remove expired reference
+      localStorage.removeItem(storageKey);
     }
     
     // Generate new reference for this checkout session
+    // Include additional randomness to ensure uniqueness across payment attempts
     const timestamp = Date.now();
-    const newReference = `SIGERIST-${sessionId}-${timestamp}`;
-    localStorage.setItem(`checkout_ref_${sessionId}`, newReference);
+    const randomSuffix = Math.random().toString(36).substr(2, 5);
+    const newReference = `SIGERIST-${sessionId}-${timestamp}-${randomSuffix}`;
+    localStorage.setItem(storageKey, newReference);
     
     return newReference;
   }, [items.length, finalTotal]); // Only regenerate if cart changes significantly
@@ -148,6 +194,10 @@ export default function CheckoutPage() {
           }}
           onError={(error) => {
             console.error('Payment error:', error);
+            // Clear checkout reference from localStorage on payment error
+            // This ensures a fresh reference for the next payment attempt
+            const sessionId = getSessionId();
+            localStorage.removeItem(`checkout_ref_${sessionId}`);
             // Redirigir a página de error con detalles
             setLocation(`/payment-error?error=${encodeURIComponent(error)}`);
           }}
