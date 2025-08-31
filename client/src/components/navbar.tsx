@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ShoppingBag, Search, Menu, X, User, LogOut } from "lucide-react";
 import { useCart } from "./cart-provider";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/auth-context";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
