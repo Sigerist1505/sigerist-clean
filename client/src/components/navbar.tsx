@@ -35,6 +35,7 @@ export function Navbar() {
       'viaje': 'maleta',
       'milan': 'maleta',
       'milano': 'maleta',
+      'viajera': 'maleta',
       
       // Pañaleras/Diaper bags
       'pañalera': 'pañalera',
@@ -44,6 +45,8 @@ export function Navbar() {
       'diaper': 'pañalera',
       'baby': 'pañalera',
       'multifuncional': 'pañalera',
+      'grande': 'pañalera',
+      'mediana': 'pañalera',
       
       // Cambiadores/Changing pads
       'cambiador': 'cambiador',
@@ -72,12 +75,16 @@ export function Navbar() {
       'baul': 'lonchera',
       'porta': 'lonchera',
       'biberones': 'lonchera',
+      'portabiberones': 'lonchera',
+      'portachupetas': 'lonchera',
+      'portachupetes': 'lonchera',
       
       // Organizadores/Organizers
       'organizador': 'organizador',
       'organizadores': 'organizador',
       'organizer': 'organizador',
       'higiene': 'organizador',
+      'mudas': 'organizador',
     };
 
     // Find matching category
@@ -87,10 +94,10 @@ export function Navbar() {
 
     if (matchedCategory) {
       // Redirect to products page with category filter
-      setLocation(`/products?category=${matchedCategory}`);
+      setLocation(`/productos?category=${matchedCategory}`);
     } else {
       // General search - redirect to products page
-      setLocation(`/products?search=${encodeURIComponent(query)}`);
+      setLocation(`/productos?search=${encodeURIComponent(query)}`);
     }
     
     setSearchQuery("");

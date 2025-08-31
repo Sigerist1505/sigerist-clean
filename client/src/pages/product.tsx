@@ -75,10 +75,16 @@ function ProductPage() {
           bordado: true,
           bordadoImageUrl: "/assets/Multifuncional 3 Bordada.jpg",
           blankImageUrl: "/assets/Multifuncional 3 sin Bordado.jpg",
-          galleryImages: ["/assets/Multifuncional 3sinB.jpg"],
+          galleryImages: [
+            "/assets/Multifuncional 3sinB.jpg",
+            "/assets/Multifuncional_Extra1.jpg",
+            "/assets/Multifuncional_Extra2.jpg"
+          ],
           bordadoGalleryImages: [
             "/assets/Multifuncional 3 Bordada.jpg",
             "/assets/Multifuncional 2 Bordada.jpg",
+            "/assets/Multifuncional_Bordado_Extra1.jpg",
+            "/assets/Multifuncional_Bordado_Extra2.jpg"
           ],
         }
       },
@@ -167,6 +173,18 @@ function ProductPage() {
           bordado: true,
           bordadoImageUrl: "/assets/MaletaMilan_ConBordado_1754093212912.jpg",
           blankImageUrl: "/assets/Maleta_Milan_SinBordar_1754094149304.jpg",
+          galleryImages: [
+            "/assets/Maleta_Milan_SinBordar_1754094149304.jpg",
+            "/assets/Milan_Extra1.jpg",
+            "/assets/Milan_Extra2.jpg",
+            "/assets/Milan_Extra3.jpg"
+          ],
+          bordadoGalleryImages: [
+            "/assets/MaletaMilan_ConBordado_1754093212912.jpg",
+            "/assets/Milan_Bordado_Extra1.jpg",
+            "/assets/Milan_Bordado_Extra2.jpg",
+            "/assets/Milan_Bordado_Extra3.jpg"
+          ],
         }
       },
       8: {

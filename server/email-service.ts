@@ -431,7 +431,7 @@ export class EmailService {
               <li>💌 Ofertas especiales y lanzamientos anticipados</li>
             </ul>
             <p style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL || 'https://sigerist.com'}" class="button">Explorar Productos</a>
+              <a href="https://sigeristluxurybags.com/productos" class="button">Explorar Productos</a>
             </p>
             <p>Si tienes alguna pregunta, no dudes en contactarnos por WhatsApp al +57 316 018 3418.</p>
             <p>¡Gracias por elegir SigeristLuxuryBags!</p>
@@ -494,7 +494,7 @@ export class EmailService {
   }
 
   async sendPurchaseConfirmation(to: string, firstName: string, order: any, items: any[]): Promise<boolean> {
-    const subject = 'Gracias por haber elegido a SigeristLuxuryBags';
+    const subject = '¡Gracias por tu compra! - SigeristLuxuryBags';
     
     // Build items list for email
     let itemsHtml = '';
@@ -548,7 +548,8 @@ export class EmailService {
           </div>
           <div class="content">
             <h2>¡Hola ${firstName}!</h2>
-            <p><strong>Gracias por haber elegido a SigeristLuxuryBags</strong></p>
+            <p><strong>¡Gracias por tu compra! Has elegido calidad y estilo únicos.</strong></p>
+            <p>Estamos emocionados de ser parte de tu historia y de que hayas confiado en nosotros para crear algo especial para ti.</p>
             
             <div class="order-details">
               <h3>Detalles de tu Compra</h3>
@@ -572,9 +573,15 @@ export class EmailService {
               </div>
             </div>
             
-            <p>Tu pedido ha sido recibido y está siendo procesado. Te notificaremos cuando esté listo para envío.</p>
+            <p><strong>¿Qué sigue ahora?</strong></p>
+            <p>• Tu pedido ha sido recibido y estamos comenzando a trabajar en él</p>
+            <p>• Te estaremos mostrando los avances de tu pedido paso a paso</p>
+            <p>• Nuestro equipo de artesanos pondrá todo su cuidado en cada detalle</p>
+            <p>• Te notificaremos cuando esté listo para envío</p>
+            
+            <p style="margin-top: 20px;"><strong>¡Gracias por elegirnos!</strong> En SigeristLuxuryBags creemos que cada bolso cuenta una historia única, y estamos honrados de ser parte de la tuya.</p>
+            
             <p>Si tienes alguna pregunta sobre tu pedido, no dudes en contactarnos por WhatsApp al +57 316 018 3418.</p>
-            <p>¡Gracias nuevamente por elegir SigeristLuxuryBags!</p>
           </div>
           <div class="footer">
             <p>© 2024 SigeristLuxuryBags - Medellín, Colombia</p>

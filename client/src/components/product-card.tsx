@@ -82,7 +82,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/product/${product.id}`} className="group">
-      <Card className="group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-gray-900/95 to-black/95 border-2 border-[#C0C0C0]/30 hover:border-[#ebc005]/60 rounded-2xl hover:shadow-[0_8px_25px_rgba(235,192,5,0.4)]">
+      <Card className="group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-2 border-[#C0C0C0]/30 hover:border-[#ebc005]/60 rounded-2xl hover:shadow-[0_8px_25px_rgba(235,192,5,0.4)]">
         <CardContent className="p-6">
           <div className="relative mb-4">
             <div className="w-full h-64 bg-white product-image-bg rounded-xl p-4 border border-[#C0C0C0]/20">
@@ -115,7 +115,7 @@ export function ProductCard({ product }: ProductCardProps) {
                   className={`w-12 h-12 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm hover:scale-105 ${
                     showEmbroidery
                       ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
-                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0]"
+                      : "bg-slate-700/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0]"
                   }`}
                   title="Con bordado"
                 >
@@ -136,7 +136,7 @@ export function ProductCard({ product }: ProductCardProps) {
                   className={`w-12 h-12 rounded-full border-2 transition-all duration-300 flex items-center justify-center shadow-lg backdrop-blur-sm hover:scale-105 ${
                     !showEmbroidery
                       ? "bg-gradient-to-br from-[#ebc005]/90 to-[#d4a804]/90 border-[#ebc005] scale-110 shadow-[#ebc005]/50"
-                      : "bg-black/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0]"
+                      : "bg-slate-700/80 border-[#C0C0C0]/60 hover:border-[#C0C0C0]"
                   }`}
                   title="Sin bordado"
                 >
@@ -153,7 +153,7 @@ export function ProductCard({ product }: ProductCardProps) {
             
             {/* Status indicator */}
             {hasBordado && (
-              <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
+              <div className="absolute bottom-3 left-3 bg-slate-800/90 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
                 {showEmbroidery ? "Con bordado" : "Sin bordado"}
               </div>
             )}
