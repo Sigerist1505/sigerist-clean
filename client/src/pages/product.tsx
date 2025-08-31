@@ -348,22 +348,44 @@ function ProductPage() {
     );
   }
 
-  const hasBordado = finalProduct.variants?.bordado === true;
+  // Intelligent bordado detection: check explicit flag or infer from available images
+  const hasBordado = finalProduct.variants?.bordado === true || 
+    (finalProduct.variants?.bordado !== false && 
+     (!!finalProduct.variants?.bordadoImageUrl || 
+      !!finalProduct.variants?.blankImageUrl || 
+      (finalProduct.variants?.bordadoGalleryImages && finalProduct.variants.bordadoGalleryImages.length > 0)));
 
   const getGalleryImages = () => {
-    if (!hasBordado) {
-      // Product doesn't support embroidery, use regular gallery images
-      return finalProduct.variants?.galleryImages || [finalProduct.imageUrl];
-    }
-    if (!showEmbroidery) {
-      // User chose "without embroidery", show blank images
-      return [finalProduct.variants?.blankImageUrl || finalProduct.imageUrl];
+    const variants = finalProduct.variants;
+    const galleryImages = variants?.galleryImages || [];
+    const bordadoGalleryImages = variants?.bordadoGalleryImages || [];
+    
+    // Handle cases where database has inconsistent variant data
+    // If bordado is null or undefined, try to determine from available images
+    const shouldShowEmbroideredImages = hasBordado ? showEmbroidery : bordadoGalleryImages.length > 0 && galleryImages.length === 0;
+    
+    if (!hasBordado || !showEmbroidery) {
+      // Product doesn't support embroidery OR user chose "without embroidery"
+      if (galleryImages.length > 0) {
+        return galleryImages;
+      }
+      // Fallback: if no gallery images but has bordado gallery images, use those (for Cambiador case)
+      if (bordadoGalleryImages.length > 0) {
+        return bordadoGalleryImages;
+      }
+      // Final fallback: use blank image or main image
+      return [variants?.blankImageUrl || finalProduct.imageUrl];
     } else {
       // User chose "with embroidery", show embroidered images
-      return (
-        finalProduct.variants?.bordadoGalleryImages ||
-        [finalProduct.variants?.bordadoImageUrl || finalProduct.variants?.referenceImageUrl || finalProduct.imageUrl]
-      );
+      if (bordadoGalleryImages.length > 0) {
+        return bordadoGalleryImages;
+      }
+      // Fallback: if no bordado gallery images but has regular gallery images, use those
+      if (galleryImages.length > 0) {
+        return galleryImages;
+      }
+      // Final fallback: use bordado image or main image
+      return [variants?.bordadoImageUrl || variants?.referenceImageUrl || finalProduct.imageUrl];
     }
   };
 
