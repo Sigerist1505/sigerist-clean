@@ -15,6 +15,7 @@ import { z } from "zod";
 export type ProductVariants = {
   bordado?: boolean;
   bordadoImageUrl?: string;
+  blankImageUrl?: string;
   galleryImages?: string[];
   bordadoGalleryImages?: string[];
 };
@@ -145,6 +146,7 @@ export const registeredUsers = pgTable("registered_users", {
   discountCode: text("discount_code"), // Código de descuento, opcional
   discountUsed: boolean("discount_used").default(false).notNull(), // Descuento usado, por defecto false
   discountExpiresAt: timestamp("discount_expires_at"), // Fecha de expiración del descuento, opcional
+  acceptsMarketing: boolean("accepts_marketing").default(false).notNull(), // Acepta marketing, por defecto false
   createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
 });
 
@@ -229,6 +231,7 @@ export const insertRegisteredUserSchema = createInsertSchema(registeredUsers, {
   name: (s) => s.name.min(2),
   phone: (s) => s.phone.optional(),
   shippingAddress: (s) => s.shippingAddress.optional(),
+  acceptsMarketing: (s) => s.acceptsMarketing,
 }).omit({ id: true, createdAt: true });
 
 export const insertPasswordResetCodeSchema = createInsertSchema(passwordResetCodes, {

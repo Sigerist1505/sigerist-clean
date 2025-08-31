@@ -323,6 +323,7 @@ export class DatabaseStorage implements IStorage {
         name: user.name,
         phone: user.phone,
         shippingAddress: user.shippingAddress,
+        acceptsMarketing: user.acceptsMarketing || false,
         createdAt: new Date(),
       })
       .returning();

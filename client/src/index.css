@@ -372,3 +372,17 @@ input:focus:invalid {
 .mobile-menu {
   z-index: 9999 !important;
 }
+
+/* Hide scrollbar for horizontal mobile navigation */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar { 
+  display: none;  /* Safari and Chrome */
+}
+
+/* Ensure product card image backgrounds are always white */
+.product-image-bg {
+  background-color: #ffffff !important;
+}
