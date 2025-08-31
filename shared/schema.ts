@@ -95,6 +95,11 @@ export const orders = pgTable("orders", {
 
   status: text("status").default("pending").notNull(), // Estado, por defecto "pending"
 
+  // Wompi transaction tracking fields
+  transactionId: text("transaction_id"), // ID de transacción de Wompi
+  paymentReference: text("payment_reference"), // Referencia de pago de Wompi
+  paymentMethod: text("payment_method"), // Método de pago usado
+  
   createdAt: timestamp("created_at").defaultNow().notNull(), // Fecha de creación, automática
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -196,6 +201,9 @@ export const insertOrderSchema = createInsertSchema(orders, {
   items: (s) => s.items.min(1),
   total: () => z.number().positive(),
   status: (s) => s.status,
+  transactionId: (s) => s.transactionId.optional(),
+  paymentReference: (s) => s.paymentReference.optional(),
+  paymentMethod: (s) => s.paymentMethod.optional(),
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
 export const insertContactMessageSchema = createInsertSchema(contactMessages, {

@@ -498,7 +498,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Prepare order data
+      // Prepare order data (including Wompi transaction details)
       const orderData = {
         customerName,
         customerEmail,
@@ -518,12 +518,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           expressService: item.expressService,
           hasBordado: item.hasBordado
         }))),
-        total: amount,
-        status: "completed"
+        total: amount, // Amount received from Wompi
+        status: "completed",
+        transactionId: transactionId, // Wompi transaction ID
+        paymentReference: reference, // Wompi payment reference
+        paymentMethod: "wompi" // Payment method used
       };
 
-      // Create the order
+      // Create the order (total = amount received from Wompi)
       const order = await storage.createOrder(orderData);
+      
+      console.log(`✅ Order created: #${order.id} for ${customerEmail} - Amount received from Wompi: $${amount}`);
       
       // Send purchase confirmation email
       try {
