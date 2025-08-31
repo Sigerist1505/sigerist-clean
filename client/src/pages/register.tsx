@@ -101,9 +101,7 @@ export default function RegisterPage() {
       });
 
       // Refresh auth status to ensure navbar updates immediately
-      setTimeout(async () => {
-        await refreshAuthStatus();
-      }, 100);
+      await refreshAuthStatus();
 
       setIsRegistered(true);
       form.reset();
