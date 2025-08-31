@@ -357,11 +357,11 @@ export default function CartPage() {
                           <span className="text-amber-400 font-medium text-sm">Envío:</span>
                           <span className="text-[#C0C0C0] text-sm">
                             {item.expressService ? (
-                              <Badge variant="secondary" className="text-xs bg-green-600/20 text-green-300 border-green-600/30">
+                              <Badge variant="secondary" className="text-xs bg-blue-600/20 text-blue-300 border-blue-600/30">
                                 Express (+$50.000)
                               </Badge>
                             ) : (
-                              <span className="text-green-300 text-xs">Regular ($25.000 contraentrega)</span>
+                              <span className="text-blue-300 text-xs">Regular ($25.000 contraentrega)</span>
                             )}
                           </span>
                         </div>
@@ -462,9 +462,9 @@ export default function CartPage() {
                       </Button>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between bg-green-900/30 border border-green-400/30 rounded-lg p-3">
+                    <div className="flex items-center justify-between bg-blue-900/30 border border-blue-400/30 rounded-lg p-3">
                       <div>
-                        <p className="text-sm font-medium text-green-300">{discountCode}</p>
+                        <p className="text-sm font-medium text-blue-300">{discountCode}</p>
                         <p className="text-xs text-gray-400">Descuento del 10% aplicado</p>
                       </div>
                       <Button
@@ -480,7 +480,7 @@ export default function CartPage() {
                 </div>
 
                 {discountCode && (
-                  <div className="flex justify-between text-green-400">
+                  <div className="flex justify-between text-blue-400">
                     <span>Descuento (10%)</span>
                     <span>-{formatPrice(discountAmount)}</span>
                   </div>
@@ -501,8 +501,8 @@ export default function CartPage() {
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium text-[#c9a920]">💰 Modalidades de Pago</h4>
                   <div className="space-y-2">
-                    <div className="p-3 bg-green-900/20 border border-green-400/30 rounded-lg">
-                      <p className="text-sm text-green-300 font-medium">• Pago online con tarjeta (Wompi/Stripe)</p>
+                    <div className="p-3 bg-blue-900/20 border border-blue-400/30 rounded-lg">
+                      <p className="text-sm text-blue-300 font-medium">• Pago online con tarjeta (Wompi/Stripe)</p>
                       <p className="text-xs text-gray-400">Pago inmediato y seguro</p>
                     </div>
                     

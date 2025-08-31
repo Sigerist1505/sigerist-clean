@@ -718,7 +718,7 @@ function ProductPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-green-600 text-green-400 hover:bg-green-600 hover:text-white"
+                  className="border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white"
                 >
                   <MessageCircle className="h-5 w-5 mr-2" />
                   WhatsApp
