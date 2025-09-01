@@ -1,0 +1,26 @@
+# Recommended Git configuration for Spanish filenames and UTF-8 support
+# To apply these settings, run: git config --local --file .gitconfig-recommended --list
+# Or copy individual settings to your global/local git config
+
+[core]
+    # Don't quote UTF-8 filenames (show Spanish characters correctly)
+    quotepath = false
+    
+    # Handle Unicode composition properly
+    precomposeunicode = true
+    
+    # Ensure proper file mode handling
+    filemode = true
+
+[i18n]
+    # Set UTF-8 encoding for commits and logs
+    commitencoding = utf-8
+    logoutputencoding = utf-8
+
+[push]
+    # Use simple push strategy
+    default = simple
+
+[pull]
+    # Use rebase instead of merge for pulls
+    rebase = false

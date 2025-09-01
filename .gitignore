@@ -70,7 +70,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# NOTE: We want to include client/public/ so we don't ignore 'public' globally
 
 # Storybook build outputs
 .out
@@ -107,11 +107,8 @@ Thumbs.db
 # Drizzle
 drizzle/ 
 
-# --- allow frontend public assets (override global ignore) ---
-!client/public/
-!client/public/**
-!client/public/assets/
-!client/public/assets/**
+# Keep client/public/ and all its contents (assets, bordados, etc.)
+# No exclusions needed - these are part of the web application
 .env.test
 
 # Test files
