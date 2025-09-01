@@ -4,47 +4,112 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Palette, Scissors, Layers } from "lucide-react";
 
-// List of embroidery images in the bordados folder
+// List of embroidery design images in the bordados folder
 const embroideryImages = [
   {
-    src: "/bordados/Bolsito_perrito_bordado.jpg",
-    title: "Bolsito Perrito Bordado",
-    description: "Diseño personalizado con bordado de perrito"
+    src: "/bordados/Leoncito.jpg",
+    title: "Leoncito",
+    description: "Diseño de leoncito bordado artesanal"
   },
   {
-    src: "/bordados/Bolso_Rosadito_Bordado_Minifantasy.jpg",
-    title: "Bolso Rosadito Bordado",
-    description: "Elegante bolso con bordado minifantasy"
+    src: "/bordados/animaciones.jpg",
+    title: "Animaciones",
+    description: "Bordados de personajes animados"
   },
   {
-    src: "/bordados/MaletaMilan_ConBordado.jpg",
-    title: "Maleta Milán con Bordado",
-    description: "Maleta de viaje con bordado personalizado"
+    src: "/bordados/animalitos.jpg",
+    title: "Animalitos",
+    description: "Colección de animalitos bordados"
   },
   {
-    src: "/bordados/Multifuncional_2_Bordada.jpg",
-    title: "Multifuncional Bordada",
-    description: "Diseño multifuncional con bordado artesanal"
+    src: "/bordados/blancanieves.jpg",
+    title: "Blancanieves",
+    description: "Bordado del personaje de Blancanieves"
   },
   {
-    src: "/bordados/Organizador_Bordado.jpg",
-    title: "Organizador Bordado",
-    description: "Organizador práctico con bordado personalizado"
+    src: "/bordados/caballo.jpg",
+    title: "Caballo",
+    description: "Diseño de caballo bordado"
   },
   {
-    src: "/bordados/Porta_Biberones_Bordado.jpg",
-    title: "Porta Biberones Bordado",
-    description: "Porta biberones con bordado único"
+    src: "/bordados/carrito.jpg",
+    title: "Carrito",
+    description: "Bordado de carrito infantil"
   },
   {
-    src: "/bordados/maleta-milan-bordada.jpg",
-    title: "Maleta Milán Bordada",
-    description: "Maleta premium con bordado de lujo"
+    src: "/bordados/chico.jpg",
+    title: "Chico",
+    description: "Diseño de niño bordado"
   },
   {
-    src: "/bordados/maleta-viajera-bordada.jpg",
-    title: "Maleta Viajera Bordada",
-    description: "Maleta viajera con bordado personalizable"
+    src: "/bordados/hada.jpg",
+    title: "Hada",
+    description: "Bordado de hada mágica"
+  },
+  {
+    src: "/bordados/hada 2.jpg",
+    title: "Hada 2",
+    description: "Segundo diseño de hada bordada"
+  },
+  {
+    src: "/bordados/leona.jpg",
+    title: "Leona",
+    description: "Bordado de leona elegante"
+  },
+  {
+    src: "/bordados/mini mouse.jpg",
+    title: "Mini Mouse",
+    description: "Bordado de Mini Mouse"
+  },
+  {
+    src: "/bordados/mouse.jpg",
+    title: "Mouse",
+    description: "Diseño de ratoncito bordado"
+  },
+  {
+    src: "/bordados/muñeca.jpg",
+    title: "Muñeca",
+    description: "Bordado de muñeca clásica"
+  },
+  {
+    src: "/bordados/muñeca 2.jpg",
+    title: "Muñeca 2",
+    description: "Segundo diseño de muñeca bordada"
+  },
+  {
+    src: "/bordados/osito.jpg",
+    title: "Osito",
+    description: "Bordado de osito tierno"
+  },
+  {
+    src: "/bordados/oveja.jpg",
+    title: "Oveja",
+    description: "Diseño de oveja bordada"
+  },
+  {
+    src: "/bordados/princesa.jpg",
+    title: "Princesa",
+    description: "Bordado de princesa elegante"
+  },
+  {
+    src: "/bordados/safari.jpg",
+    title: "Safari",
+    description: "Diseño de animales del safari"
+  },
+  {
+    src: "/bordados/safari 2.jpg",
+    title: "Safari 2",
+    description: "Segundo diseño de safari bordado"
+  },
+  {
+    src: "/bordados/wini pu.jpg",
+    title: "Winnie Pooh",
+    description: "Bordado de Winnie Pooh"
+  },
+  {
+    src: "/bordados/zoo.jpg",
+    title: "Zoo",
+    description: "Colección de animales del zoológico"
   }
 ];
 
