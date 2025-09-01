@@ -1,7 +1,18 @@
 // server/mock-storage.ts
-// Simple in-memory storage for testing authentication flow
+// Enhanced in-memory storage for testing all functionality including cart and orders
 
 import * as bcrypt from "bcryptjs";
+import { 
+  type Product, 
+  type CartItem, 
+  type InsertCartItem, 
+  type Order, 
+  type InsertOrder,
+  type ContactMessage,
+  type InsertContactMessage,
+  type RegisteredUser,
+  type InsertRegisteredUser
+} from "@shared/schema";
 
 interface User {
   id: number;
@@ -20,7 +31,15 @@ interface PasswordResetCode {
 export class MockStorage {
   private users: User[] = [];
   private resetCodes: PasswordResetCode[] = [];
+  private cartItems: CartItem[] = [];
+  private orders: Order[] = [];
+  private contactMessages: ContactMessage[] = [];
+  private registeredUsers: RegisteredUser[] = [];
   private nextUserId = 1;
+  private nextCartItemId = 1;
+  private nextOrderId = 1;
+  private nextContactId = 1;
+  private nextRegisteredUserId = 1;
 
   constructor() {
     // Add a test user for demo purposes
@@ -53,24 +72,22 @@ export class MockStorage {
     return this.users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
   }
 
-  async createRegisteredUser(userData: {
-    email: string;
-    passwordHash: string;
-    name: string;
-    phone?: string;
-    shippingAddress?: string;
-  }): Promise<User> {
+  async createRegisteredUser(userData: InsertRegisteredUser): Promise<RegisteredUser> {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(userData.passwordHash, saltRounds);
     
-    const newUser: User = {
-      id: this.nextUserId++,
-      name: userData.name,
-      email: userData.email.toLowerCase(),
+    const newUser: RegisteredUser = {
+      id: this.nextRegisteredUserId++,
+      email: userData.email,
       passwordHash: hashedPassword,
+      name: userData.name,
+      phone: userData.phone || null,
+      shippingAddress: userData.shippingAddress || null,
+      createdAt: new Date()
     };
 
-    this.users.push(newUser);
+    this.registeredUsers.push(newUser);
+    console.log(`✅ Mock: Created registered user #${newUser.id} - ${userData.email}`);
     return newUser;
   }
 
@@ -152,19 +169,147 @@ export class MockStorage {
     }
   }
 
-  // Mock implementations for other required methods
-  async getProducts() { return []; }
-  async getCartItems() { return []; }
-  async addCartItem() { return { id: 1, productId: 1, quantity: 1, customizations: null, sessionId: 'test' }; }
-  async updateCartItem() { return true; }
-  async removeCartItem() { return true; }
-  async clearCart() { return true; }
-  async getCartItemsBySession() { return []; }
-  async clearCartBySession() { return true; }
-  async createOrder() { return { id: 1, customerName: 'Test', customerEmail: 'test@test.com', customerPhone: '123', total: 100, shippingAddress: 'Test', status: 'pending', createdAt: new Date() }; }
-  async getOrders() { return []; }
-  async createContactMessage() { return { id: 1, name: 'Test', email: 'test@test.com', phone: '123', message: 'Test', createdAt: new Date() }; }
-  async validateDiscountCode() { return { valid: false }; }
+  // Mock implementations for cart and orders
+  async getProducts(): Promise<Product[]> { 
+    return [
+      {
+        id: 1,
+        name: "Test Luxury Bag",
+        description: "A beautiful test bag for demonstration",
+        price: 50000,
+        category: "luxury",
+        imageUrl: "https://example.com/bag.jpg",
+        blankImageUrl: "https://example.com/bag-blank.jpg", 
+        referenceImageUrl: "https://example.com/bag-ref.jpg",
+        animalType: null,
+        colors: ["negro", "café"],
+        inStock: true,
+        variants: {},
+        createdAt: new Date()
+      }
+    ]; 
+  }
+
+  async getCartItems(): Promise<CartItem[]> { 
+    return this.cartItems; 
+  }
+
+  async getCartItemsBySession(sessionId: string): Promise<CartItem[]> {
+    return this.cartItems.filter(item => item.sessionId === sessionId);
+  }
+
+  async addCartItem(item: InsertCartItem): Promise<CartItem> {
+    const newItem: CartItem = {
+      id: this.nextCartItemId++,
+      sessionId: item.sessionId,
+      productId: item.productId,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      personalization: item.personalization || null,
+      embroideryColor: item.embroideryColor || null,
+      embroideryFont: item.embroideryFont || null,
+      customPreview: item.customPreview || null,
+      addPompon: item.addPompon || false,
+      addPersonalizedKeychain: item.addPersonalizedKeychain || false,
+      addDecorativeBow: item.addDecorativeBow || false,
+      addPersonalization: item.addPersonalization || false,
+      expressService: item.expressService || false,
+      keychainPersonalization: item.keychainPersonalization || null,
+      addNameEmbroidery: item.addNameEmbroidery || false,
+      hasBordado: item.hasBordado || false
+    };
+    
+    this.cartItems.push(newItem);
+    console.log(`✅ Mock: Added cart item #${newItem.id} for session ${item.sessionId}`);
+    return newItem;
+  }
+
+  async updateCartItem(id: number, quantity: number): Promise<CartItem | undefined> {
+    const item = this.cartItems.find(item => item.id === id);
+    if (item) {
+      item.quantity = quantity;
+      console.log(`✅ Mock: Updated cart item #${id} quantity to ${quantity}`);
+    }
+    return item;
+  }
+
+  async removeCartItem(id: number): Promise<boolean> {
+    const index = this.cartItems.findIndex(item => item.id === id);
+    if (index !== -1) {
+      this.cartItems.splice(index, 1);
+      console.log(`✅ Mock: Removed cart item #${id}`);
+      return true;
+    }
+    return false;
+  }
+
+  async clearCart(): Promise<void> {
+    this.cartItems = [];
+    console.log(`✅ Mock: Cleared all cart items`);
+  }
+
+  async clearCartBySession(sessionId: string): Promise<void> {
+    const originalLength = this.cartItems.length;
+    this.cartItems = this.cartItems.filter(item => item.sessionId !== sessionId);
+    console.log(`✅ Mock: Cleared ${originalLength - this.cartItems.length} cart items for session ${sessionId}`);
+  }
+
+  async createOrder(orderData: InsertOrder): Promise<Order> {
+    const newOrder: Order = {
+      id: this.nextOrderId++,
+      customerName: orderData.customerName,
+      customerEmail: orderData.customerEmail,
+      customerPhone: orderData.customerPhone,
+      items: orderData.items,
+      total: orderData.total,
+      status: orderData.status || "pending",
+      transactionId: orderData.transactionId || null,
+      paymentReference: orderData.paymentReference || null,
+      paymentMethod: orderData.paymentMethod || null,
+      createdAt: new Date()
+    };
+    
+    this.orders.push(newOrder);
+    console.log(`✅ Mock: Created order #${newOrder.id} for ${orderData.customerEmail} - Total: $${orderData.total}`);
+    return newOrder;
+  }
+
+  async getOrders(): Promise<Order[]> { 
+    return this.orders; 
+  }
+
+  async createContactMessage(messageData: InsertContactMessage): Promise<ContactMessage> {
+    const newMessage: ContactMessage = {
+      id: this.nextContactId++,
+      name: messageData.name,
+      email: messageData.email,
+      phone: messageData.phone || null,
+      message: messageData.message,
+      createdAt: new Date()
+    };
+    
+    this.contactMessages.push(newMessage);
+    console.log(`✅ Mock: Created contact message #${newMessage.id} from ${messageData.email}`);
+    return newMessage;
+  }
+
+  async createRegisteredUserWithDiscount(
+    user: InsertRegisteredUser,
+    discount: { discountCode: string; expirationDate: string }
+  ): Promise<RegisteredUser> {
+    const newUser = await this.createRegisteredUser(user);
+    console.log(`✅ Mock: Created user with discount code: ${discount.discountCode}`);
+    return newUser;
+  }
+
+  async getRegisteredUsers(): Promise<RegisteredUser[]> {
+    return this.registeredUsers;
+  }
+
+  async validateDiscountCode(_code: string): Promise<{ valid: boolean }> { 
+    return { valid: false }; 
+  }
 }
 
 export const mockStorage = new MockStorage();

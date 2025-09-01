@@ -57,7 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Products
   app.get("/api/products", async (_req, res) => {
     try {
-      const products = await storage.getProducts();
+      const products = await activeStorage.getProducts();
       res.json(products);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -69,7 +69,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products/:id", async (req, res) => {
     try {
       const id = Number(req.params.id);
-      const product = await storage.getProduct(id);
+      const product = await activeStorage.getProduct(id);
       if (!product) return res.status(404).json({ message: "Product not found" });
       res.json(product);
     } catch (error) {
@@ -82,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cart
   app.get("/api/cart", async (_req, res) => {
     try {
-      const items = await storage.getCartItems();
+      const items = await activeStorage.getCartItems();
       res.json(items);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -112,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return Number(value);
       }
       const validated = insertCartItemSchema.parse(processedBody);
-      const item = await storage.addCartItem(validated);
+      const item = await activeStorage.addCartItem(validated);
       res.status(201).json(item);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -129,7 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = Number(req.params.id);
       const { quantity } = req.body;
-      const item = await storage.updateCartItem(id, quantity);
+      const item = await activeStorage.updateCartItem(id, quantity);
       if (!item) return res.status(404).json({ message: "Cart item not found" });
       res.json(item);
     } catch (error) {
@@ -142,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/cart/:id", async (req, res) => {
     try {
       const id = Number(req.params.id);
-      const ok = await storage.removeCartItem(id);
+      const ok = await activeStorage.removeCartItem(id);
       if (!ok) return res.status(404).json({ message: "Cart item not found" });
       res.json({ message: "Item removed from cart" });
     } catch (error) {
@@ -154,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/cart", async (_req, res) => {
     try {
-      await storage.clearCart();
+      await activeStorage.clearCart();
       res.json({ message: "Cart cleared" });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -167,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/cart/:sessionId", async (req, res) => {
     try {
       const sessionId = req.params.sessionId;
-      const items = await storage.getCartItemsBySession(sessionId);
+      const items = await activeStorage.getCartItemsBySession(sessionId);
       res.json(items);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -179,7 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/cart/session/:sessionId", async (req, res) => {
     try {
       const sessionId = req.params.sessionId;
-      await storage.clearCartBySession(sessionId);
+      await activeStorage.clearCartBySession(sessionId);
       res.json({ message: "Cart cleared" });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -192,7 +192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/orders", async (req, res) => {
     try {
       const validated = insertOrderSchema.parse(req.body);
-      const order = await storage.createOrder(validated);
+      const order = await activeStorage.createOrder(validated);
       
       // Send purchase confirmation email
       try {
@@ -228,7 +228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contact", async (req, res) => {
     try {
       const validated = insertContactMessageSchema.parse(req.body);
-      const message = await storage.createContactMessage(validated);
+      const message = await activeStorage.createContactMessage(validated);
       res.json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -490,7 +490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get cart items for this session
-      const cartItems = await storage.getCartItemsBySession(sessionId);
+      const cartItems = await activeStorage.getCartItemsBySession(sessionId);
       
       if (!cartItems || cartItems.length === 0) {
         return res.status(400).json({
@@ -526,7 +526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Create the order (total = amount received from Wompi)
-      const order = await storage.createOrder(orderData);
+      const order = await activeStorage.createOrder(orderData);
       
       console.log(`✅ Order created: #${order.id} for ${customerEmail} - Amount received from Wompi: $${amount}`);
       
@@ -560,7 +560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Clear the cart for this session
-      await storage.clearCartBySession(sessionId);
+      await activeStorage.clearCartBySession(sessionId);
 
       res.json({
         success: true,
