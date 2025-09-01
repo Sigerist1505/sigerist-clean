@@ -130,7 +130,7 @@ export function Navbar() {
   const navItems = [
     { label: "Inicio", href: "/" },
     { label: "Productos", href: "/#productos" },
-    { label: "Personalización", href: "/#personalizacion" },
+    { label: "Personalización", href: "/personalizacion" },
     { label: "Nosotros", href: "/nosotros" },
     { label: "FAQ", href: "/faq" },
   ];

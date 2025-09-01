@@ -28,7 +28,7 @@ export function Footer() {
               <li><Link href="/#productos" className="hover:text-yellow-400 transition-colors">Mochilas</Link></li>
               <li><Link href="/#productos" className="hover:text-yellow-400 transition-colors">Pañaleras</Link></li>
               <li><Link href="/#productos" className="hover:text-yellow-400 transition-colors">Accesorios</Link></li>
-              <li><Link href="/#personalizacion" className="hover:text-yellow-400 transition-colors">Personalización</Link></li>
+              <li><Link href="/personalizacion" className="hover:text-yellow-400 transition-colors">Personalización</Link></li>
             </ul>
           </div>
           

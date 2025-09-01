@@ -23,6 +23,7 @@ import ForgotPasswordPage from "@/pages/forgot-password";
 import NotFound from "@/pages/not-found";
 import FAQ from "@/pages/faq";
 import ProductsPage from "@/pages/products"; // Asegúrate de crear este archivo
+import PersonalizationPage from "@/pages/personalization";
 
 function Router() {
   return (
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/chatbot-test" component={ChatbotTestPage} />
       <Route path="/faq" component={FAQ} />
       <Route path="/productos" component={ProductsPage} /> {/* Nueva ruta */}
+      <Route path="/personalizacion" component={PersonalizationPage} /> {/* Nueva ruta */}
       <Route component={NotFound} /> {/* Fallback 404 */}
     </Switch>
   );
