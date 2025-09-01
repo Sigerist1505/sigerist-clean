@@ -15,6 +15,8 @@
     "migrate:wompi-tracking": "node add-wompi-order-tracking.js",
     "test:auth-fixes": "node test-auth-fixes.js",
     "test:purchase-flow": "node test-purchase-flow.mjs",
+    "test:complete-flow": "node test-complete-purchase-flow.mjs",
+    "verify:production": "node verify-production-flow.mjs",
     "fix:add-name-embroidery": "node fix-add-name-embroidery-column.js",
     "fix:cart-schema": "node comprehensive-cart-fix.js",
     "audit:cart-schema": "node audit-cart-schema.js",
